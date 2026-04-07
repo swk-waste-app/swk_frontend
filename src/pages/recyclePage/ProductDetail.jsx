@@ -106,7 +106,7 @@ const ProductDetailPage = () => {
           <div className="md:w-1/2">
             <div className="relative h-96">
               <img
-                src={`https://savefiles.org/${product.image}?shareable_link=473`}
+                src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${product.image}`}
                 alt={product.title}
                 className="w-full h-full object-cover"
               />
@@ -156,7 +156,7 @@ const ProductDetailPage = () => {
 
                 <div className="flex items-center gap-3 text-gray-600">
                   <FaBox className="text-green-500 text-xl" />
-                  <span className="text-base">Quantity: {product.quantity}</span>
+                  <span className="text-base">Quantity: {product.inventory}</span>
                 </div>
               </div>
 
@@ -192,7 +192,7 @@ const ProductDetailPage = () => {
               <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <span className="text-green-500">•</span> Available Quantity
               </h3>
-              <p className="text-gray-600">{product.quantity}</p>
+              <p className="text-gray-600">{product.inventory}</p>
             </div>
           </div>
         </div>
