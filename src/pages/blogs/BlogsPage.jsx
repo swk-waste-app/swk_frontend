@@ -10,7 +10,7 @@ const BlogsPage = () => {
 
   const fetchSWKNews = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/news/news`, {
+      const response = await axios.get(`http://localhost:6060/api/news/news`, {
         params: {
           query: 'recycling', 
         },
@@ -80,7 +80,7 @@ const BlogsPage = () => {
                   Read More
                 </a>
               )}
-              <p className="text-sm text-gray-500 mt-2">{`Published: ${new Date(article.published).toLocaleString()}`}</p>
+              <p className="text-sm text-gray-500 mt-2">{`Published: ${new Date(article.publishedAt).toLocaleString()}`}</p>
             </div>
           ))}
         </div>

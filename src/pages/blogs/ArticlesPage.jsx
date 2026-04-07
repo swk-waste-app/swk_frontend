@@ -10,7 +10,7 @@ const ArticlePage = () => {
 
   const fetchSWKNews = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/scholar/google-scholar`, {
+      const response = await axios.get(`http://localhost:6060/api/scholar/google-scholar`, {
         params: { 
           query: 'waste management',
         },
@@ -121,7 +121,7 @@ const ArticlePage = () => {
               </div>
             )}
             <p className="text-sm text-gray-500 mt-2">
-              {`Published: ${new Date(article.published).toLocaleString()}`}
+              {`${article.displayed_link || ''}`}
             </p>
           </div>
         ))}
