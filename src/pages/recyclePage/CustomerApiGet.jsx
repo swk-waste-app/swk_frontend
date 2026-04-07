@@ -4,7 +4,7 @@ const ApiGet = ({ id, title, inventory, image, description, price }) => {
   const productId = id || 'no-id';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md 
+    <div className="bg-white rounded-lg sm:rounded-xl shadow-md 
                     hover:shadow-xl transform hover:-translate-y-1 transition-all 
                     duration-300 flex flex-col h-full">
       {/* Image Container */}

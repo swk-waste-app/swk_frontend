@@ -36,7 +36,7 @@ const VendorApiGet = ({ id, title, image, description, price }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden
                     transform hover:-translate-y-1 transition-all duration-300">
       {/* Image Container */}
       <div className="relative group">
