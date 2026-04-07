@@ -11,7 +11,7 @@ const ApiGet = ({ id, title, inventory, image, description, price }) => {
       <div className="relative overflow-hidden rounded-t-lg sm:rounded-t-xl 
                       h-40 sm:h-48 md:h-52 lg:h-56">
         <img 
-          src={`https://savefiles.org/${image}?shareable_link=473`} 
+          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${image}`} 
           alt={title} 
           className="w-full h-full object-cover transform hover:scale-110 
                      transition-transform duration-500" 
@@ -37,10 +37,11 @@ const ApiGet = ({ id, title, inventory, image, description, price }) => {
         </h2>
 
         {/* Price and Inventory */}
+      
         <div className="flex items-center justify-between">
           <span className="text-xl sm:text-2xl font-bold text-green-600 
                           dark:text-green-400">
-            GH₵ {price || '0.00'}
+            GH₵ {price ? Number(price).toFixed(2) : '0.00'}
           </span>
           <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             {inventory} units left
