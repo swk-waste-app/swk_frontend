@@ -1,16 +1,16 @@
 import axios from "axios"
 
-const baseURL = import.meta.env.VITE_BASE_URL
-
-const token = localStorage.getItem("token")
-
-if (token) {
-    axios.defaults.headers.common["Authorization"]= `bearer ${token}`
-    console.log(token)
-}else{
-console.log("no token found")}
+const baseURL = "http://localhost:6060/api"
 
 export const apiClient = axios.create({
-    baseURL: baseURL, 
+    baseURL: baseURL,
 })
 
+// This runs before every request and always picks up the latest token
+apiClient.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token")
+    if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`
+    }
+    return config
+})
