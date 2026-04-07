@@ -10,7 +10,7 @@ const BlogsPage = () => {
 
   const fetchSWKNews = async () => {
     try {
-      const response = await axios.get(`http://localhost:6060/api/news/news`, {
+      const response = await axios.get(`https://swk-backend.onrender.com/api/news/news`, {
         params: {
           query: 'recycling', 
         },

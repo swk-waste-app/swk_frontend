@@ -10,7 +10,7 @@ const ArticlePage = () => {
 
   const fetchSWKNews = async () => {
     try {
-      const response = await axios.get(`http://localhost:6060/api/scholar/google-scholar`, {
+      const response = await axios.get(`https://swk-backend.onrender.com/api/scholar/google-scholar`, {
         params: { 
           query: 'waste management',
         },
