@@ -41,7 +41,7 @@ const VendorApiGet = ({ id, title, image, description, price }) => {
       {/* Image Container */}
       <div className="relative group">
         <img 
-          src={`https://savefiles.org/${image}?shareable_link=473`}
+          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${image}`}
           alt={title}
           className="w-full h-48 object-cover transition-transform duration-500 
                      group-hover:scale-105"
@@ -76,7 +76,7 @@ const VendorApiGet = ({ id, title, image, description, price }) => {
         {/* Price */}
         <div className="flex items-center justify-between">
           <span className="text-xl font-bold text-green-600 dark:text-green-400">
-            GH₵ {price || '0.00'}
+            GH₵ {price ? Number(price).toFixed(2) : '0.00'}
           </span>
         </div>
 
