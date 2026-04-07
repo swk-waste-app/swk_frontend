@@ -81,9 +81,9 @@ const SideBar= ({profile, role}) => {
               }`}
             >
               <FaHome className="mr-2" />
-              <Link to="/" className="block w-full h-full">
-                Overview
-              </Link>
+              <Link to="/customerDashboard/pickup" className="block w-full h-full">
+  Overview
+</Link>
             </li>
 
             {role === "user" && (
