@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { apiGetUserStats, apiGetLeaderboard } from '../../services/product';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FaRecycle, FaLeaf, FaTrophy, FaFire, FaCalendarCheck, FaShoppingBag, FaStore, FaArrowRight, FaGlobe, FaBullseye } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaRecycle, FaLeaf, FaTrophy, FaFire, FaCalendarCheck, FaShoppingBag, FaStore, FaArrowRight, FaGlobe } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -33,6 +33,7 @@ const ECO_TIPS = [
 ];
 
 const Overview = ({ role }) => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,13 +42,19 @@ const Overview = ({ role }) => {
     const [editingGoal, setEditingGoal] = useState(false);
     const [newGoal, setNewGoal] = useState(monthlyGoal);
 
+    const currentRole = role || localStorage.getItem('role');
+
     useEffect(() => {
+        if (currentRole === 'admin') {
+            navigate('/customerDashboard/adminoverview');
+            return;
+        }
         fetchData();
         const tipInterval = setInterval(() => {
             setTipIndex(prev => (prev + 1) % ECO_TIPS.length);
         }, 5000);
         return () => clearInterval(tipInterval);
-    }, []);
+    }, [currentRole]);
 
     const fetchData = async () => {
         try {
@@ -69,6 +76,8 @@ const Overview = ({ role }) => {
         localStorage.setItem('monthlyGoal', newGoal);
         setEditingGoal(false);
     };
+
+    if (currentRole === 'admin') return null;
 
     if (loading) {
         return (
@@ -103,7 +112,6 @@ const Overview = ({ role }) => {
     })?.count || 0;
 
     const goalProgress = Math.min(Math.round((thisMonthPickups / monthlyGoal) * 100), 100);
-
     const userRank = leaderboard.findIndex(u => u.name === stats?.user?.name) + 1;
 
     return (
@@ -144,10 +152,8 @@ const Overview = ({ role }) => {
                         <span>{nextLevel?.min || '∞'} pts</span>
                     </div>
                     <div className="w-full bg-green-900 rounded-full h-3">
-                        <div
-                            className="bg-white rounded-full h-3 transition-all duration-1000"
-                            style={{ width: `${progressPercent}%` }}
-                        ></div>
+                        <div className="bg-white rounded-full h-3 transition-all duration-1000"
+                            style={{ width: `${progressPercent}%` }}></div>
                     </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-4">
@@ -240,30 +246,19 @@ const Overview = ({ role }) => {
 
             {/* Goal Setting + Environmental Impact */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* Monthly Goal */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800">🎯 Monthly Goal</h3>
-                        <button onClick={() => setEditingGoal(!editingGoal)}
-                            className="text-xs text-green-600 hover:underline">
+                        <button onClick={() => setEditingGoal(!editingGoal)} className="text-xs text-green-600 hover:underline">
                             {editingGoal ? 'Cancel' : 'Edit Goal'}
                         </button>
                     </div>
                     {editingGoal ? (
                         <div className="flex items-center gap-3">
-                            <input
-                                type="number"
-                                value={newGoal}
-                                onChange={e => setNewGoal(parseInt(e.target.value))}
-                                className="w-20 border rounded-lg p-2 text-center text-gray-700"
-                                min="1" max="30"
-                            />
+                            <input type="number" value={newGoal} onChange={e => setNewGoal(parseInt(e.target.value))}
+                                className="w-20 border rounded-lg p-2 text-center text-gray-700" min="1" max="30" />
                             <span className="text-gray-600 text-sm">pickups this month</span>
-                            <button onClick={saveGoal}
-                                className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">
-                                Save
-                            </button>
+                            <button onClick={saveGoal} className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">Save</button>
                         </div>
                     ) : (
                         <>
@@ -272,46 +267,35 @@ const Overview = ({ role }) => {
                                 <span className="text-gray-500 text-lg mb-1">/ {monthlyGoal} pickups</span>
                             </div>
                             <div className="w-full bg-gray-100 rounded-full h-4">
-                                <div
-                                    className="bg-green-500 rounded-full h-4 transition-all duration-1000 flex items-center justify-end pr-2"
+                                <div className="bg-green-500 rounded-full h-4 transition-all duration-1000 flex items-center justify-end pr-2"
                                     style={{ width: `${goalProgress}%` }}>
                                     {goalProgress > 20 && <span className="text-white text-xs font-bold">{goalProgress}%</span>}
                                 </div>
                             </div>
                             <p className="text-xs text-gray-500 mt-2">
                                 {goalProgress >= 100 ? '🎉 Goal achieved! Amazing work!' :
-                                 `${monthlyGoal - thisMonthPickups} more pickup${monthlyGoal - thisMonthPickups !== 1 ? 's' : ''} to reach your goal`}
+                                    `${monthlyGoal - thisMonthPickups} more pickup${monthlyGoal - thisMonthPickups !== 1 ? 's' : ''} to reach your goal`}
                             </p>
                         </>
                     )}
                 </div>
-
-                {/* Environmental Impact */}
                 <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 shadow-sm border border-green-200">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">🌍 Your Environmental Impact</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-green-600">
-                                {Math.round((stats?.stats?.totalWasteCollected || 0) * 0.5)}
-                            </p>
+                            <p className="text-2xl font-bold text-green-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 0.5)}</p>
                             <p className="text-xs text-gray-600 mt-1">🌳 Trees equivalent</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-blue-600">
-                                {Math.round((stats?.stats?.totalCarbonSaved || 0) / 0.21)}
-                            </p>
+                            <p className="text-2xl font-bold text-blue-600">{Math.round((stats?.stats?.totalCarbonSaved || 0) / 0.21)}</p>
                             <p className="text-xs text-gray-600 mt-1">🚗 Car trips avoided</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-yellow-600">
-                                {Math.round((stats?.stats?.totalWasteCollected || 0) * 1.5)}
-                            </p>
+                            <p className="text-2xl font-bold text-yellow-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 1.5)}</p>
                             <p className="text-xs text-gray-600 mt-1">💡 Hours of electricity</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-teal-600">
-                                {Math.round((stats?.stats?.totalWasteCollected || 0) * 10)}
-                            </p>
+                            <p className="text-2xl font-bold text-teal-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 10)}</p>
                             <p className="text-xs text-gray-600 mt-1">💧 Litres of water saved</p>
                         </div>
                     </div>
@@ -319,7 +303,7 @@ const Overview = ({ role }) => {
             </div>
 
             {/* Vendor Stats */}
-            {role === 'vendor' && stats?.vendorStats && (
+            {currentRole === 'vendor' && stats?.vendorStats && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
                         <p className="text-gray-500 text-xs uppercase tracking-wider">Products Listed</p>
@@ -413,8 +397,6 @@ const Overview = ({ role }) => {
 
             {/* Leaderboard + Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {/* Leaderboard */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800">🏆 Community Leaderboard</h3>
@@ -455,8 +437,6 @@ const Overview = ({ role }) => {
                         </div>
                     )}
                 </div>
-
-                {/* Recent Activity */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800">🕐 Recent Activity</h3>

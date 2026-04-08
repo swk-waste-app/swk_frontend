@@ -18,6 +18,7 @@ import ArticlePage from './pages/blogs/ArticlesPage'
 import WasteSchedulePage from './pages/customerDashboard/DatePicker'
 import WasteEditPage from './pages/customerDashboard/EditDatePicker'
 import AdminDashboard from './pages/adminDashboard/AdminDashboard'
+import AdminOverview from './pages/adminDashboard/AdminOverview'
 import AdminSignup from './pages/adminDashboard/AdminSignUp'
 import AdminLogin from './pages/adminDashboard/AdminSignin'
 import ProductDetailPage from './pages/recyclePage/ProductDetail'
@@ -40,6 +41,7 @@ function App() {
       element: <CustDushboardLayout/>,
       children: [
         { path: "overview", element: <Overview /> },
+        { path: "adminoverview", element: <AdminOverview /> },
         { path: "blogs", element: <BlogsPage /> },
         { path: "articles", element: <ArticlePage /> },
         { path: "products", element: <CustomerPage /> },

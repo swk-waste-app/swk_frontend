@@ -12,8 +12,10 @@ const SideBar = ({ profile, role }) => {
     const location = useLocation();
 
     useEffect(() => {
-        fetchNotifications();
-    }, []);
+        if (role !== 'admin') {
+            fetchNotifications();
+        }
+    }, [role]);
 
     const fetchNotifications = async () => {
         try {
@@ -65,6 +67,9 @@ const SideBar = ({ profile, role }) => {
             : 'text-white hover:bg-green-700'
     }`;
 
+    const overviewPath = role === 'admin' ? '/customerDashboard/adminoverview' : '/customerDashboard/overview';
+    const overviewActive = role === 'admin' ? isActiveLink('/adminoverview') : isActiveLink('/overview');
+
     return (
         <>
             {/* Mobile Header */}
@@ -106,25 +111,33 @@ const SideBar = ({ profile, role }) => {
                             <div>
                                 <p className="text-xs text-green-300">Welcome back,</p>
                                 <p className="text-sm font-semibold">{profile?.name || "User"}</p>
+                                {role === 'admin' && (
+                                    <span className="text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full font-bold">Admin</span>
+                                )}
+                                {role === 'vendor' && (
+                                    <span className="text-xs bg-purple-400 text-white px-2 py-0.5 rounded-full font-bold">Vendor</span>
+                                )}
                             </div>
                         </div>
-                        {/* Notification Bell */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="text-white hover:text-yellow-300 transition-colors relative">
-                                <FaBell size={18} />
-                                {notifications.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
-                                        {notifications.length}
-                                    </span>
-                                )}
-                            </button>
-                        </div>
+                        {/* Notification Bell — only for non-admin */}
+                        {role !== 'admin' && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowNotifications(!showNotifications)}
+                                    className="text-white hover:text-yellow-300 transition-colors relative">
+                                    <FaBell size={18} />
+                                    {notifications.length > 0 && (
+                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
+                                            {notifications.length}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Notification Dropdown */}
-                    {showNotifications && (
+                    {showNotifications && role !== 'admin' && (
                         <div className="mx-2 mt-2 bg-white rounded-xl shadow-lg overflow-hidden">
                             <div className="p-3 bg-gray-50 border-b flex items-center justify-between">
                                 <p className="text-xs font-semibold text-gray-700">Notifications</p>
@@ -150,11 +163,15 @@ const SideBar = ({ profile, role }) => {
                     {/* Navigation */}
                     <nav className="mt-4 pb-20">
                         <ul>
-                            <li className={navLinkClass("/overview")}>
+                            {/* Overview — all roles */}
+                            <li className={`p-4 cursor-pointer flex items-center transition-all duration-200 rounded-lg mx-2 mb-1 ${
+                                overviewActive ? 'bg-white text-green-800 font-semibold shadow-sm' : 'text-white hover:bg-green-700'
+                            }`}>
                                 <FaHome className="mr-3 text-sm" />
-                                <Link to="/customerDashboard/overview" className="block w-full">Overview</Link>
+                                <Link to={overviewPath} className="block w-full">Overview</Link>
                             </li>
 
+                            {/* User Links */}
                             {role === "user" && (
                                 <>
                                     <li className={navLinkClass("/pickup")}>
@@ -172,6 +189,7 @@ const SideBar = ({ profile, role }) => {
                                 </>
                             )}
 
+                            {/* Admin Links */}
                             {role === "admin" && (
                                 <li className={navLinkClass("/adminview")}>
                                     <FaTrashAlt className="mr-3 text-sm" />
@@ -179,6 +197,7 @@ const SideBar = ({ profile, role }) => {
                                 </li>
                             )}
 
+                            {/* Vendor Links */}
                             {role === "vendor" && (
                                 <>
                                     <li className={navLinkClass("/vendorProduct")}>
