@@ -1,4 +1,4 @@
-
+import Overview from './pages/customerDashboard/Overview'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LoginPage from './pages/SigninPage/SignIn'
@@ -77,6 +77,10 @@ function App() {
       element:<CustDushboardLayout/>,
       children:[
      
+        {
+  path: "overview",
+  element: <Overview />
+},
       {
       path: "blogs",
       element: <BlogsPage />

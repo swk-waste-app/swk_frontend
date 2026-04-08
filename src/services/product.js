@@ -78,3 +78,9 @@ export const apiDeleteScheduledTicket = async (id) => {
 export const apiDeleteTicket = async (id) => {
   return apiClient.delete(`/products/${id}`);
 };
+export const apiGetUserStats = async () => {
+    return apiClient.get("/users/me/stats");
+};
+export const apiGetLeaderboard = async () => {
+    return apiClient.get("/users/leaderboard");
+};

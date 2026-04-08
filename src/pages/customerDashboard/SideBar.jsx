@@ -1,270 +1,228 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, Outlet, useLocation, useOutletContext } from 'react-router-dom';
-import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
-import { apiGetProfile } from '../../services/product';
-import WasteSchedulePage from './DatePicker';
-import { FaStore } from 'react-icons/fa';  
+import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell } from 'react-icons/fa';
+import { FaStore } from 'react-icons/fa';
+import { apiGetUserStats } from '../../services/product';
 
+const SideBar = ({ profile, role }) => {
+    const navigate = useNavigate();
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const location = useLocation();
 
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
 
-const SideBar= ({profile, role}) => {
-  console.log('Current role:', role);
+    const fetchNotifications = async () => {
+        try {
+            const response = await apiGetUserStats();
+            const notifs = [];
+            if (response.data?.stats?.scheduledPickups > 0) {
+                notifs.push({
+                    id: 1,
+                    message: `You have ${response.data.stats.scheduledPickups} scheduled pickup${response.data.stats.scheduledPickups > 1 ? 's' : ''}`,
+                    type: 'pickup',
+                    time: 'Pending'
+                });
+            }
+            if (response.data?.stats?.inProgressPickups > 0) {
+                notifs.push({
+                    id: 2,
+                    message: `${response.data.stats.inProgressPickups} pickup${response.data.stats.inProgressPickups > 1 ? 's are' : ' is'} in progress`,
+                    type: 'progress',
+                    time: 'Active'
+                });
+            }
+            if (!response.data?.stats?.totalPickups) {
+                notifs.push({
+                    id: 3,
+                    message: 'Welcome! Schedule your first waste pickup',
+                    type: 'welcome',
+                    time: 'New'
+                });
+            }
+            setNotifications(notifs);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
 
-  const navigate = useNavigate();
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
+    const LogOut = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        setTimeout(() => { navigate("/"); }, 1000);
+    };
 
+    const isActiveLink = (path) => location.pathname.includes(path);
 
+    const navLinkClass = (path) => `p-4 cursor-pointer flex items-center transition-all duration-200 rounded-lg mx-2 mb-1 ${
+        isActiveLink(path)
+            ? 'bg-white text-green-800 font-semibold shadow-sm'
+            : 'text-white hover:bg-green-700'
+    }`;
 
+    return (
+        <>
+            {/* Mobile Header */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-green-800 text-white p-4 flex items-center justify-between">
+                <button onClick={toggleSidebar} className="text-white focus:outline-none">
+                    {isSidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                </button>
+                <h1 className="font-bold text-lg">Taka Kipawa</h1>
+                <div className="relative">
+                    <button onClick={() => setShowNotifications(!showNotifications)} className="relative">
+                        <FaBell size={20} />
+                        {notifications.length > 0 && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
+                                {notifications.length}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            </div>
 
+            <div className="flex">
+                {/* Overlay */}
+                {isSidebarOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                        onClick={() => setSidebarOpen(false)} />
+                )}
 
-  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+                {/* Sidebar */}
+                <div className={`fixed left-0 h-screen w-64 bg-green-800 text-white overflow-y-auto transition-transform duration-300 z-40 lg:z-auto ${
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                } lg:translate-x-0`}>
 
+                    {/* Profile Section */}
+                    <div className="p-6 flex items-center justify-between border-b border-green-700">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-lg font-bold border-2 border-green-400">
+                                {profile?.name ? profile.name[0].toUpperCase() : "?"}
+                            </div>
+                            <div>
+                                <p className="text-xs text-green-300">Welcome back,</p>
+                                <p className="text-sm font-semibold">{profile?.name || "User"}</p>
+                            </div>
+                        </div>
+                        {/* Notification Bell */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="text-white hover:text-yellow-300 transition-colors relative">
+                                <FaBell size={18} />
+                                {notifications.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
+                                        {notifications.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
 
+                    {/* Notification Dropdown */}
+                    {showNotifications && (
+                        <div className="mx-2 mt-2 bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div className="p-3 bg-gray-50 border-b flex items-center justify-between">
+                                <p className="text-xs font-semibold text-gray-700">Notifications</p>
+                                <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600">
+                                    <FaTimes size={12} />
+                                </button>
+                            </div>
+                            {notifications.map(notif => (
+                                <div key={notif.id} className="p-3 border-b hover:bg-gray-50 flex items-start gap-2">
+                                    <span className="text-lg">
+                                        {notif.type === 'pickup' ? '🗓️' :
+                                         notif.type === 'progress' ? '🔄' : '👋'}
+                                    </span>
+                                    <div>
+                                        <p className="text-xs text-gray-700">{notif.message}</p>
+                                        <p className="text-xs text-green-600 mt-1">{notif.time}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
+                    {/* Navigation */}
+                    <nav className="mt-4 pb-20">
+                        <ul>
+                            <li className={navLinkClass("/overview")}>
+                                <FaHome className="mr-3 text-sm" />
+                                <Link to="/customerDashboard/overview" className="block w-full">Overview</Link>
+                            </li>
 
-  const LogOut = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+                            {role === "user" && (
+                                <>
+                                    <li className={navLinkClass("/pickup")}>
+                                        <FaTrashAlt className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/pickup" className="block w-full">Waste Collection</Link>
+                                    </li>
+                                    <li className={navLinkClass("/products")}>
+                                        <FaRecycle className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/products" className="block w-full">Recycle</Link>
+                                    </li>
+                                    <li className={navLinkClass("/login")}>
+                                        <FaStore className="mr-3 text-sm" />
+                                        <Link to="/login" className="block w-full">Sell here</Link>
+                                    </li>
+                                </>
+                            )}
 
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
-   
-  }
+                            {role === "admin" && (
+                                <li className={navLinkClass("/adminview")}>
+                                    <FaTrashAlt className="mr-3 text-sm" />
+                                    <Link to="/customerDashboard/adminview" className="block w-full">Ticket Management</Link>
+                                </li>
+                            )}
 
-  // Function to check if link is active
-  const isActiveLink = (path) => {
-    return location.pathname.includes(path);
-  };
+                            {role === "vendor" && (
+                                <>
+                                    <li className={navLinkClass("/vendorProduct")}>
+                                        <FaFileAlt className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/vendorProduct" className="block w-full">Vendor Product</Link>
+                                    </li>
+                                    <li className={navLinkClass("/addProduct")}>
+                                        <FaStore className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/addProduct" className="block w-full">Add Product</Link>
+                                    </li>
+                                </>
+                            )}
 
-  return (
-    <>
- 
+                            <div className="mx-2 my-2 border-t border-green-700"></div>
 
+                            <li className={navLinkClass("/blogs")}>
+                                <FaBlog className="mr-3 text-sm" />
+                                <Link to="/customerDashboard/blogs" className="block w-full">Blogs</Link>
+                            </li>
+                            <li className={navLinkClass("/articles")}>
+                                <FaFileAlt className="mr-3 text-sm" />
+                                <Link to="/customerDashboard/articles" className="block w-full">Articles</Link>
+                            </li>
+                        </ul>
+                    </nav>
 
+                    {/* Logout */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-700 bg-green-800">
+                        <button onClick={LogOut}
+                            className="w-full p-3 flex items-center justify-center gap-2 text-white bg-green-700 rounded-lg hover:bg-red-600 transition-colors duration-200">
+                            <FaSignOutAlt />
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-    <div className="flex">
-      {/* Hamburger Icon */}
-      <button
-        className="lg:hidden fixed top-4 left-4 z-50 text-white bg-green-800 p-2 rounded-md focus:outline-none"
-        onClick={toggleSidebar}
-      >
-        <FaBars size={20} />
-      </button>
-
-      {/* Sidebar */}
-      <div
-        className={`fixed  left-0 h-screen w-64 bg-green-800 text-white overflow-y-auto scrollbar-hide transition-transform duration-300 z-40 lg:z-auto ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
-        <div className="p-6 flex items-center gap-4">
-          {profile && (
-            <>
-              <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-xl font-bold">
-                {profile.name ? profile.name[0].toUpperCase() : "?"}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Welcome,</h1>
-                <p className="text-sm">{profile?.name || "User"}</p>
-              </div>
-            </>
-          )}
-        </div>
-
-        <nav className="mt-6">
-          <ul>
-            <li
-              className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                isActiveLink("/Landing") ? "bg-green-700" : "hover:bg-green-700"
-              }`}
-            >
-              <FaHome className="mr-2" />
-              <Link to="/customerDashboard/pickup" className="block w-full h-full">
-  Overview
-</Link>
-            </li>
-
-            {role === "user" && (
-              <>
-                <li
-                  className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                    isActiveLink("/pickup") ? "bg-green-700" : "hover:bg-green-700"
-                  }`}
-                >
-                  <FaTrashAlt className="mr-2" />
-                  <Link to="/customerDashboard/pickup" className="block w-full h-full">
-                    Waste Collection
-                  </Link>
-                </li>
-
-                <li
-                  className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                    isActiveLink("/products") ? "bg-green-700" : "hover:bg-green-700"
-                  }`}
-                >
-                  <FaRecycle className="mr-2" />
-                  <Link to="/customerDashboard/products" className="block w-full h-full">
-                    Recycle
-                  </Link>
-                </li>
-
-                <li
-                  className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                    isActiveLink("/login") ? "bg-green-700" : "hover:bg-green-700"
-                  }`}
-                >
-                  <FaStore className="mr-2" />
-                  <Link to="/login" className="block w-full h-full">
-                    Sell here
-                  </Link>
-                </li>
-              </>
-            )}
-
-            {role === "admin" && (
-              <li
-                className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                  isActiveLink("/adminview") ? "bg-green-700" : "hover:bg-green-700"
-                }`}
-              >
-                <FaTrashAlt className="mr-2" />
-                <Link to="/customerDashboard/adminview" className="block w-full h-full">
-                  Ticket Management
-                </Link>
-              </li>
-            )}
-
-            {role === "vendor" && (
-              <>
-                <li
-                  className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                    isActiveLink("/vendorProduct") ? "bg-green-700" : "hover:bg-green-700"
-                  }`}
-                >
-                  <FaFileAlt className="mr-2" />
-                  <Link to="/customerDashboard/vendorProduct" className="block w-full h-full">
-                    Vendor Product
-                  </Link>
-                </li>
-
-                <li
-                  className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                    isActiveLink("/addProduct") ? "bg-green-700" : "hover:bg-green-700"
-                  }`}
-                >
-                  <FaStore className="mr-2" />
-                  <Link to="/customerDashboard/addProduct" className="block w-full h-full">
-                    Add Product
-                  </Link>
-                </li>
-              </>
-            )}
-
-            <li
-              className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                isActiveLink("/blogs") ? "bg-green-700" : "hover:bg-green-700"
-              }`}
-            >
-              <FaBlog className="mr-2" />
-              <Link to="/customerDashboard/blogs" className="block w-full h-full">
-                Blogs
-              </Link>
-            </li>
-
-            <li
-              className={`p-4 cursor-pointer flex items-center transition-colors duration-200 ${
-                isActiveLink("/articles") ? "bg-green-700" : "hover:bg-green-700"
-              }`}
-            >
-              <FaFileAlt className="mr-2" />
-              <Link to="/customerDashboard/articles" className="block w-full h-full">
-                Articles
-              </Link>
-            </li>
-          </ul>
-        </nav>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-700">
-          <button
-            onClick={LogOut}
-            className="w-full p-3 flex items-center justify-center gap-2 
-                     text-white bg-green-700 rounded-lg hover:bg-green-600 
-                     transition-colors duration-200"
-          >
-            <FaSignOutAlt />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
-    </div>
- 
-
-
-      {/* Main Content Area */}
-      <div
-  className={`ml-0 lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 transition-all duration-300`}
-  key={role + location.pathname}
->
-  <div className="max-w-7xl mx-auto">
-    {/* Welcome Message */}
-    <div className="mb-6 sm:mb-8 bg-white rounded-lg shadow-md border-l-4 border-green-500">
-      <div className="p-4 sm:p-6">
-        <h3 className="text-xl sm:text-2xl font-bold text-green-800 mb-2 sm:mb-3">
-          Welcome, {profile?.name || (role === 'user' ? 'User' : 'Vendor')}!
-        </h3>
-        <div
-          className="flex flex-col sm:flex-row items-start sm:items-center 
-                      justify-between p-3 sm:p-4 bg-green-50 rounded-lg gap-4"
-        >
-          <p className="text-gray-700 text-base sm:text-lg leading-relaxed w-full sm:w-3/4">
-            {role === 'user' ? (
-              <span className="flex flex-col gap-2">
-                <span className="text-lg sm:text-xl font-semibold text-green-700">
-                  Welcome to your eco-friendly hub! 🌱
-                </span>
-                <span className="text-sm sm:text-base">
-                  Here you can schedule waste collections, explore recycling options, and make a positive impact on the environment. Let's make the world greener together!
-                </span>
-              </span>
-            ) : role === 'admin' ? (
-              <span className="flex flex-col gap-2">
-                <span className="text-lg sm:text-xl font-semibold text-green-700">
-                  Welcome to Admin Dashboard! 🌿
-                </span>
-                <span className="text-sm sm:text-base">
-                  Here you can manage waste collection tickets, monitor activities, and ensure smooth operations. Keep our environment clean and green!
-                </span>
-              </span>
-            ) : (
-              <span className="flex flex-col gap-2">
-                <span className="text-lg sm:text-xl font-semibold text-green-700">
-                  Welcome to your vendor dashboard! 🌿
-                </span>
-                <span className="text-sm sm:text-base">
-                  Here you can showcase your eco-friendly products, connect with conscious consumers, and be part of the sustainable revolution. Let's grow your green business!
-                </span>
-              </span>
-            )}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    {/* Content Section */}
-    <div className="w-full">
-      {role === 'user' && (
-        <div className="mt-6 p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-md">
-          <WasteSchedulePage />
-        </div>
-      )}
-    </div>
-  </div>
-</div>
-
-    </>
-  );
+            {/* Main Content Area */}
+            <div className="ml-0 lg:ml-64 flex-1 transition-all duration-300 pt-14 lg:pt-0"
+                key={role + location.pathname}>
+                <Outlet />
+            </div>
+        </>
+    );
 };
 
 export default SideBar;
