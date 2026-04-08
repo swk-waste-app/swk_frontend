@@ -11,7 +11,6 @@ import DirectionPage from './pages/directionPage/Direction'
 import CustomerPage from './pages/recyclePage/CustomerPage'
 import Login from './pages/recyclePage/VendorSignin'
 import Signup from './pages/recyclePage/vendorSignUp'
-
 import WasteSection from './pages/customerDashboard/Waste'
 import ProductForm from './pages/recyclePage/AddProductForm'
 import VendorView from './pages/recyclePage/VendorFetch'
@@ -24,122 +23,39 @@ import AdminLogin from './pages/adminDashboard/AdminSignin'
 import ProductDetailPage from './pages/recyclePage/ProductDetail'
 import ScheduleDetailPage from './pages/customerDashboard/ScheduleDetailPage'
 import EditProductForm from './pages/recyclePage/EditProductForm'
-import VendorViewback from './pages/recyclePage/custobackup'
-
-
 
 function App() {
- 
   const router = createBrowserRouter([
+    { path: "/s", element: <DirectionPage/> },
+    { path: "/signin", element: <LoginPage /> },
+    { path: "/signup", element: <SignupPage/> },
+    { path: "/", element: <LandingLayout /> },
+    { path: "/who-we-are", element: <AboutUsPage /> },
+    { path: "/login", element: <Login /> },
+    { path: "/vendorsignup", element: <Signup /> },
+    { path: "/Adminsignup", element: <AdminSignup /> },
+    { path: "/AdminLogin", element: <AdminLogin /> },
     {
-      path: "/s",
-      element: <DirectionPage/>
-    },
-    {
-      path: "/signin",
-      element: <LoginPage />
-    },
-    {
-      path: "/signup",
-      element: <SignupPage/>
-    },
-    {
-      path: "/",
-      element: <LandingLayout />
-    },
-    {
-      path: "/who-we-are",
-      element: <AboutUsPage />
-    },
-    {
-      path: "/login",
-      element: <Login />
-    },
-    {
-      path: "/vendorsignup",
-      element: <Signup />
-    },
-    {path:"schedule/:id",
-      element:<WasteEditPage/>
-    },
-    {
-      path: "/Adminsignup",
-      element: <AdminSignup />
-    },
-    {
-      path: "/AdminLogin",
-      element: <AdminLogin />
-    },
-  
-  
-     {
-      path:"/customerDashboard",
-      element:<CustDushboardLayout/>,
-      children:[
-     
-        {
-  path: "overview",
-  element: <Overview />
-},
-      {
-      path: "blogs",
-      element: <BlogsPage />
-      },
-      {
-        path: "articles",
-        element: <ArticlePage />
-        },
-      {
-        path: "products",
-        element: <CustomerPage />
-      },
-      {
-        path: "pickup",
-        element: <WasteSection />
-      },
-      {
-        path: "vendorProduct",
-        element: <VendorView/>
-      },
-      {
-        path: "wpickup",
-        element: <WasteSchedulePage />
-      },
-     
-      {
-        path: "addProduct",
-        element: <ProductForm />
-      },
-      {
-        path: "editProduct/:id",
-        element: <EditProductForm/>
-      },
-      {
-         path:"adminview", 
-         element:<AdminDashboard />
-      },
-      {
-        path:"product/:id", 
-        element:<ProductDetailPage/>
-     },
-     {
-      path:"schedule/:id", 
-      element:<ScheduleDetailPage/>
-   }
+      path: "/customerDashboard",
+      element: <CustDushboardLayout/>,
+      children: [
+        { path: "overview", element: <Overview /> },
+        { path: "blogs", element: <BlogsPage /> },
+        { path: "articles", element: <ArticlePage /> },
+        { path: "products", element: <CustomerPage /> },
+        { path: "pickup", element: <WasteSection /> },
+        { path: "vendorProduct", element: <VendorView/> },
+        { path: "wpickup", element: <WasteSchedulePage /> },
+        { path: "addProduct", element: <ProductForm /> },
+        { path: "editProduct/:id", element: <EditProductForm/> },
+        { path: "adminview", element: <AdminDashboard /> },
+        { path: "product/:id", element: <ProductDetailPage/> },
+        { path: "schedule/:id", element: <ScheduleDetailPage/> },
+        { path: "editSchedule/:id", element: <WasteEditPage/> },
       ]
     },
-
-    // {path:"/editform/:id",
-    //   element:<EditProductForm/>
-    // },
-  
-    // {path:"/single/:advertid",
-    //   element:<SingleProduct/>
-    // },
   ])
-  return (
-    <RouterProvider router={router} />
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App

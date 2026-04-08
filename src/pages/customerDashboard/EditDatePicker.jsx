@@ -1,110 +1,214 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { apiEditProduct } from '../../services/product';
+import { apiEditProduct, apiGetSingleScheduledProducts } from '../../services/product';
+import { FaArrowLeft, FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaStickyNote } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
+const WASTE_TYPES = [
+    'General Waste',
+    'Recyclable Materials',
+    'Organic/Food Waste',
+    'Electronic (E-Waste)',
+    'Hazardous Waste',
+    'Fashion & Textiles',
+    'Plastics',
+    'Metals & Scrap',
+    'Glass',
+    'Wood & Furniture',
+    'Paper & Cardboard',
+    'Rubber',
+    'Other',
+];
+
 const WasteEditPage = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
-  
-  const [formData, setFormData] = useState({
-    pickupDate: new Date(),  // Changed from date to pickupDate
-    location: ''
-  });
+    const navigate = useNavigate();
+    const { id } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [formData, setFormData] = useState({
+        pickupDate: new Date(),
+        location: '',
+        wasteType: 'General Waste',
+        estimatedWeight: '',
+        notes: ''
+    });
 
-  const handleDateChange = (date) => {
-    setFormData(prev => ({
-      ...prev,
-      pickupDate: date  // Changed from date to pickupDate
-    }));
-  };
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            try {
+                const response = await apiGetSingleScheduledProducts(id);
+                const schedule = response.data;
+                setFormData({
+                    pickupDate: new Date(schedule.pickupDate),
+                    location: schedule.location || '',
+                    wasteType: schedule.wasteType || 'General Waste',
+                    estimatedWeight: schedule.estimatedWeight || '',
+                    notes: schedule.notes || ''
+                });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load schedule details' });
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSchedule();
+    }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await apiEditProduct(id, {
+                ...formData,
+                pickupDate: formData.pickupDate.toISOString(),
+                estimatedWeight: formData.estimatedWeight ? parseFloat(formData.estimatedWeight) : 0
+            });
+            await Swal.fire({
+                icon: 'success',
+                title: 'Rescheduled!',
+                text: 'Your pickup has been rescheduled successfully',
+                confirmButtonColor: '#026937'
+            });
+            navigate(-1);
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'Failed', text: error.message || 'Failed to update schedule' });
+        } finally {
+            setSaving(false);
+        }
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const submitData = {
-        ...formData,
-        pickupDate: formData.pickupDate.toISOString(),  // Changed from date to pickupDate
-        // status: 'updated'  // Include status if needed
-      };
-      
-      console.log('Submitting data:', submitData); // Debug log
-      await apiEditProduct(id, submitData);
-      
-      await Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Schedule updated successfully',
-        confirmButtonColor: '#10B981'
-      });
-      
-      navigate(-1);
-    } catch (error) {
-      console.error('Error:', error); // Debug log
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: error.message || 'Failed to update schedule',
-        confirmButtonColor: '#EF4444'
-      });
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+            </div>
+        );
     }
-  };
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Edit Waste Schedule</h1>
-      
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">
-            Pickup Date
-            <DatePicker
-              selected={formData.pickupDate}  // Changed from date to pickupDate
-              onChange={handleDateChange}
-              showTimeSelect
-              timeFormat="HH:mm"
-              timeIntervals={15}
-              dateFormat="MMMM d, yyyy h:mm aa"
-              className="w-full p-2 border rounded"
-              required
-            />
-          </label>
+    return (
+        <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+
+            {/* Back Button */}
+            <button onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+                <FaArrowLeft /> Back
+            </button>
+
+            {/* Header */}
+            <div className="rounded-2xl p-6 text-white"
+                style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
+                <h1 className="text-2xl font-bold">Reschedule Pickup</h1>
+                <p className="text-green-200 text-sm mt-1">Update your waste pickup details</p>
+            </div>
+
+            {/* Form */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <form onSubmit={handleSubmit} className="space-y-5">
+
+                    {/* Pickup Date */}
+                    <div>
+                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                            <FaCalendarAlt className="text-green-500" /> Pickup Date & Time
+                        </label>
+                        <DatePicker
+                            selected={formData.pickupDate}
+                            onChange={(date) => setFormData(prev => ({ ...prev, pickupDate: date }))}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            dateFormat="MMMM d, yyyy h:mm aa"
+                            minDate={new Date()}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            required
+                        />
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                            <FaMapMarkerAlt className="text-green-500" /> Location
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.location}
+                            onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            placeholder="Enter pickup location"
+                            required
+                        />
+                    </div>
+
+                    {/* Waste Type */}
+                    <div>
+                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                            <FaRecycle className="text-green-500" /> Waste Type
+                        </label>
+                        <select
+                            value={formData.wasteType}
+                            onChange={(e) => setFormData(prev => ({ ...prev, wasteType: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                        >
+                            {WASTE_TYPES.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Estimated Weight */}
+                    <div>
+                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                            ⚖️ Estimated Weight (kg) <span className="text-gray-400 font-normal">Optional</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={formData.estimatedWeight}
+                            onChange={(e) => setFormData(prev => ({ ...prev, estimatedWeight: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            placeholder="e.g. 5"
+                            min="0"
+                        />
+                        {formData.estimatedWeight > 0 && (
+                            <p className="text-xs text-green-600 mt-1">
+                                🏆 You'll earn approximately {Math.round(formData.estimatedWeight * 10)} points on completion
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Notes */}
+                    <div>
+                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                            <FaStickyNote className="text-green-500" /> Notes <span className="text-gray-400 font-normal">Optional</span>
+                        </label>
+                        <textarea
+                            value={formData.notes}
+                            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 resize-none"
+                            placeholder="Any special instructions..."
+                            rows={3}
+                        />
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="flex-1 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium disabled:opacity-50">
+                            {saving ? 'Saving...' : '✓ Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">
-            Location
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Enter pickup location"
-              required
-            />
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-        >
-          Update Schedule
-        </button>
-      </form>
-    </div>
-  );
+    );
 };
 
 export default WasteEditPage;

@@ -23,33 +23,52 @@ export const apiAddSchedule = async (formData) => {
   });
 };
 
+// Get all scheduled products
 export const apiGetScheduledProducts = async () => {
-  return apiClient.get("/history");
+  return apiClient.get("/waste-collection/history");
 };
+
+// Get user's scheduled products
 export const apiGetUsersScheduledProducts = async () => {
   return apiClient.get("/users/me/schedules");
 };
+
+// Get vendor's products
 export const apiGetVendorsProducts = async () => {
   return apiClient.get("/users/me/products");
 };
+
+// Get scheduled counts
 export const apiGetScheduledCounts = async () => {
-  return apiClient.get("/schedules/count/");
+  return apiClient.get("/waste-collection/schedules/count");
 };
+
+// Get single scheduled product
 export const apiGetSingleScheduledProducts = async (id) => {
-  return apiClient.get(`/schedule/${id}`);
+  return apiClient.get(`/waste-collection/schedule/${id}`);
 };
+
+// Get profile
 export const apiGetProfile = async () => {
   return apiClient.get("/users/profile");
 };
+
+// Send message
 export const apiSendMessage = async (messageData) => {
-  return apiClient.post("/send", messageData);
+  return apiClient.post("/messages/send", messageData);
 };
+
+// Edit schedule
 export const apiEditProduct = async (id, formData) => {
-  return apiClient.patch(`schedules/${id}`, formData);
+  return apiClient.patch(`/waste-collection/schedules/${id}`, formData);
 };
+
+// Edit scheduled product status
 export const apiEditScheduledProduct = async (id, formData) => {
-  return apiClient.patch(`/${id}/status`, formData);
+  return apiClient.patch(`/waste-collection/${id}/status`, formData);
 };
+
+// Get single product
 export const apiGetSingleProduct = async (id) => {
   try {
     const response = await apiClient.get(`/products/${id}`);
@@ -69,18 +88,28 @@ export const apiGetSingleProduct = async (id) => {
     }
   }
 };
+
+// Edit recycled product
 export const apiEditRecycledProduct = async (id, formData) => {
   return apiClient.patch(`/products/${id}`, formData);
 };
+
+// Delete scheduled ticket
 export const apiDeleteScheduledTicket = async (id) => {
-  return apiClient.delete(`/schedules/${id}`);
+  return apiClient.delete(`/waste-collection/schedules/${id}`);
 };
+
+// Delete product
 export const apiDeleteTicket = async (id) => {
   return apiClient.delete(`/products/${id}`);
 };
+
+// Get user stats
 export const apiGetUserStats = async () => {
-    return apiClient.get("/users/me/stats");
+  return apiClient.get("/users/me/stats");
 };
+
+// Get leaderboard
 export const apiGetLeaderboard = async () => {
-    return apiClient.get("/users/leaderboard");
+  return apiClient.get("/users/leaderboard");
 };
