@@ -1,4 +1,5 @@
 import Overview from './pages/customerDashboard/Overview'
+import VendorDashboard from './pages/recyclePage/vendorDashboard'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LoginPage from './pages/SigninPage/SignIn'
@@ -54,6 +55,7 @@ function App() {
         { path: "product/:id", element: <ProductDetailPage/> },
         { path: "schedule/:id", element: <ScheduleDetailPage/> },
         { path: "editSchedule/:id", element: <WasteEditPage/> },
+        { path: "vendoroverview", element: <VendorDashboard /> },
       ]
     },
   ])

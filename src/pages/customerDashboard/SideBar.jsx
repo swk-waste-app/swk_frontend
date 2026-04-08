@@ -67,8 +67,17 @@ const SideBar = ({ profile, role }) => {
             : 'text-white hover:bg-green-700'
     }`;
 
-    const overviewPath = role === 'admin' ? '/customerDashboard/adminoverview' : '/customerDashboard/overview';
-    const overviewActive = role === 'admin' ? isActiveLink('/adminoverview') : isActiveLink('/overview');
+    const overviewPath = role === 'admin' 
+    ? '/customerDashboard/adminoverview' 
+    : role === 'vendor' 
+    ? '/customerDashboard/vendoroverview' 
+    : '/customerDashboard/overview';
+
+const overviewActive = role === 'admin' 
+    ? isActiveLink('/adminoverview') 
+    : role === 'vendor' 
+    ? isActiveLink('/vendoroverview') 
+    : isActiveLink('/overview');
 
     return (
         <>
