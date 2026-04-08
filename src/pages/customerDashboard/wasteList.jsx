@@ -1,251 +1,267 @@
 import React, { useEffect, useState } from 'react';
-import { FaUserCircle } from 'react-icons/fa';
-import { FiCalendar, FiFileMinus, FiFileText, FiShare2, FiTrash2, FiUser } from 'react-icons/fi';
-import { MdOutlinePeopleAlt } from 'react-icons/md';
-import { TbRefreshAlert } from 'react-icons/tb';
-import { PiSunLight } from 'react-icons/pi';
-import { RiInformationLine } from 'react-icons/ri';
-import { IoEllipse } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
-import Swal from 'sweetalert2'; 
-
+import Swal from 'sweetalert2';
+import { FaTrash, FaEye, FaEdit, FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch, FaFilter } from 'react-icons/fa';
 import { apiDeleteScheduledTicket, apiGetUsersScheduledProducts } from '../../services/product';
 
-const WasteCollectionList = () => {
-  const [tickets, setTickets] = useState([]);
-  const [deletingId, setDeletingId] = useState(null);
+const STATUS_COLORS = {
+    'Scheduled': { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
+    'In Progress': { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' },
+    'Completed': { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
+    'Cancelled': { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+};
 
-  // Fetch data from the backend
-  useEffect(() => {
+const WASTE_TYPE_EMOJI = {
+    'General': '🗑️',
+    'Recyclable': '♻️',
+    'Organic': '🌿',
+    'Electronic': '💻',
+    'Hazardous': '⚠️',
+};
+
+const WasteCollectionList = () => {
+    const [tickets, setTickets] = useState([]);
+    const [filtered, setFiltered] = useState([]);
+    const [deletingId, setDeletingId] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
+
+    useEffect(() => {
+        fetchTickets();
+    }, []);
+
+    useEffect(() => {
+        let result = tickets;
+        if (search) {
+            result = result.filter(t =>
+                t.location?.toLowerCase().includes(search.toLowerCase()) ||
+                t.wasteType?.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+        if (statusFilter !== 'All') {
+            result = result.filter(t => t.status === statusFilter);
+        }
+        setFiltered(result);
+    }, [tickets, search, statusFilter]);
+
     const fetchTickets = async () => {
-      console.log("Fetching tickets..."); 
-      try {
-        const response = await apiGetUsersScheduledProducts();
-        // Debug logs
-        console.log("Raw API Response:", response);
-        console.log("Response data type:", typeof response.data);
-        console.log("Response data:", response.data);
-        
-        // Check if response.data exists and is an array
-        if (response.data && Array.isArray(response.data)) {
-          setTickets(response.data);
-        } else {
-          console.error("Invalid data format received:", response.data);
-          setTickets([]); // Set empty array as fallback
+        try {
+            const response = await apiGetUsersScheduledProducts();
+            if (response.data && Array.isArray(response.data)) {
+                setTickets(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching tickets:", error);
+        } finally {
+            setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching tickets:", error);
-        if (error.response) {
-          console.error("Error response:", error.response);
-        }
-      }
     };
 
-    fetchTickets();
-  }, []);
+    const handleDelete = async (id) => {
+        const result = await Swal.fire({
+            title: 'Delete this pickup?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel',
+        });
 
-  // Debug log for state updates
-  useEffect(() => {
-    console.log("Tickets state updated:", tickets);
-    console.log("Tickets length:", tickets.length);
-  }, [tickets]);
+        if (result.isConfirmed) {
+            setDeletingId(id);
+            try {
+                await apiDeleteScheduledTicket(id);
+                setTickets(prev => prev.filter(t => t._id !== id));
+                Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'Failed to delete', text: error.message });
+            } finally {
+                setDeletingId(null);
+            }
+        }
+    };
 
-  const handleEditTicket = (id) => {
-    navigate(`/waste/edit/${id}`);
-  };
-  const handleDeleteTicket = async (id) => {
-    console.log('Delete clicked for ID:', id);
-    // Prevent default link behavior
-    // e.preventDefault();
-    
-    // Show confirmation dialog
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#10B981',
-      cancelButtonColor: '#EF4444',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-      reverseButtons: true
-    });
-
-    if (result.isConfirmed) {
-      setDeletingId(id);
-      try {
-        await apiDeleteScheduledTicket(id);
-        
-        // Update local state
-        setTickets(prevTickets => 
-          prevTickets.filter(ticket => ticket._id !== id)
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-48">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-500"></div>
+            </div>
         );
-
-        // Show success message
-        Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: 'Schedule has been deleted.',
-          confirmButtonColor: '#10B981',
-          timer: 1500
-        });
-
-      } catch (error) {
-        console.error('Delete error:', error);
-        // Show error message
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: error.message || 'Failed to delete schedule',
-          confirmButtonColor: '#10B981'
-        });
-      } finally {
-        setDeletingId(null);
-      }
     }
-  };
 
-
-
-  return (
-    <div className="bg-white rounded-lg shadow p-2 sm:p-4 overflow-hidden mt-4 sm:mt-10">
-      <h3 className="text-lg font-semibold mb-4 px-2">Ticket Management</h3>
-      
-      {/* Mobile View */}
-      <div className="block lg:hidden">
-        {tickets.map((ticket) => (
-          <div key={ticket._id} 
-               className="border rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <div className="text-sm text-gray-500 flex items-center gap-2">
-                  <FiCalendar className="text-green-500" />
-                  {new Date(ticket.pickupDate).toLocaleDateString() || 'N/A'}
+    return (
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">My Pickup Schedules</h3>
+                        <p className="text-sm text-gray-500 mt-1">{tickets.length} total schedules</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        {/* Search */}
+                        <div className="relative">
+                            <FaSearch className="absolute left-3 top-3 text-gray-400 text-sm" />
+                            <input
+                                type="text"
+                                placeholder="Search location..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 w-full sm:w-48"
+                            />
+                        </div>
+                        {/* Filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={e => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                        >
+                            <option value="All">All Status</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  ID: {ticket._id || 'N/A'}
+            </div>
+
+            {/* Content */}
+            {filtered.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                    <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
+                    <p className="font-medium text-gray-500">No pickups found</p>
+                    <p className="text-sm mt-1">
+                        {tickets.length === 0 ? 'Schedule your first waste pickup to get started!' : 'Try adjusting your search or filter.'}
+                    </p>
                 </div>
-              </div>
-              <span className={`flex items-center px-3 py-1 gap-2 rounded-full text-sm
-                ${ticket.status === 'In progress'
-                  ? 'bg-[#FFD70029] text-[#FFD700]'
-                  : 'bg-[#78E0D4] text-[#2C4229]'}`}>
-                <IoEllipse className="text-xs" />
-                {ticket.status || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-              <MdOutlinePeopleAlt className="text-green-500" />
-              {ticket.location || 'N/A'}
-            </div>
+            ) : (
+                <>
+                    {/* Mobile Cards */}
+                    <div className="block lg:hidden p-4 space-y-4">
+                        {filtered.map((ticket) => {
+                            const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
+                            return (
+                                <div key={ticket._id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
+                                            <div>
+                                                <p className="font-medium text-gray-800 text-sm">{ticket.wasteType || 'General'}</p>
+                                                <p className="text-xs text-gray-500">{ticket._id?.slice(-8)}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
+                                            {ticket.status}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2 text-sm text-gray-600">
+                                        <div className="flex items-center gap-2">
+                                            <FaCalendarAlt className="text-green-500 text-xs" />
+                                            <span>{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <FaMapMarkerAlt className="text-green-500 text-xs" />
+                                            <span>{ticket.location}</span>
+                                        </div>
+                                        {ticket.estimatedWeight > 0 && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-green-500 text-xs">⚖️</span>
+                                                <span>{ticket.estimatedWeight} kg estimated</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-gray-100">
+                                        <Link to={`/customerDashboard/schedule/${ticket._id}`}
+                                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline">
+                                            <FaEye size={12} /> View
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(ticket._id)}
+                                            disabled={deletingId === ticket._id || ticket.status === 'Completed'}
+                                            className="flex items-center gap-1 text-xs text-red-500 hover:underline disabled:opacity-30">
+                                            <FaTrash size={12} /> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
 
-            <div className="flex justify-end gap-4 pt-2 border-t">
-              <Link to={`/customerDashboard/schedule/${ticket._id}`}
-                    className="text-gray-600 hover:text-green-600">
-                <RiInformationLine size={20} />
-              </Link>
-              <Link to={`/schedule/${ticket._id}`}
-                    className="text-gray-600 hover:text-green-600">
-                <FiFileText size={20} />
-              </Link>
-              <button 
-                onClick={() => handleDeleteTicket(ticket._id)}
-                disabled={deletingId === ticket._id}
-                className="text-gray-600 hover:text-red-500 disabled:opacity-50">
-                <FiTrash2 size={20} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop View */}
-      <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full min-w-[600px] text-left">
-          <thead>
-            <tr className="border-b">
-              <th className="py-2 px-4">
-                <span className="flex items-center space-x-2">
-                  <FiCalendar className="text-green-500" />
-                  <span className="text-[#344054]">Date</span>
-                </span>
-              </th>
-              <th className="py-2 px-4">
-                <span className="flex items-center space-x-2">
-                  <FiFileMinus className="text-green-500" />
-                  <span className="text-[#344054]">Id</span>
-                </span>
-              </th>
-              <th className="py-2 px-4">
-                <span className="flex items-center space-x-2">
-                  <MdOutlinePeopleAlt className="text-green-500" />
-                  <span className="text-[#344054]">Location</span>
-                </span>
-              </th>
-              <th className="py-2 px-4">
-                <span className="flex items-center space-x-2">
-                  <PiSunLight className="text-green-500" />
-                  <span className="text-[#344054]">Status</span>
-                </span>
-              </th>
-              <th className="py-2 px-4">
-                <span className="flex items-center space-x-2">
-                  <TbRefreshAlert className="text-green-500" />
-                  <span className="text-[#344054]">Quick Actions</span>
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="text-[#475467]">
-            {tickets.map((ticket) => (
-              <tr key={ticket._id} className="border-t hover:bg-gray-50">
-                <td className="py-2 px-4">
-                  {new Date(ticket.pickupDate).toLocaleDateString() || 'N/A'}
-                </td>
-                <td className="py-2 px-4">{ticket._id || 'N/A'}</td>
-                <td className="py-2 px-4">{ticket.location || 'N/A'}</td>
-                <td className="py-2 px-4">
-                  <span className={`flex items-center px-4 gap-2 rounded-full w-fit py-1
-                    ${ticket.status === 'In progress'
-                      ? 'bg-[#FFD70029] text-[#FFD700]'
-                      : 'bg-[#78E0D4] text-[#2C4229]'}`}>
-                    <IoEllipse />
-                    {ticket.status || 'N/A'}
-                  </span>
-                </td>
-                <td className="py-2 px-4">
-                  <div className="flex items-center gap-4">
-                    <Link to={`/customerDashboard/schedule/${ticket._id}`}
-                          className="text-gray-600 hover:text-green-600">
-                      <RiInformationLine size={20} />
-                    </Link>
-                    <Link to={`/schedule/${ticket._id}`}
-                          className="text-gray-600 hover:text-green-600">
-                      <FiFileText size={20} />
-                    </Link>
-                    <button 
-                      onClick={() => handleDeleteTicket(ticket._id)}
-                      disabled={deletingId === ticket._id}
-                      className="text-gray-600 hover:text-red-500 disabled:opacity-50">
-                      <FiTrash2 size={20} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* No Tickets Message */}
-      {tickets.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No tickets available
+                    {/* Desktop Table */}
+                    <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100">
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waste Type</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Weight</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {filtered.map((ticket) => {
+                                    const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
+                                    return (
+                                        <tr key={ticket._id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
+                                                    <span className="text-sm font-medium text-gray-800">{ticket.wasteType || 'General'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <p className="text-sm text-gray-800">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-xs text-gray-500">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-1 text-sm text-gray-700">
+                                                    <FaMapMarkerAlt className="text-green-500 text-xs flex-shrink-0" />
+                                                    <span className="truncate max-w-32">{ticket.location}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <span className="text-sm text-gray-700">
+                                                    {ticket.estimatedWeight > 0 ? `${ticket.estimatedWeight} kg` : '—'}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium w-fit ${statusStyle.bg} ${statusStyle.text}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
+                                                    {ticket.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-3">
+                                                    <Link to={`/customerDashboard/schedule/${ticket._id}`}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View details">
+                                                        <FaEye size={14} />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(ticket._id)}
+                                                        disabled={deletingId === ticket._id || ticket.status === 'Completed'}
+                                                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
+                                                        title="Delete">
+                                                        <FaTrash size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
-      )}
-    </div>
-  );
-}
+    );
+};
 
 export default WasteCollectionList;
