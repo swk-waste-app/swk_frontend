@@ -1,4 +1,5 @@
 import Overview from './pages/customerDashboard/Overview'
+import GoogleCallback from './pages/auth/GoogleCallback'
 import VendorDashboard from './pages/recyclePage/vendorDashboard'
 import './App.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -31,6 +32,7 @@ function App() {
     { path: "/s", element: <DirectionPage/> },
     { path: "/signin", element: <LoginPage /> },
     { path: "/signup", element: <SignupPage/> },
+    { path: "/auth/callback", element: <GoogleCallback /> },
     { path: "/", element: <LandingLayout /> },
     { path: "/who-we-are", element: <AboutUsPage /> },
     { path: "/login", element: <Login /> },
@@ -56,6 +58,7 @@ function App() {
         { path: "schedule/:id", element: <ScheduleDetailPage/> },
         { path: "editSchedule/:id", element: <WasteEditPage/> },
         { path: "vendoroverview", element: <VendorDashboard /> },
+        
       ]
     },
   ])
