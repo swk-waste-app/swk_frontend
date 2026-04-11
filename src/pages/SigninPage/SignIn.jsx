@@ -6,6 +6,8 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import image1 from '../../assets/images/image1.png';
 import logo from '../../assets/images/SWK_LOGO__5_.png';
 
+const BACKEND_URL = 'https://swk-backend.onrender.com';
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,9 +49,8 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Store selected role so we can use it after OAuth callback
     localStorage.setItem('pendingRole', selectedRole);
-    window.location.href = 'http://localhost:6060/api/auth/google';
+    window.location.href = `${BACKEND_URL}/api/auth/google`;
   };
 
   return (

@@ -1,8 +1,8 @@
+import './App.css'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Overview from './pages/customerDashboard/Overview'
 import GoogleCallback from './pages/auth/GoogleCallback'
 import VendorDashboard from './pages/recyclePage/vendorDashboard'
-import './App.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import LoginPage from './pages/SigninPage/SignIn'
 import SignupPage from './pages/signupPage/Signup'
 import LandingLayout from './layout/LandingLayout'
@@ -45,6 +45,7 @@ function App() {
       children: [
         { path: "overview", element: <Overview /> },
         { path: "adminoverview", element: <AdminOverview /> },
+        { path: "vendoroverview", element: <VendorDashboard /> },
         { path: "blogs", element: <BlogsPage /> },
         { path: "articles", element: <ArticlePage /> },
         { path: "products", element: <CustomerPage /> },
@@ -57,8 +58,6 @@ function App() {
         { path: "product/:id", element: <ProductDetailPage/> },
         { path: "schedule/:id", element: <ScheduleDetailPage/> },
         { path: "editSchedule/:id", element: <WasteEditPage/> },
-        { path: "vendoroverview", element: <VendorDashboard /> },
-        
       ]
     },
   ])

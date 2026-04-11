@@ -7,6 +7,8 @@ import image1 from "../../assets/images/image2.png";
 import { AiOutlineMail, AiOutlineLock } from 'react-icons/ai';
 import logo from '../../assets/images/SWK_LOGO__5_.png';
 
+const BACKEND_URL = 'https://swk-backend.onrender.com';
+
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +57,7 @@ export default function SignupPage() {
 
   const handleGoogleSignup = () => {
     localStorage.setItem('pendingRole', selectedRole);
-    window.location.href = 'http://localhost:6060/api/auth/google';
+    window.location.href = `${BACKEND_URL}/api/auth/google`;
   };
 
   return (
