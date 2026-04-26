@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus } from 'react-icons/fa';
+import { FaHome, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus } from 'react-icons/fa';
 import { apiGetUserStats } from '../../services/product';
 
 const SideBar = ({ profile, role }) => {
@@ -187,8 +187,8 @@ const overviewActive = role === 'admin'
                                         <Link to="/customerDashboard/pickup" onClick={() => setSidebarOpen(false)} className="block w-full">Waste Collection</Link>
                                     </li>
                                     <li className={navLinkClass("/products")}>
-                                        <FaRecycle className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/products" onClick={() => setSidebarOpen(false)} className="block w-full">Recycle</Link>
+                                        <FaShoppingBag className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/products" onClick={() => setSidebarOpen(false)} className="block w-full">Marketplace</Link>
                                     </li>
                                     <li className={navLinkClass("/login")}>
                                         <FaStore className="mr-3 text-sm" />
