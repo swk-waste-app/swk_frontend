@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import WasteCollectionList from '../customerDashboard/wasteList';
 import WasteSchedulePage from '../customerDashboard/DatePicker';
 import { apiGetUserStats } from '../../services/product';

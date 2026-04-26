@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiSendMessage } from '../services/product';
 import Swal from 'sweetalert2';
 
@@ -23,7 +23,7 @@ const ContactUsForm = () => {
     setLoading(true);
 
     try {
-      const response = await apiSendMessage({
+      await apiSendMessage({
         ...formData,
         user: localStorage.getItem('userId') // Assuming you store userId in localStorage
       });

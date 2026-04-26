@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell } from 'react-icons/fa';
-import { FaStore } from 'react-icons/fa';
+import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus } from 'react-icons/fa';
 import { apiGetUserStats } from '../../services/product';
 
 const SideBar = ({ profile, role }) => {
@@ -211,11 +210,15 @@ const overviewActive = role === 'admin'
                                 <>
                                     <li className={navLinkClass("/vendorProduct")}>
                                         <FaFileAlt className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/vendorProduct" onClick={() => setSidebarOpen(false)} className="block w-full">Vendor Product</Link>
+                                        <Link to="/customerDashboard/vendorProduct" onClick={() => setSidebarOpen(false)} className="block w-full">My Products</Link>
                                     </li>
                                     <li className={navLinkClass("/addProduct")}>
-                                        <FaStore className="mr-3 text-sm" />
+                                        <FaPlus className="mr-3 text-sm" />
                                         <Link to="/customerDashboard/addProduct" onClick={() => setSidebarOpen(false)} className="block w-full">Add Product</Link>
+                                    </li>
+                                    <li className={navLinkClass("/products")}>
+                                        <FaShoppingBag className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/products" onClick={() => setSidebarOpen(false)} className="block w-full">Marketplace</Link>
                                     </li>
                                 </>
                             )}

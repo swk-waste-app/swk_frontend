@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Swal from 'sweetalert2';
@@ -155,7 +155,7 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
                                 />
                                 {estimatedWeight > 0 && (
                                     <p className="text-xs text-green-600 mt-1">
-                                        🏆 You'll earn ~{Math.round(estimatedWeight * 10)} points on completion
+                                        🏆 You&apos;ll earn ~{Math.round(estimatedWeight * 10)} points on completion
                                     </p>
                                 )}
                             </div>

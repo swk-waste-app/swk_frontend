@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -47,7 +47,7 @@ const WasteEditPage = () => {
                     estimatedWeight: schedule.estimatedWeight || '',
                     notes: schedule.notes || ''
                 });
-            } catch (error) {
+            } catch {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load schedule details' });
             } finally {
                 setLoading(false);
@@ -171,7 +171,7 @@ const WasteEditPage = () => {
                         />
                         {formData.estimatedWeight > 0 && (
                             <p className="text-xs text-green-600 mt-1">
-                                🏆 You'll earn approximately {Math.round(formData.estimatedWeight * 10)} points on completion
+                                🏆 You&apos;ll earn approximately {Math.round(formData.estimatedWeight * 10)} points on completion
                             </p>
                         )}
                     </div>

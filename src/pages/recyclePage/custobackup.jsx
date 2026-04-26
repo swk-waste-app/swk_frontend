@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGetProducts } from '../../services/product';
 import VendorApiGet from "../recyclePage/VendorApi";
-import { Link } from 'react-router-dom';
 
 const VendorViewback = () => {
   const [Adverts, setAdverts] = useState([]);

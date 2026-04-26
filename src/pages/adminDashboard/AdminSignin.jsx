@@ -1,6 +1,5 @@
 import image1 from '../../assets/images/image17.png';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { apiLogin } from '../../services/Auth';
 
 const AdminLogin = () => {

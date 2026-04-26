@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGetScheduledProducts, apiEditScheduledProduct } from '../../services/product';
 import { FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
                 const response = await apiGetScheduledProducts();
                 setTickets(response.data || []);
                 Swal.fire({ icon: 'success', title: 'Updated!', timer: 1500, showConfirmButton: false });
-            } catch (error) {
+            } catch {
                 Swal.fire({ icon: 'error', title: 'Failed to update status' });
             }
         }

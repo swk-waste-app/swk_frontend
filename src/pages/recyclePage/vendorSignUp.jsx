@@ -2,7 +2,7 @@ import image1 from '../../assets/images/image15.png';
 import { apiSignup } from '../../services/Auth';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function Signup() {
     const [loading, setLoading] = useState(false);

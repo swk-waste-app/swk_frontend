@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGetUserStats, apiGetLeaderboard } from '../../services/product';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { FaRecycle, FaLeaf, FaTrophy, FaFire, FaCalendarCheck, FaShoppingBag, FaStore, FaArrowRight, FaGlobe } from 'react-icons/fa';
@@ -54,7 +54,7 @@ const Overview = ({ role }) => {
             setTipIndex(prev => (prev + 1) % ECO_TIPS.length);
         }, 5000);
         return () => clearInterval(tipInterval);
-    }, [currentRole]);
+    }, [currentRole, navigate]);
 
     const fetchData = async () => {
         try {

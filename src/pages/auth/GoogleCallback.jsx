@@ -23,7 +23,7 @@ const GoogleCallback = () => {
         } else {
             navigate('/signin?error=google_failed');
         }
-    }, []);
+    }, [navigate, searchParams]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">

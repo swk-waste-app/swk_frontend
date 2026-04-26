@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGetScheduledProducts, apiGetProducts, apiGetLeaderboard } from '../../services/product';
-import { FaRecycle, FaCheck, FaUsers, FaShoppingBag, FaLeaf } from 'react-icons/fa';
+import { FaRecycle, FaCheck, FaUsers, FaShoppingBag } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const AdminOverview = () => {

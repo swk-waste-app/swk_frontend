@@ -1,5 +1,3 @@
-import React from 'react';
-import {Link } from 'react-router-dom';
 import image8 from '../../assets/images/image8.png'
 import image7 from '../../assets/images/image16.png'
 import image6 from '../../assets/images/image6.png'

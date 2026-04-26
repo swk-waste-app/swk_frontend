@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiGetProducts } from '../../services/product';
 import ApiGet from './CustomerApiGet';
-import { FaSearch, FaFilter, FaRecycle, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaRecycle, FaTimes } from 'react-icons/fa';
 
 const CATEGORIES = ['All', 'Bottles', 'Papers', 'Organic Fertilizer', 'Fashion & Textiles', 
     'Electronics', 'Metals', 'Plastics', 'Glass', 'Wood', 'Other'];
@@ -22,7 +22,22 @@ const CustomerPage = () => {
     }, []);
 
     useEffect(() => {
-        applyFilters();
+        let result = [...products];
+        if (search) {
+            result = result.filter(p =>
+                p.title?.toLowerCase().includes(search.toLowerCase()) ||
+                p.description?.toLowerCase().includes(search.toLowerCase()) ||
+                p.upcyclingStory?.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+        if (category !== 'All') result = result.filter(p => p.category === category);
+        if (showUpcycledOnly) result = result.filter(p => p.isUpcycled);
+        if (priceRange.min) result = result.filter(p => p.price >= parseFloat(priceRange.min));
+        if (priceRange.max) result = result.filter(p => p.price <= parseFloat(priceRange.max));
+        if (sortBy === 'price_low') result.sort((a, b) => a.price - b.price);
+        else if (sortBy === 'price_high') result.sort((a, b) => b.price - a.price);
+        else if (sortBy === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setFiltered(result);
     }, [products, search, category, showUpcycledOnly, sortBy, priceRange]);
 
     const fetchData = async () => {
@@ -36,44 +51,6 @@ const CustomerPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const applyFilters = () => {
-        let result = [...products];
-
-        // Search
-        if (search) {
-            result = result.filter(p =>
-                p.title?.toLowerCase().includes(search.toLowerCase()) ||
-                p.description?.toLowerCase().includes(search.toLowerCase()) ||
-                p.upcyclingStory?.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-
-        // Category
-        if (category !== 'All') {
-            result = result.filter(p => p.category === category);
-        }
-
-        // Upcycled only
-        if (showUpcycledOnly) {
-            result = result.filter(p => p.isUpcycled);
-        }
-
-        // Price range
-        if (priceRange.min) {
-            result = result.filter(p => p.price >= parseFloat(priceRange.min));
-        }
-        if (priceRange.max) {
-            result = result.filter(p => p.price <= parseFloat(priceRange.max));
-        }
-
-        // Sort
-        if (sortBy === 'price_low') result.sort((a, b) => a.price - b.price);
-        else if (sortBy === 'price_high') result.sort((a, b) => b.price - a.price);
-        else if (sortBy === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        setFiltered(result);
     };
 
     const clearFilters = () => {
@@ -217,6 +194,8 @@ const CustomerPage = () => {
                                 wasteType={product.wasteType}
                                 location={product.location}
                                 condition={product.condition}
+                                vendorName={product.user?.name}
+                                vendorId={product.user?.id}
                             />
                         ))}
                     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle, FaUser, FaStore } from 'react-icons/fa';
 import { AiOutlineMail, AiOutlineLock } from 'react-icons/ai';
 import { apiLogin } from '../../services/Auth';

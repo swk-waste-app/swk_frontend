@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { FiTrendingUp, FiCheckCircle, FiPackage } from 'react-icons/fi';
 import { apiGetUsersScheduledProducts } from '../../services/product';

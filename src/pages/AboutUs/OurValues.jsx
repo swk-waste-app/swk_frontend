@@ -1,4 +1,3 @@
-import React from 'react';
 import { RiFocusLine } from 'react-icons/ri';
 
 

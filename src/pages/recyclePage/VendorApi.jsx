@@ -1,38 +1,29 @@
 import { Link } from 'react-router-dom';
-import { FaRegEdit, FaTrashAlt, FaEye, FaBox, FaClock } from 'react-icons/fa';
+import { FaRegEdit, FaTrashAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { apiDeleteTicket } from '../../services/product';
 
-const VendorApiGet = ({ id, title, image, description, price }) => {
+const VendorApiGet = ({ id, title, image, description, price, onDelete }) => {
   const handleDelete = async (id) => {
-    Swal.fire({
+    const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#10B981', // green
-      cancelButtonColor: '#EF4444',  // red
+      confirmButtonColor: '#10B981',
+      cancelButtonColor: '#EF4444',
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await apiDeleteTicket(id);
-          Swal.fire(
-            'Deleted!',
-            'Product has been deleted.',
-            'success'
-          );
-          // You might want to trigger a refresh of the products list here
-        } catch (error) {
-          Swal.fire(
-            'Error!',
-            'Failed to delete product.',
-            'error'
-          );
-        }
-      }
     });
+    if (result.isConfirmed) {
+      try {
+        await apiDeleteTicket(id);
+        Swal.fire('Deleted!', 'Product has been deleted.', 'success');
+        if (onDelete) onDelete(id);
+      } catch {
+        Swal.fire('Error!', 'Failed to delete product.', 'error');
+      }
+    }
   };
 
   return (

@@ -1,20 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { apiGetVendorsProducts, apiGetUserStats, apiGetLeaderboard } from '../../services/product';
 import { Link } from 'react-router-dom';
-import { FaStore, FaEye, FaBoxOpen, FaMoneyBillWave, FaRecycle, FaArrowRight, FaPlus, FaStar, FaLeaf } from 'react-icons/fa';
+import { FaStore, FaEye, FaBoxOpen, FaMoneyBillWave, FaRecycle, FaArrowRight, FaPlus, FaStar, FaLeaf, FaShoppingBag } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const CATEGORY_COLORS = {
-    'Fashion & Textiles': '#8B5CF6',
-    'Electronics': '#3B82F6',
-    'Plastics': '#06B6D4',
-    'Metals': '#F59E0B',
-    'Glass': '#10B981',
-    'Wood': '#92400E',
-    'Papers': '#6B7280',
-    'Bottles': '#EF4444',
-    'Other': '#64748B',
-};
 
 const VendorDashboard = () => {
     const [products, setProducts] = useState([]);
@@ -77,6 +66,7 @@ const VendorDashboard = () => {
 
     // Vendor rank in leaderboard
     const vendorName = stats?.user?.name;
+    const vendorId = stats?.user?.id;
     const vendorRank = leaderboard.findIndex(u => u.name === vendorName) + 1;
 
     return (
@@ -92,7 +82,7 @@ const VendorDashboard = () => {
                     <div>
                         <p className="text-green-200 text-sm uppercase tracking-wider">Vendor Portal</p>
                         <h1 className="text-3xl font-bold mt-1">My Shop Overview</h1>
-                        <p className="text-green-200 text-sm mt-1">{vendorName || 'Vendor'}'s Upcycling Store</p>
+                        <p className="text-green-200 text-sm mt-1">{vendorName || 'Vendor'}&apos;s Upcycling Store</p>
                     </div>
                     {vendorRank > 0 && (
                         <div className="bg-white bg-opacity-20 rounded-xl px-4 py-3 text-center">
@@ -114,7 +104,7 @@ const VendorDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link to="/customerDashboard/addProduct"
                     className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
@@ -137,6 +127,19 @@ const VendorDashboard = () => {
                     </div>
                     <FaArrowRight className="text-gray-300 ml-auto group-hover:text-teal-600 transition-colors" />
                 </Link>
+                {vendorId && (
+                    <Link to={`/customerDashboard/store/${vendorId}`}
+                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
+                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
+                            <FaShoppingBag className="text-purple-600 group-hover:text-white" />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500">Public</p>
+                            <p className="text-sm font-semibold text-gray-800">My Store</p>
+                        </div>
+                        <FaArrowRight className="text-gray-300 ml-auto group-hover:text-purple-600 transition-colors" />
+                    </Link>
+                )}
             </div>
 
             {/* Stats Cards */}

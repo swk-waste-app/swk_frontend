@@ -1,4 +1,3 @@
-import React from 'react';
 import image9 from '../../assets/images/image9.png'
 
 const TrashCanPlacement = () => {

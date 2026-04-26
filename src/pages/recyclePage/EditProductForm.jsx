@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiEditRecycledProduct, apiGetSingleProduct } from '../../services/product';
 import Swal from 'sweetalert2';
@@ -29,7 +29,7 @@ const EditProductForm = () => {
           inventory: productData.inventory,
           image: null
         });
-      } catch (error) {
+      } catch {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to fetch product details' });
         navigate('/customerDashboard/vendorProduct');
       } finally {

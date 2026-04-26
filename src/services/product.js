@@ -113,3 +113,13 @@ export const apiGetUserStats = async () => {
 export const apiGetLeaderboard = async () => {
   return apiClient.get("/users/leaderboard");
 };
+
+// Get public vendor profile
+export const apiGetVendorProfile = async (vendorId) => {
+  return apiClient.get(`/users/${vendorId}/public`);
+};
+
+// Get a vendor's public products
+export const apiGetVendorProducts = async (vendorId) => {
+  return apiClient.get(`/products?user=${vendorId}`);
+};

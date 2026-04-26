@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import { FiCalendar, FiFileMinus, FiFileText, FiTrash2, FiUser } from 'react-icons/fi';
 import { MdOutlinePeopleAlt } from 'react-icons/md';
@@ -7,7 +7,7 @@ import { PiSunLight } from 'react-icons/pi';
 import { RiInformationLine } from 'react-icons/ri';
 import { IoEllipse } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
-import { apiGetScheduledProducts, apiDeleteScheduledTicket, apiGetUsersScheduledProducts } from '../../services/product';
+import { apiDeleteScheduledTicket, apiGetUsersScheduledProducts } from '../../services/product';
 import Swal from 'sweetalert2';
 
 const WasteCollection = () => {

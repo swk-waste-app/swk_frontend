@@ -26,6 +26,7 @@ import AdminLogin from './pages/adminDashboard/AdminSignin'
 import ProductDetailPage from './pages/recyclePage/ProductDetail'
 import ScheduleDetailPage from './pages/customerDashboard/ScheduleDetailPage'
 import EditProductForm from './pages/recyclePage/EditProductForm'
+import VendorStorefront from './pages/recyclePage/VendorStorefront'
 
 const router = createBrowserRouter([
   { path: "/s", element: <DirectionPage/> },
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "product/:id", element: <ProductDetailPage/> },
       { path: "schedule/:id", element: <ScheduleDetailPage/> },
       { path: "editSchedule/:id", element: <WasteEditPage/> },
+      { path: "store/:vendorId", element: <VendorStorefront /> },
     ]
   },
 ])

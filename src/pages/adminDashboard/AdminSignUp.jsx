@@ -1,7 +1,6 @@
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { IoMdContact } from "react-icons/io";
-import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { apiSignup } from '../../services/Auth';
 import { useNavigate } from 'react-router-dom';
@@ -160,9 +159,10 @@ export default function AdminSignup() {
 
         <button
           type="submit"
-          className="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition duration-200 mt-4"
+          disabled={loading}
+          className="w-full py-3 bg-green-600 text-white font-semibold rounded hover:bg-green-700 transition duration-200 mt-4 disabled:opacity-50"
         >
-          sign up
+          {loading ? 'Creating account...' : 'Sign Up'}
         </button>
 
         <div className="text-center text-gray-500 mt-4">OR</div>
