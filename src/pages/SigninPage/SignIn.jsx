@@ -158,7 +158,7 @@ const LoginPage = () => {
           </form>
 
           {/* Sign Up Links */}
-          <div className="mt-6 space-y-2 text-center text-sm">
+          <div className="mt-6 text-center text-sm">
             {selectedRole === 'user' ? (
               <p className="text-gray-600">
                 New user? <Link to="/signup" className="text-green-600 font-medium hover:underline">Create account</Link>
@@ -168,9 +168,6 @@ const LoginPage = () => {
                 New vendor? <Link to="/vendorsignup" className="text-purple-600 font-medium hover:underline">Register as vendor</Link>
               </p>
             )}
-            <p className="text-gray-600">
-              Are you an admin? <Link to="/AdminLogin" className="text-gray-500 hover:underline">Admin login</Link>
-            </p>
           </div>
         </div>
 

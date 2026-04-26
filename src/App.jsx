@@ -23,8 +23,6 @@ const WasteSchedulePage = lazy(() => import('./pages/customerDashboard/DatePicke
 const WasteEditPage    = lazy(() => import('./pages/customerDashboard/EditDatePicker'))
 const AdminDashboard   = lazy(() => import('./pages/adminDashboard/AdminDashboard'))
 const AdminOverview    = lazy(() => import('./pages/adminDashboard/AdminOverview'))
-const AdminSignup      = lazy(() => import('./pages/adminDashboard/AdminSignUp'))
-const AdminLogin       = lazy(() => import('./pages/adminDashboard/AdminSignin'))
 const ProductDetailPage = lazy(() => import('./pages/recyclePage/ProductDetail'))
 const ScheduleDetailPage = lazy(() => import('./pages/customerDashboard/ScheduleDetailPage'))
 const EditProductForm  = lazy(() => import('./pages/recyclePage/EditProductForm'))
@@ -46,8 +44,6 @@ const router = createBrowserRouter([
   { path: "/who-we-are", element: <AboutUsPage /> },
   { path: "/login", element: <Login /> },
   { path: "/vendorsignup", element: <Signup /> },
-  { path: "/Adminsignup", element: <AdminSignup /> },
-  { path: "/AdminLogin", element: <AdminLogin /> },
   {
     path: "/customerDashboard",
     element: <CustDushboardLayout/>,
