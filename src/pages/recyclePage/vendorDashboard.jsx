@@ -295,7 +295,7 @@ const VendorDashboard = () => {
                                     <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center overflow-hidden">
                                         {product.image ? (
                                             <img
-                                                src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${product.image}`}
+                                                src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_400,q_auto,f_auto/${product.image}`}
                                                 alt={product.title}
                                                 className="w-full h-full object-cover"
                                                 onError={e => { e.target.style.display = 'none'; }}

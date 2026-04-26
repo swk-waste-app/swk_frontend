@@ -114,6 +114,11 @@ export const apiGetLeaderboard = async () => {
   return apiClient.get("/users/leaderboard");
 };
 
+// Submit rating and feedback for a completed pickup
+export const apiSubmitPickupRating = async (id, data) => {
+  return apiClient.patch(`/waste-collection/schedules/${id}`, data);
+};
+
 // Get public vendor profile
 export const apiGetVendorProfile = async (vendorId) => {
   return apiClient.get(`/users/${vendorId}/public`);

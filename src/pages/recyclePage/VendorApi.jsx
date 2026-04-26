@@ -32,7 +32,7 @@ const VendorApiGet = ({ id, title, image, description, price, onDelete }) => {
       {/* Image Container */}
       <div className="relative group">
         <img 
-          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${image}`}
+          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${image}`}
           alt={title}
           className="w-full h-48 object-cover transition-transform duration-500 
                      group-hover:scale-105"

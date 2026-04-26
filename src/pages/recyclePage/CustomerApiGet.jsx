@@ -7,7 +7,7 @@ const ApiGet = ({ id, title, inventory, image, description, price, isUpcycled, w
       {/* Image */}
       <div className="relative overflow-hidden rounded-t-xl h-48">
         <img
-          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${image}`}
+          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${image}`}
           alt={title}
           className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
           onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}

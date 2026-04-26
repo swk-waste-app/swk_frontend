@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { apiGetSingleScheduledProducts, apiGetProfile, apiEditScheduledProduct } from '../../services/product';
+import { apiGetSingleScheduledProducts, apiGetProfile, apiEditScheduledProduct, apiSubmitPickupRating } from '../../services/product';
 import { FaCalendar, FaMapMarkerAlt, FaRecycle, FaUser, FaArrowLeft, FaStar, FaWeight } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
@@ -14,6 +14,9 @@ const ScheduleDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,16 +41,25 @@ const ScheduleDetailPage = () => {
     ? STATUS_STEPS.indexOf(schedule?.status)
     : 0;
 
-  const handleRating = (star) => {
-    setRating(star);
-    Swal.fire({
-      icon: 'success',
-      title: 'Thank you!',
-      text: `You rated this pickup ${star} star${star > 1 ? 's' : ''}`,
-      confirmButtonColor: '#026937',
-      timer: 2000,
-      showConfirmButton: false
-    });
+  const handleSubmitRating = async () => {
+    if (!rating) return;
+    setSubmittingRating(true);
+    try {
+      await apiSubmitPickupRating(schedule._id, { rating, feedback: feedback.trim() });
+      setRatingSubmitted(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Thank you!',
+        text: `You rated this pickup ${rating} star${rating > 1 ? 's' : ''}`,
+        confirmButtonColor: '#026937',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Failed to submit rating', confirmButtonColor: '#026937' });
+    } finally {
+      setSubmittingRating(false);
+    }
   };
 
   const estimatedPoints = schedule?.estimatedWeight
@@ -244,28 +256,41 @@ const ScheduleDetailPage = () => {
           {schedule.status === 'Completed' && (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-800 mb-3">⭐ Rate this Pickup</h2>
-              <p className="text-sm text-gray-500 mb-4">How was your pickup experience?</p>
-              <div className="flex gap-2 justify-center">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => handleRating(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="text-3xl transition-transform hover:scale-110"
-                  >
-                    <FaStar className={`${
-                      star <= (hoverRating || rating)
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`} />
-                  </button>
-                ))}
-              </div>
-              {rating > 0 && (
-                <p className="text-center text-sm text-green-600 mt-2">
-                  You rated this {rating} star{rating > 1 ? 's' : ''} ✓
+              {ratingSubmitted || schedule.rating ? (
+                <p className="text-center text-sm text-green-600">
+                  You rated this {schedule.rating || rating} star{(schedule.rating || rating) > 1 ? 's' : ''} ✓
                 </p>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500 mb-4">How was your pickup experience?</p>
+                  <div className="flex gap-2 justify-center mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="text-3xl transition-transform hover:scale-110"
+                      >
+                        <FaStar className={star <= (hoverRating || rating) ? 'text-yellow-400' : 'text-gray-300'} />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    placeholder="Leave a comment (optional)..."
+                    rows={3}
+                    className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-300 mb-3"
+                  />
+                  <button
+                    onClick={handleSubmitRating}
+                    disabled={!rating || submittingRating}
+                    className="w-full py-2 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {submittingRating ? 'Submitting…' : 'Submit Rating'}
+                  </button>
+                </>
               )}
             </div>
           )}

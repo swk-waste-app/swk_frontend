@@ -64,7 +64,7 @@ const ProductDetailPage = () => {
             <div className="md:w-2/5">
               <div className="relative h-72 md:h-full min-h-[280px]">
                 <img
-                  src={`https://res.cloudinary.com/dwgj3lovn/image/upload/${product.image}`}
+                  src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_1000,q_auto,f_auto/${product.image}`}
                   alt={product.title}
                   className="w-full h-full object-cover"
                   onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
@@ -150,6 +150,39 @@ const ProductDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Before / After Images */}
+        {(product.beforeImage || product.afterImage) && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <FaRecycle className="text-green-500" /> Transformation
+            </h2>
+            <div className="grid grid-cols-2 gap-4">
+              {product.beforeImage && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Before</p>
+                  <img
+                    src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.beforeImage}`}
+                    alt="Before upcycling"
+                    className="w-full h-48 object-cover rounded-xl"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Before'; }}
+                  />
+                </div>
+              )}
+              {product.afterImage && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">After</p>
+                  <img
+                    src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.afterImage}`}
+                    alt="After upcycling"
+                    className="w-full h-48 object-cover rounded-xl"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=After'; }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Upcycling Story */}
         {(product.upcyclingStory || product.materialsUsed?.length > 0) && (

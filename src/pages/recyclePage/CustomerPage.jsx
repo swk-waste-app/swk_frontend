@@ -16,6 +16,8 @@ const CustomerPage = () => {
     const [showUpcycledOnly, setShowUpcycledOnly] = useState(false);
     const [sortBy, setSortBy] = useState('newest');
     const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 12;
 
     useEffect(() => {
         fetchData();
@@ -38,6 +40,7 @@ const CustomerPage = () => {
         else if (sortBy === 'price_high') result.sort((a, b) => b.price - a.price);
         else if (sortBy === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setFiltered(result);
+        setPage(1);
     }, [products, search, category, showUpcycledOnly, sortBy, priceRange]);
 
     const fetchData = async () => {
@@ -180,8 +183,9 @@ const CustomerPage = () => {
 
                 {/* Products Grid */}
                 {filtered.length > 0 ? (
+                    <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filtered.map((product) => (
+                        {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((product) => (
                             <ApiGet
                                 key={product.id}
                                 id={product.id}
@@ -199,6 +203,36 @@ const CustomerPage = () => {
                             />
                         ))}
                     </div>
+                    {/* Pagination */}
+                    {filtered.length > PAGE_SIZE && (
+                        <div className="flex items-center justify-center gap-2 pt-2 pb-6">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                ← Prev
+                            </button>
+                            {Array.from({ length: Math.ceil(filtered.length / PAGE_SIZE) }, (_, i) => i + 1).map(n => (
+                                <button
+                                    key={n}
+                                    onClick={() => setPage(n)}
+                                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                        n === page
+                                            ? 'bg-green-600 text-white'
+                                            : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}>
+                                    {n}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / PAGE_SIZE), p + 1))}
+                                disabled={page === Math.ceil(filtered.length / PAGE_SIZE)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                Next →
+                            </button>
+                        </div>
+                    )}
+                    </>
                 ) : (
                     <div className="text-center py-16 text-gray-400">
                         <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />

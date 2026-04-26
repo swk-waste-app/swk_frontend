@@ -12,6 +12,8 @@ const VendorStorefront = () => {
     const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [sortBy, setSortBy] = useState('newest');
+    const [upcycledOnly, setUpcycledOnly] = useState(false);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -34,16 +36,20 @@ const VendorStorefront = () => {
     }, [vendorId, navigate]);
 
     useEffect(() => {
-        if (!search) {
-            setFiltered(products);
-            return;
+        let result = [...products];
+        if (search) {
+            const q = search.toLowerCase();
+            result = result.filter(p =>
+                p.title?.toLowerCase().includes(q) ||
+                p.description?.toLowerCase().includes(q)
+            );
         }
-        const q = search.toLowerCase();
-        setFiltered(products.filter(p =>
-            p.title?.toLowerCase().includes(q) ||
-            p.description?.toLowerCase().includes(q)
-        ));
-    }, [search, products]);
+        if (upcycledOnly) result = result.filter(p => p.isUpcycled);
+        if (sortBy === 'price_low') result.sort((a, b) => a.price - b.price);
+        else if (sortBy === 'price_high') result.sort((a, b) => b.price - a.price);
+        else result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setFiltered(result);
+    }, [search, products, sortBy, upcycledOnly]);
 
     if (loading) {
         return (
@@ -125,10 +131,27 @@ const VendorStorefront = () => {
                     )}
                 </div>
 
-                {/* Count */}
-                <p className="text-sm text-gray-500">
-                    {filtered.length} product{filtered.length !== 1 ? 's' : ''} available
-                </p>
+                {/* Filter Row */}
+                <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                        onClick={() => setUpcycledOnly(u => !u)}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                            upcycledOnly ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'
+                        }`}>
+                        <FaRecycle size={12} /> Upcycled Only
+                    </button>
+                    <select
+                        value={sortBy}
+                        onChange={e => setSortBy(e.target.value)}
+                        className="px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="newest">Newest First</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                    </select>
+                    <p className="ml-auto text-sm text-gray-500">
+                        {filtered.length} product{filtered.length !== 1 ? 's' : ''}
+                    </p>
+                </div>
 
                 {/* Products Grid */}
                 {filtered.length > 0 ? (
