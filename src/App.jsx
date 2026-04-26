@@ -27,6 +27,7 @@ const ProductDetailPage = lazy(() => import('./pages/recyclePage/ProductDetail')
 const ScheduleDetailPage = lazy(() => import('./pages/customerDashboard/ScheduleDetailPage'))
 const EditProductForm  = lazy(() => import('./pages/recyclePage/EditProductForm'))
 const VendorStorefront = lazy(() => import('./pages/recyclePage/VendorStorefront'))
+const AdminSetup       = lazy(() => import('./pages/adminDashboard/AdminSetup'))
 const NotFound         = lazy(() => import('./pages/NotFound'))
 
 const Spinner = () => (
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
   { path: "/who-we-are", element: <AboutUsPage /> },
   { path: "/login", element: <Login /> },
   { path: "/vendorsignup", element: <Signup /> },
+  { path: "/swk-admin-setup", element: <AdminSetup /> },
   {
     path: "/customerDashboard",
     element: <CustDushboardLayout/>,
