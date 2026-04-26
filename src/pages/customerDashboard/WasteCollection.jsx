@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
-import { FiCalendar, FiFileMinus, FiFileText, FiShare2, FiTrash2, FiUser } from 'react-icons/fi';
+import { FiCalendar, FiFileMinus, FiFileText, FiTrash2, FiUser } from 'react-icons/fi';
 import { MdOutlinePeopleAlt } from 'react-icons/md';
 import { TbRefreshAlert } from 'react-icons/tb';
 import { PiSunLight } from 'react-icons/pi';
@@ -14,39 +14,19 @@ const WasteCollection = () => {
   const [tickets, setTickets] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
 
-  // Add initial console log to verify component mounting
-  console.log("WasteCollection component mounted");
-
-  // Fetch data from the backend
   useEffect(() => {
     const fetchTickets = async () => {
-      console.log("Fetching tickets..."); // Log before API call
       try {
         const response = await apiGetUsersScheduledProducts();
-        console.log("API Response:", response); // Log entire response
-        console.log("User schedule:", response.data); // Log data
         setTickets(response.data);
       } catch (error) {
         console.error("Error fetching tickets:", error);
       }
     };
-
     fetchTickets();
   }, []);
 
-  // Add a log to verify state updates
-  useEffect(() => {
-    console.log("Current tickets state:", tickets);
-  }, [tickets]);
-
-  const handleEditTicket = (id) => {
- 
-    console.log(`Editing ticket with id: ${id}`);
-  };
-
-  const handleDeleteTicket = async (id, e) => {
-    // Prevent default link behavior
-    e.preventDefault();
+  const handleDeleteTicket = async (id) => {
     
     // Show confirmation dialog
     const result = await Swal.fire({
@@ -150,14 +130,13 @@ const WasteCollection = () => {
                 </span>
               </td>
               <td className="py-2 flex space-x-2 text-[#101828]">
-                <Link to="/edit" onClick={() => handleEditTicket(ticket._id)}>
+                <Link to={`/customerDashboard/editSchedule/${ticket._id}`}>
                   <RiInformationLine />
                 </Link>
-                <FiShare2 />
-                <Link to={`/schedule/${ticket._id}`}>
+                <Link to={`/customerDashboard/schedule/${ticket._id}`}>
                   <FiFileText />
                 </Link>
-                <FiTrash2 
+                <FiTrash2
                   className={`cursor-pointer hover:text-red-500 w-4 h-4
                              ${deletingId === ticket._id ? 'opacity-50' : ''}
                              transition-all duration-200`}

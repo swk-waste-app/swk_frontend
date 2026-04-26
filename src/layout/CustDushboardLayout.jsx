@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiGetProfile } from '../services/product';
 import SideBar from '../pages/customerDashboard/SideBar';
@@ -10,20 +10,29 @@ const CustDushboardLayout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
     const fetchProfile = async () => {
       setIsLoading(true);
       try {
         const response = await apiGetProfile();
         setProfile(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error('Error fetching profile:', error);
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          navigate("/signin");
+        }
       } finally {
         setIsLoading(false);
       }
     };
     fetchProfile();
-  }, [role]);
+  }, [role, navigate]);
 
   return (
     <>

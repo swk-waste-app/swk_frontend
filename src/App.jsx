@@ -27,40 +27,41 @@ import ProductDetailPage from './pages/recyclePage/ProductDetail'
 import ScheduleDetailPage from './pages/customerDashboard/ScheduleDetailPage'
 import EditProductForm from './pages/recyclePage/EditProductForm'
 
+const router = createBrowserRouter([
+  { path: "/s", element: <DirectionPage/> },
+  { path: "/signin", element: <LoginPage /> },
+  { path: "/signup", element: <SignupPage/> },
+  { path: "/auth/callback", element: <GoogleCallback /> },
+  { path: "/", element: <LandingLayout /> },
+  { path: "/who-we-are", element: <AboutUsPage /> },
+  { path: "/login", element: <Login /> },
+  { path: "/vendorsignup", element: <Signup /> },
+  { path: "/Adminsignup", element: <AdminSignup /> },
+  { path: "/AdminLogin", element: <AdminLogin /> },
+  {
+    path: "/customerDashboard",
+    element: <CustDushboardLayout/>,
+    children: [
+      { path: "overview", element: <Overview /> },
+      { path: "adminoverview", element: <AdminOverview /> },
+      { path: "vendoroverview", element: <VendorDashboard /> },
+      { path: "blogs", element: <BlogsPage /> },
+      { path: "articles", element: <ArticlePage /> },
+      { path: "products", element: <CustomerPage /> },
+      { path: "pickup", element: <WasteSection /> },
+      { path: "vendorProduct", element: <VendorView/> },
+      { path: "wpickup", element: <WasteSchedulePage /> },
+      { path: "addProduct", element: <ProductForm /> },
+      { path: "editProduct/:id", element: <EditProductForm/> },
+      { path: "adminview", element: <AdminDashboard /> },
+      { path: "product/:id", element: <ProductDetailPage/> },
+      { path: "schedule/:id", element: <ScheduleDetailPage/> },
+      { path: "editSchedule/:id", element: <WasteEditPage/> },
+    ]
+  },
+])
+
 function App() {
-  const router = createBrowserRouter([
-    { path: "/s", element: <DirectionPage/> },
-    { path: "/signin", element: <LoginPage /> },
-    { path: "/signup", element: <SignupPage/> },
-    { path: "/auth/callback", element: <GoogleCallback /> },
-    { path: "/", element: <LandingLayout /> },
-    { path: "/who-we-are", element: <AboutUsPage /> },
-    { path: "/login", element: <Login /> },
-    { path: "/vendorsignup", element: <Signup /> },
-    { path: "/Adminsignup", element: <AdminSignup /> },
-    { path: "/AdminLogin", element: <AdminLogin /> },
-    {
-      path: "/customerDashboard",
-      element: <CustDushboardLayout/>,
-      children: [
-        { path: "overview", element: <Overview /> },
-        { path: "adminoverview", element: <AdminOverview /> },
-        { path: "vendoroverview", element: <VendorDashboard /> },
-        { path: "blogs", element: <BlogsPage /> },
-        { path: "articles", element: <ArticlePage /> },
-        { path: "products", element: <CustomerPage /> },
-        { path: "pickup", element: <WasteSection /> },
-        { path: "vendorProduct", element: <VendorView/> },
-        { path: "wpickup", element: <WasteSchedulePage /> },
-        { path: "addProduct", element: <ProductForm /> },
-        { path: "editProduct/:id", element: <EditProductForm/> },
-        { path: "adminview", element: <AdminDashboard /> },
-        { path: "product/:id", element: <ProductDetailPage/> },
-        { path: "schedule/:id", element: <ScheduleDetailPage/> },
-        { path: "editSchedule/:id", element: <WasteEditPage/> },
-      ]
-    },
-  ])
   return <RouterProvider router={router} />
 }
 

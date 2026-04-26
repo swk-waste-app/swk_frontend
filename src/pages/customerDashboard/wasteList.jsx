@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { FaTrash, FaEye, FaEdit, FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaTrash, FaEye, FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch } from 'react-icons/fa';
 import { apiDeleteScheduledTicket, apiGetUsersScheduledProducts } from '../../services/product';
 
 const STATUS_COLORS = {
@@ -12,11 +12,19 @@ const STATUS_COLORS = {
 };
 
 const WASTE_TYPE_EMOJI = {
-    'General': '🗑️',
-    'Recyclable': '♻️',
-    'Organic': '🌿',
-    'Electronic': '💻',
-    'Hazardous': '⚠️',
+    'General Waste': '🗑️',
+    'Recyclable Materials': '♻️',
+    'Organic/Food Waste': '🌿',
+    'Electronic (E-Waste)': '💻',
+    'Hazardous Waste': '⚠️',
+    'Fashion & Textiles': '👗',
+    'Plastics': '🧴',
+    'Metals & Scrap': '🔩',
+    'Glass': '🍶',
+    'Wood & Furniture': '🪵',
+    'Paper & Cardboard': '📄',
+    'Rubber': '⚫',
+    'Other': '📦',
 };
 
 const WasteCollectionList = () => {

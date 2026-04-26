@@ -22,22 +22,22 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-gray-300">
               <li>
-                <Link to="/about" className="hover:text-green-400 transition-colors duration-300">
+                <Link to="/who-we-are" className="hover:text-green-400 transition-colors duration-300">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="hover:text-green-400 transition-colors duration-300">
+                <Link to="/signin" className="hover:text-green-400 transition-colors duration-300">
                   Our Services
                 </Link>
               </li>
               <li>
-                <Link to="/blogs" className="hover:text-green-400 transition-colors duration-300">
+                <Link to="/customerDashboard/blogs" className="hover:text-green-400 transition-colors duration-300">
                   Blog & News
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-green-400 transition-colors duration-300">
+                <Link to="/signin" className="hover:text-green-400 transition-colors duration-300">
                   Contact Us
                 </Link>
               </li>

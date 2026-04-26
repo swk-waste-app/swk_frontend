@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { FaHome, FaRecycle, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell } from 'react-icons/fa';
 import { FaStore } from 'react-icons/fa';
@@ -177,7 +177,7 @@ const overviewActive = role === 'admin'
                                 overviewActive ? 'bg-white text-green-800 font-semibold shadow-sm' : 'text-white hover:bg-green-700'
                             }`}>
                                 <FaHome className="mr-3 text-sm" />
-                                <Link to={overviewPath} className="block w-full">Overview</Link>
+                                <Link to={overviewPath} onClick={() => setSidebarOpen(false)} className="block w-full">Overview</Link>
                             </li>
 
                             {/* User Links */}
@@ -185,15 +185,15 @@ const overviewActive = role === 'admin'
                                 <>
                                     <li className={navLinkClass("/pickup")}>
                                         <FaTrashAlt className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/pickup" className="block w-full">Waste Collection</Link>
+                                        <Link to="/customerDashboard/pickup" onClick={() => setSidebarOpen(false)} className="block w-full">Waste Collection</Link>
                                     </li>
                                     <li className={navLinkClass("/products")}>
                                         <FaRecycle className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/products" className="block w-full">Recycle</Link>
+                                        <Link to="/customerDashboard/products" onClick={() => setSidebarOpen(false)} className="block w-full">Recycle</Link>
                                     </li>
                                     <li className={navLinkClass("/login")}>
                                         <FaStore className="mr-3 text-sm" />
-                                        <Link to="/login" className="block w-full">Sell here</Link>
+                                        <Link to="/login" onClick={() => setSidebarOpen(false)} className="block w-full">Sell here</Link>
                                     </li>
                                 </>
                             )}
@@ -202,7 +202,7 @@ const overviewActive = role === 'admin'
                             {role === "admin" && (
                                 <li className={navLinkClass("/adminview")}>
                                     <FaTrashAlt className="mr-3 text-sm" />
-                                    <Link to="/customerDashboard/adminview" className="block w-full">Ticket Management</Link>
+                                    <Link to="/customerDashboard/adminview" onClick={() => setSidebarOpen(false)} className="block w-full">Ticket Management</Link>
                                 </li>
                             )}
 
@@ -211,11 +211,11 @@ const overviewActive = role === 'admin'
                                 <>
                                     <li className={navLinkClass("/vendorProduct")}>
                                         <FaFileAlt className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/vendorProduct" className="block w-full">Vendor Product</Link>
+                                        <Link to="/customerDashboard/vendorProduct" onClick={() => setSidebarOpen(false)} className="block w-full">Vendor Product</Link>
                                     </li>
                                     <li className={navLinkClass("/addProduct")}>
                                         <FaStore className="mr-3 text-sm" />
-                                        <Link to="/customerDashboard/addProduct" className="block w-full">Add Product</Link>
+                                        <Link to="/customerDashboard/addProduct" onClick={() => setSidebarOpen(false)} className="block w-full">Add Product</Link>
                                     </li>
                                 </>
                             )}
@@ -224,11 +224,11 @@ const overviewActive = role === 'admin'
 
                             <li className={navLinkClass("/blogs")}>
                                 <FaBlog className="mr-3 text-sm" />
-                                <Link to="/customerDashboard/blogs" className="block w-full">Blogs</Link>
+                                <Link to="/customerDashboard/blogs" onClick={() => setSidebarOpen(false)} className="block w-full">Blogs</Link>
                             </li>
                             <li className={navLinkClass("/articles")}>
                                 <FaFileAlt className="mr-3 text-sm" />
-                                <Link to="/customerDashboard/articles" className="block w-full">Articles</Link>
+                                <Link to="/customerDashboard/articles" onClick={() => setSidebarOpen(false)} className="block w-full">Articles</Link>
                             </li>
                         </ul>
                     </nav>

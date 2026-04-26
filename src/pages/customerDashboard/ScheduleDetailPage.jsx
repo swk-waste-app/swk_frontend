@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { apiGetSingleScheduledProducts, apiGetProfile } from '../../services/product';
-import { FaCalendar, FaMapMarkerAlt, FaRecycle, FaClock, FaUser, FaArrowLeft, FaStar, FaWeight } from 'react-icons/fa';
+import { apiGetSingleScheduledProducts, apiGetProfile, apiEditScheduledProduct } from '../../services/product';
+import { FaCalendar, FaMapMarkerAlt, FaRecycle, FaUser, FaArrowLeft, FaStar, FaWeight } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 const STATUS_STEPS = ['Scheduled', 'In Progress', 'Completed'];
@@ -280,8 +280,8 @@ const ScheduleDetailPage = () => {
             ✏️ Reschedule Pickup
           </Link>
           <button
-            onClick={() => {
-              Swal.fire({
+            onClick={async () => {
+              const result = await Swal.fire({
                 title: 'Cancel this pickup?',
                 text: 'Please select a reason:',
                 input: 'select',
@@ -291,10 +291,22 @@ const ScheduleDetailPage = () => {
                   'wrong_date': 'Wrong date selected',
                   'other': 'Other reason'
                 },
+                inputPlaceholder: 'Select a reason',
                 showCancelButton: true,
                 confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
                 confirmButtonText: 'Cancel Pickup',
+                cancelButtonText: 'Go Back',
               });
+              if (result.isConfirmed) {
+                try {
+                  await apiEditScheduledProduct(schedule._id, { status: 'Cancelled' });
+                  setSchedule(prev => ({ ...prev, status: 'Cancelled' }));
+                  Swal.fire({ icon: 'success', title: 'Pickup Cancelled', timer: 1500, showConfirmButton: false });
+                } catch {
+                  Swal.fire({ icon: 'error', title: 'Failed to cancel pickup', confirmButtonColor: '#026937' });
+                }
+              }
             }}
             className="flex-1 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors">
             ✕ Cancel Pickup
