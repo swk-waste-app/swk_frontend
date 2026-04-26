@@ -129,22 +129,19 @@ const Overview = ({ role }) => {
                 <div className="absolute top-0 right-0 w-48 h-48 opacity-10 text-9xl flex items-center justify-center">
                     {currentLevel.emoji}
                 </div>
-                <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-start justify-between gap-3 relative z-10 flex-wrap">
                     <div>
-                        <p className="text-green-200 text-sm uppercase tracking-wider">Current Level</p>
-                        <h2 className="text-3xl font-bold">{currentLevel.name} {currentLevel.emoji}</h2>
-                        <p className="text-green-200 mt-1">{points} points earned</p>
+                        <p className="text-green-200 text-xs uppercase tracking-wider">Current Level</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold">{currentLevel.name} {currentLevel.emoji}</h2>
+                        <p className="text-green-200 mt-1 text-sm">{points} points earned</p>
                     </div>
-                    <div className="text-right">
-                        {userRank > 0 && (
-                            <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1 mb-2">
-                                <p className="text-white text-xs">Community Rank</p>
-                                <p className="text-white font-bold text-xl">#{userRank}</p>
-                            </div>
-                        )}
-                        <p className="text-green-200 text-xs">Next: {nextLevel?.name || 'Max Level'}</p>
-                        <p className="text-white font-bold text-lg">{progressPercent}%</p>
-                    </div>
+                    {userRank > 0 && (
+                        <div className="bg-white bg-opacity-20 rounded-xl px-4 py-2 text-center flex-shrink-0">
+                            <p className="text-green-200 text-xs">Community Rank</p>
+                            <p className="text-white font-bold text-xl">#{userRank}</p>
+                            <p className="text-green-200 text-xs mt-0.5">{progressPercent}% to next</p>
+                        </div>
+                    )}
                 </div>
                 <div className="mt-4">
                     <div className="flex justify-between text-xs text-green-200 mb-1">
@@ -224,22 +221,22 @@ const Overview = ({ role }) => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-600">
                     <p className="text-gray-500 text-xs uppercase tracking-wider">Total Pickups</p>
-                    <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalPickups || 0}</h3>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalPickups || 0}</h3>
                     <p className="text-xs text-green-600 mt-1">All time</p>
                 </div>
                 <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-teal-500">
                     <p className="text-gray-500 text-xs uppercase tracking-wider">Completed</p>
-                    <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.completedPickups || 0}</h3>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.completedPickups || 0}</h3>
                     <p className="text-xs text-teal-600 mt-1">Successfully done</p>
                 </div>
                 <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
                     <p className="text-gray-500 text-xs uppercase tracking-wider">Waste Collected</p>
-                    <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalWasteCollected || 0} <span className="text-lg font-normal">kg</span></h3>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalWasteCollected || 0} <span className="text-base sm:text-lg font-normal">kg</span></h3>
                     <p className="text-xs text-yellow-600 mt-1">Total weight</p>
                 </div>
                 <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
                     <p className="text-gray-500 text-xs uppercase tracking-wider">Carbon Saved</p>
-                    <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalCarbonSaved || 0} <span className="text-lg font-normal">kg</span></h3>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats?.stats?.totalCarbonSaved || 0} <span className="text-base sm:text-lg font-normal">kg</span></h3>
                     <p className="text-xs text-blue-600 mt-1">CO₂ equivalent</p>
                 </div>
             </div>
@@ -254,9 +251,9 @@ const Overview = ({ role }) => {
                         </button>
                     </div>
                     {editingGoal ? (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <input type="number" value={newGoal} onChange={e => setNewGoal(parseInt(e.target.value))}
-                                className="w-20 border rounded-lg p-2 text-center text-gray-700" min="1" max="30" />
+                                className="w-16 border rounded-lg p-2 text-center text-gray-700" min="1" max="30" />
                             <span className="text-gray-600 text-sm">pickups this month</span>
                             <button onClick={saveGoal} className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">Save</button>
                         </div>
@@ -307,19 +304,19 @@ const Overview = ({ role }) => {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
                         <p className="text-gray-500 text-xs uppercase tracking-wider">Products Listed</p>
-                        <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalProducts}</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalProducts}</h3>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-pink-500">
                         <p className="text-gray-500 text-xs uppercase tracking-wider">Total Views</p>
-                        <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalViews}</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalViews}</h3>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
                         <p className="text-gray-500 text-xs uppercase tracking-wider">Items Sold</p>
-                        <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalSold}</h3>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{stats.vendorStats.totalSold}</h3>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
                         <p className="text-gray-500 text-xs uppercase tracking-wider">Revenue</p>
-                        <h3 className="text-3xl font-bold text-gray-800 mt-1">GH₵ {stats.vendorStats.totalRevenue?.toFixed(2) || '0.00'}</h3>
+                        <h3 className="text-xl sm:text-3xl font-bold text-gray-800 mt-1">GH₵ {stats.vendorStats.totalRevenue?.toFixed(2) || '0.00'}</h3>
                     </div>
                 </div>
             )}

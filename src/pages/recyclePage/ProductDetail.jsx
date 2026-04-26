@@ -127,7 +127,7 @@ const ProductDetailPage = () => {
 
               {/* Vendor Panel */}
               {vendor && (
-                <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                       {vendor.name?.[0]?.toUpperCase() || '?'}

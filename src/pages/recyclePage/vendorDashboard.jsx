@@ -148,7 +148,7 @@ const VendorDashboard = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-500 text-xs uppercase tracking-wider">Total Products</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{totalProducts}</h3>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalProducts}</h3>
                             <p className="text-xs text-green-600 mt-1">{availableProducts} available</p>
                         </div>
                         <FaBoxOpen className="text-green-500 text-2xl opacity-80" />
@@ -158,7 +158,7 @@ const VendorDashboard = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-500 text-xs uppercase tracking-wider">Total Views</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{totalViews}</h3>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalViews}</h3>
                             <p className="text-xs text-blue-600 mt-1">Across all products</p>
                         </div>
                         <FaEye className="text-blue-500 text-2xl opacity-80" />
@@ -168,7 +168,7 @@ const VendorDashboard = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-500 text-xs uppercase tracking-wider">Items Sold</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{totalSold}</h3>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalSold}</h3>
                             <p className="text-xs text-orange-600 mt-1">All time</p>
                         </div>
                         <FaStore className="text-orange-500 text-2xl opacity-80" />
@@ -178,7 +178,7 @@ const VendorDashboard = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-gray-500 text-xs uppercase tracking-wider">Revenue</p>
-                            <h3 className="text-2xl font-bold text-gray-800 mt-1">GH₵ {totalRevenue.toFixed(2)}</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mt-1">GH₵ {totalRevenue.toFixed(2)}</h3>
                             <p className="text-xs text-purple-600 mt-1">Avg price: GH₵ {avgPrice}</p>
                         </div>
                         <FaMoneyBillWave className="text-purple-500 text-2xl opacity-80" />
