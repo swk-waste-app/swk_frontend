@@ -5,7 +5,6 @@ import image1 from "../../assets/images/image12.png";
 import image2 from "../../assets/images/image11.png";
 import image3 from "../../assets/images/image13.png";
 import { Link } from 'react-router-dom';
-import { FaUserShield } from 'react-icons/fa';
 
 const HeroSection = () => {
   const img = [image1, image2, image3];
@@ -23,18 +22,6 @@ const HeroSection = () => {
 
   return (
     <div className="relative h-screen overflow-hidden">
-      {/* Admin Portal Link */}
-      <div className="absolute top-4 right-4 z-20">
-        <Link
-          to="/AdminLogin"
-          className="px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium text-white bg-black bg-opacity-50 
-                     hover:bg-opacity-70 rounded-full transition-all duration-300 
-                     flex items-center gap-2 backdrop-blur-sm border border-white/20"
-        >
-          <FaUserShield className="text-green-400" />
-          Admin Portal
-        </Link>
-      </div>
 
       <Slider {...settings} className="absolute inset-0 h-full w-full">
   {img.map((img, index) => (
