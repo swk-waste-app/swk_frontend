@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { FaHome, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus } from 'react-icons/fa';
+import { FaHome, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus, FaBookOpen } from 'react-icons/fa';
 import { apiGetUserStats } from '../../services/product';
 
 const SideBar = ({ profile, role }) => {
@@ -199,10 +199,16 @@ const overviewActive = role === 'admin'
 
                             {/* Admin Links */}
                             {role === "admin" && (
-                                <li className={navLinkClass("/adminview")}>
-                                    <FaTrashAlt className="mr-3 text-sm" />
-                                    <Link to="/customerDashboard/adminview" onClick={() => setSidebarOpen(false)} className="block w-full">Ticket Management</Link>
-                                </li>
+                                <>
+                                    <li className={navLinkClass("/adminview")}>
+                                        <FaTrashAlt className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/adminview" onClick={() => setSidebarOpen(false)} className="block w-full">Ticket Management</Link>
+                                    </li>
+                                    <li className={navLinkClass("/addEducation")}>
+                                        <FaBookOpen className="mr-3 text-sm" />
+                                        <Link to="/customerDashboard/addEducation" onClick={() => setSidebarOpen(false)} className="block w-full">Add Resource</Link>
+                                    </li>
+                                </>
                             )}
 
                             {/* Vendor Links */}

@@ -1,61 +1,81 @@
-import image8 from '../../assets/images/image8.png'
-import image7 from '../../assets/images/image16.png'
-import image6 from '../../assets/images/image6.png'
+import { FaArrowRight, FaBookOpen, FaLeaf, FaTruckLoading } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import serviceCollection from '../../assets/images/service-collection.webp';
+import serviceCompost from '../../assets/images/service-compost.webp';
+import serviceEducation from '../../assets/images/service-blog.webp';
+
+const SERVICES = [
+  {
+    image: serviceCollection,
+    icon: FaTruckLoading,
+    title: 'Waste Collection',
+    description:
+      'Using meticulous collection strategies, we efficiently gather waste and transport it to designated facilities for sorting, transfer and recycling.',
+    to: '/signin',
+  },
+  {
+    image: serviceCompost,
+    icon: FaLeaf,
+    title: 'Composting & Recycling',
+    description:
+      'Our Integrated Waste Processing Plant receives, sorts and recycles solid waste, producing organic compost for agronomic use across Ghana and West Africa.',
+    to: '/signin',
+  },
+  {
+    image: serviceEducation,
+    icon: FaBookOpen,
+    title: 'Education & Awareness',
+    description:
+      'Practical guides, sorting tips and workshop updates — built to help households and businesses live more sustainably.',
+    to: '/education',
+  },
+];
+
 const WasteManagementSection = () => {
   return (
-    <div className="bg-gray-100 py-32">
-      <div className="container mx-auto px-4">
-      <div className="flex flex-col md:flex-row justify-center px-4 md:px-6 gap-6">
-  <div className="text-center md:text-left mb-6 md:mb-10 w-full md:w-[40%]">
-    <p className="text-green-600 font-semibold uppercase text-sm">What We Offer</p>
-    <h2 className="text-3xl md:text-4xl font-bold text-green-800 mt-2">
-      Sustainable Waste Management Solutions
-    </h2>
-  </div>
-  <div className="w-full md:w-[40%]">
-    <p className="text-gray-700 mt-4 max-w-xl">
-      The SWK Taka Kipawa App is a proudly Ghanaian-owned platform that combines waste management with an upcycling marketplace. Our mission is to make environmental responsibility accessible and impactful by empowering users to schedule waste pickups, shop eco-friendly products, and participate in sustainability workshops. We are committed to providing an intuitive, eco-conscious solution that supports households and businesses alike in building a greener future.
-    </p>
-    <a href="#services" className="text-green-800 font-semibold mt-4 inline-block underline">
-      All Services
-    </a>
-  </div>
-</div>
-
-        <div className="grid md:grid-cols-3 gap-6 mt-[5%] h-[70%] px-10">
-        {/* <Link to="/customerDashboard/pickup" > */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden p-6 h-[100%] transition-transform transform hover:-translate-y-2 hover:shadow-2xl duration-300 w-full">
-            <img src={image6} alt="Waste Collection" className="w-full h-40 object-cover" />
-            <h3 className="text-xl font-bold text-green-800 mt-4">Waste Collection</h3>
-            <p className="text-gray-700 mt-2">
-              Using meticulous collection strategies, we efficiently gather wastes, transport them to designated facilities for sorting and transfer and recycling.
-            </p>
+    <div id="services" className="bg-gray-50 py-24 lg:py-28 scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <div className="max-w-xl">
+            <p className="text-green-600 font-bold uppercase text-sm tracking-widest">What We Offer</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-green-900 mt-3 leading-tight">
+              Sustainable Waste Management Solutions
+            </h2>
           </div>
-          {/* </Link> */}
+          <p className="text-gray-600 max-w-md">
+            The Taka Kipawa App is a proudly Ghanaian&#8209;owned platform combining waste management with an
+            upcycling marketplace &mdash; built for households and businesses building a greener future.
+          </p>
+        </div>
 
-         {/* <Link to="/customerDashboard/products" > */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden p-6 h-[100%] transition-transform transform hover:-translate-y-2 hover:shadow-2xl duration-300 w-full">
-            <img src={image7} alt="Composting & Recycling" className="w-full h-40 object-cover" />
-            <h3 className="text-xl font-bold text-green-800 mt-4">Composting & Recycling</h3>
-            <p className="text-gray-700 mt-2">
-              Our Integrated Waste Processing and Recycling Plant receives, sorts, processes, and recycles solid waste and produces organic compost for agronomic purposes in Ghana and West Africa.
-            </p>
-          </div>
-          {/* </Link> */}
-
-          {/* <Link to="/customerDashboard/blogs" className="block"> */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden p-6 h-[100%] transition-transform transform hover:-translate-y-2 hover:shadow-2xl duration-300 w-full">
-        <img
-          src={image8}
-          alt="Landfill Management"
-          className="w-full h-40 object-cover"
-        />
-        <h3 className="text-xl font-bold text-green-800 mt-4">Blogs</h3>
-        <p className="text-gray-700 mt-2">
-          We possess the appropriate technologies to effectively manage and decommission waste landfills.
-        </p>
-      </div>
-    {/* </Link> */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {SERVICES.map(({ image, icon: Icon, title, description, to }) => (
+            <Link
+              to={to}
+              key={title}
+              className="group relative flex flex-col bg-white rounded-2xl shadow-md overflow-hidden ring-1 ring-gray-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={image}
+                  alt={title}
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <span className="absolute bottom-4 left-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-green-700 shadow-lg">
+                  <Icon size={18} />
+                </span>
+              </div>
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="text-xl font-bold text-green-900">{title}</h3>
+                <p className="text-gray-600 mt-2.5 text-sm leading-relaxed flex-1">{description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-green-700 font-semibold text-sm group-hover:gap-3 transition-all duration-200">
+                  Learn more <FaArrowRight size={12} />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

@@ -16,33 +16,16 @@ const Login = () => {
       const response = await apiLogin({ email, password });
       if (response.status === 200) {
         localStorage.setItem('token', response.data.accessToken);
-       localStorage.setItem("role",response.data.role)
-       // Updated role handling
-      //  switch(response.data.role) {
-      //   case 'vendor':
-      //     localStorage.setItem("vendorRole", response.data.role);
-      //     break;
-      //   case 'admin':
-      //     localStorage.setItem("adminRole", response.data.role);
-      //     break;
-      //   default:
-      //     localStorage.setItem("userRole", response.data.role);
-      // }
+        localStorage.setItem('role', response.data.role);
 
-      // setSuccessMessage('Login successful! Redirecting...');
-      
-      // Updated navigation based on role
-      navigate("/customerDashboard/vendorProduct"); 
-      // setTimeout(() => {
-      //   if (response.data.role === 'admin') {
-      //     navigate("/admin/dashboard");
-      //   } else if (response.data.role === 'vendor') {
-      //     navigate("/customerDashboard/vendorProduct"); // or your vendor route
-      //   } else {
-      //     navigate("/customerDashboard/pickup");
-      //   }
-      // }, 2000);
-    }
+        if (response.data.role === 'admin') {
+          navigate('/customerDashboard/adminoverview');
+        } else if (response.data.role === 'vendor') {
+          navigate('/customerDashboard/vendorProduct');
+        } else {
+          navigate('/customerDashboard/overview');
+        }
+      }
     } catch (err) {
       console.error('Login error:', err);
       alert('An error occurred during login. Please try again.');

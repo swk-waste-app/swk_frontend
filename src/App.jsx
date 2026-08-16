@@ -10,6 +10,10 @@ const SignupPage        = lazy(() => import('./pages/signupPage/Signup'))
 const LandingLayout    = lazy(() => import('./layout/LandingLayout'))
 const CustDushboardLayout = lazy(() => import('./layout/CustDushboardLayout'))
 const BlogsPage        = lazy(() => import('./pages/blogs/BlogsPage'))
+const NavbarLayout     = lazy(() => import('./layout/NavbarLayout'))
+const EducationHub     = lazy(() => import('./pages/education/EducationHub'))
+const EducationDetail  = lazy(() => import('./pages/education/EducationDetail'))
+const AddEducationForm = lazy(() => import('./pages/education/AddEducationForm'))
 const AboutUsPage      = lazy(() => import('./pages/WhoWeAre'))
 const DirectionPage    = lazy(() => import('./pages/directionPage/Direction'))
 const CustomerPage     = lazy(() => import('./pages/recyclePage/CustomerPage'))
@@ -43,7 +47,16 @@ const router = createBrowserRouter([
   { path: "/signup", element: <SignupPage/> },
   { path: "/auth/callback", element: <GoogleCallback /> },
   { path: "/", element: <LandingLayout /> },
-  { path: "/who-we-are", element: <AboutUsPage /> },
+  {
+    path: "/",
+    element: <NavbarLayout />,
+    children: [
+      { path: "who-we-are", element: <AboutUsPage /> },
+      { path: "blog", element: <BlogsPage /> },
+      { path: "education", element: <EducationHub /> },
+      { path: "education/:id", element: <EducationDetail /> },
+    ],
+  },
   { path: "/login", element: <Login /> },
   { path: "/vendorsignup", element: <Signup /> },
   { path: "/swk-admin-setup", element: <AdminSetup /> },
@@ -62,6 +75,7 @@ const router = createBrowserRouter([
       { path: "vendorProduct", element: <VendorView/> },
       { path: "wpickup", element: <WasteSchedulePage /> },
       { path: "addProduct", element: <ProductForm /> },
+      { path: "addEducation", element: <AddEducationForm /> },
       { path: "editProduct/:id", element: <EditProductForm/> },
       { path: "adminview", element: <AdminDashboard /> },
       { path: "product/:id", element: <ProductDetailPage/> },

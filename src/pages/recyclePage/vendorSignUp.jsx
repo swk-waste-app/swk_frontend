@@ -39,11 +39,7 @@ function Signup() {
 
                 // Store user info in localStorage
                 localStorage.setItem('token', response.data.accessToken); // Save the token
-                localStorage.setItem('userRole', payload.role);
-
-  // Log the role immediately after setting it
-  // const storedRole = localStorage.getItem('userRole');
-  console.log('Stored Role:', localStorage.getItem('userRole'));
+                localStorage.setItem('role', payload.role);
 
                 setLoading(false);
                 navigate("/login"); 

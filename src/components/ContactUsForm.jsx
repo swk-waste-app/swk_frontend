@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { apiSendMessage } from '../services/product';
 import Swal from 'sweetalert2';
+
+const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
 
 const ContactUsForm = () => {
   const [formData, setFormData] = useState({
@@ -23,10 +24,25 @@ const ContactUsForm = () => {
     setLoading(true);
 
     try {
-      await apiSendMessage({
-        ...formData,
-        user: localStorage.getItem('userId') // Assuming you store userId in localStorage
+      if (!WEB3FORMS_ACCESS_KEY) {
+        throw new Error('Contact form is not configured yet. Please try again later.');
+      }
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `Taka Kipawa contact: ${formData.subject}`,
+          from_name: 'Taka Kipawa Website',
+          email: formData.email,
+          message: formData.message,
+        }),
       });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to send message');
+      }
 
       Swal.fire({
         icon: 'success',
@@ -58,12 +74,12 @@ const ContactUsForm = () => {
     <div className="flex justify-center items-center min-h-[80vh] px-4">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Subject Field */}
           <div>
-            <label 
-              htmlFor="subject" 
+            <label
+              htmlFor="subject"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Subject
@@ -75,7 +91,7 @@ const ContactUsForm = () => {
               value={formData.subject}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 
+              className="w-full px-4 py-3 rounded-lg border border-gray-300
                          focus:ring-2 focus:ring-green-500 focus:border-transparent
                          transition duration-200"
               placeholder="Enter subject"
@@ -84,8 +100,8 @@ const ContactUsForm = () => {
 
           {/* Email Field */}
           <div>
-            <label 
-              htmlFor="email" 
+            <label
+              htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Email
@@ -97,7 +113,7 @@ const ContactUsForm = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 
+              className="w-full px-4 py-3 rounded-lg border border-gray-300
                          focus:ring-2 focus:ring-green-500 focus:border-transparent
                          transition duration-200"
               placeholder="your@email.com"
@@ -106,8 +122,8 @@ const ContactUsForm = () => {
 
           {/* Message Field */}
           <div>
-            <label 
-              htmlFor="message" 
+            <label
+              htmlFor="message"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Message
@@ -119,7 +135,7 @@ const ContactUsForm = () => {
               onChange={handleChange}
               required
               rows="4"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 
+              className="w-full px-4 py-3 rounded-lg border border-gray-300
                          focus:ring-2 focus:ring-green-500 focus:border-transparent
                          transition duration-200 resize-none"
               placeholder="Type your message here..."
@@ -132,8 +148,8 @@ const ContactUsForm = () => {
             disabled={loading}
             className={`w-full py-3 px-6 rounded-lg text-white font-medium
                        transition duration-200 ${
-                         loading 
-                           ? 'bg-green-400 cursor-not-allowed' 
+                         loading
+                           ? 'bg-green-400 cursor-not-allowed'
                            : 'bg-green-600 hover:bg-green-700'
                        }`}
           >

@@ -14,14 +14,14 @@ const GoogleCallback = () => {
             localStorage.setItem('role', role);
 
             if (role === 'admin') {
-                navigate('/customerDashboard/adminoverview');
+                navigate('/customerDashboard/adminoverview', { replace: true });
             } else if (role === 'vendor') {
-                navigate('/customerDashboard/vendoroverview');
+                navigate('/customerDashboard/vendoroverview', { replace: true });
             } else {
-                navigate('/customerDashboard/overview');
+                navigate('/customerDashboard/overview', { replace: true });
             }
         } else {
-            navigate('/signin?error=google_failed');
+            navigate('/signin?error=google_failed', { replace: true });
         }
     }, [navigate, searchParams]);
 

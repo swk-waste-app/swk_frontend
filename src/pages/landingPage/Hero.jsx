@@ -1,13 +1,20 @@
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import image1 from "../../assets/images/image12.png";
-import image2 from "../../assets/images/image11.png";
-import image3 from "../../assets/images/image13.png";
 import { Link } from 'react-router-dom';
+import { FaChevronDown, FaRecycle, FaTruck, FaUsers } from 'react-icons/fa';
+import heroImg1 from '../../assets/images/hero-1.webp';
+import heroImg2 from '../../assets/images/hero-2.webp';
+import heroImg3 from '../../assets/images/hero-3.webp';
+
+const STATS = [
+  { icon: FaUsers, value: '100+', label: 'Happy Customers' },
+  { icon: FaTruck, value: '3+ yrs', label: 'On-the-Ground Experience' },
+  { icon: FaRecycle, value: '100%', label: 'Eco-Conscious Process' },
+];
 
 const HeroSection = () => {
-  const img = [image1, image2, image3];
+  const images = [heroImg1, heroImg2, heroImg3];
 
   const settings = {
     dots: true,
@@ -16,60 +23,87 @@ const HeroSection = () => {
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 4500,
     fade: true,
+    pauseOnHover: false,
+    arrows: false,
   };
 
   return (
-    <div className="relative h-screen overflow-hidden">
-
-      <Slider {...settings} className="absolute inset-0 h-full w-full">
-  {img.map((img, index) => (
-    <div key={index} className="!flex h-[100vh] w-full"> {/* Added !flex and explicit height */}
-      <img 
-        src={img} 
-        alt={`Slide ${index + 1}`} 
-        className="h-full w-full object-cover" // Removed sm:object-contain to maintain full coverage
-      />
-      <div className="absolute inset-0 bg-black opacity-50"></div>
-    </div>
-  ))}
-</Slider>
-
-      <div className="absolute inset-0 z-10 flex items-center justify-center text-center text-white px-4 sm:px-6 md:px-8">
-        <div className="relative z-20 max-w-2xl mx-auto">
-          {/* Title Section */}
-          <div className="mb-8 p-6 rounded-lg bg-black/30 backdrop-blur-sm border border-white/10">
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-green-300 via-green-400 to-green-500 text-transparent bg-clip-text">
-                Taka Kipawa
-              </span>
-            </h1>
-            <div className="h-1 w-16 sm:w-24 mx-auto bg-gradient-to-r from-green-300 to-green-500 rounded-full mb-4"></div>
+    <div className="relative h-[100svh] min-h-[640px] overflow-hidden bg-green-950">
+      <Slider {...settings} className="absolute inset-0 h-full w-full [&_.slick-list]:h-full [&_.slick-track]:h-full">
+        {images.map((img, index) => (
+          <div key={index} className="!flex h-[100svh] min-h-[640px] w-full">
+            <img
+              src={img}
+              alt=""
+              loading={index === 0 ? 'eager' : 'lazy'}
+              className="h-full w-full object-cover"
+            />
           </div>
+        ))}
+      </Slider>
 
-          <p className="text-lg sm:text-xl md:text-2xl mb-4 font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-green-500">
-            Leading the Way in Sustainable Waste Management
+      {/* Gradient overlay for legibility + brand tint */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-green-950/80" />
+      <div className="absolute inset-0 bg-gradient-to-t from-green-950 via-transparent to-transparent opacity-60" />
+
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-16">
+        <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-green-200 backdrop-blur-sm">
+            Proudly Ghanaian &middot; Kipawa &amp; Beyond
+          </span>
+
+          <h1 className="mt-6 text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] text-white">
+            Cleaner Streets.{' '}
+            <span className="bg-gradient-to-r from-green-300 via-emerald-400 to-green-500 text-transparent bg-clip-text">
+              Greener Ghana.
+            </span>
+          </h1>
+
+          <p className="mt-6 text-base sm:text-xl text-gray-100/90 max-w-2xl mx-auto font-light">
+            Taka Kipawa makes waste management effortless &mdash; schedule pickups, shop
+            upcycled goods, and join a community turning trash into treasure.
           </p>
 
-          <p className="text-sm sm:text-lg md:text-xl mb-12 font-light tracking-wide text-gray-100">
-            Reduce • Reuse • Recycle
-          </p>
+          <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              to="/signup"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white
+                       bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-lg shadow-green-600/40
+                       hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105"
+            >
+              Get Started &mdash; It&rsquo;s Free
+            </Link>
+            <a
+              href="#services"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white
+                       rounded-full border-2 border-white/40 hover:border-white hover:bg-white/10 transition-all duration-300"
+            >
+              Explore Services
+            </a>
+          </div>
+        </div>
 
-          <Link
-            to="/signin"
-            className="inline-block px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-semibold text-white 
-                     bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-lg 
-                     hover:from-green-600 hover:to-green-700 transition-all duration-300 
-                     transform hover:scale-105"
-            style={{
-              boxShadow: '0 0 20px rgba(34, 197, 94, 0.5)',
-            }}
-          >
-            Get Started
-          </Link>
+        {/* Floating stats strip */}
+        <div className="hidden sm:grid absolute bottom-8 left-1/2 -translate-x-1/2 grid-cols-3 gap-3 md:gap-6 w-[min(92%,760px)] rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md px-4 py-5 shadow-2xl">
+          {STATS.map(({ icon: Icon, value, label }) => (
+            <div key={label} className="flex flex-col items-center text-center gap-1.5">
+              <Icon className="text-green-300" size={20} />
+              <span className="text-xl md:text-2xl font-extrabold text-white">{value}</span>
+              <span className="text-[11px] md:text-xs text-gray-200 uppercase tracking-wide">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
+
+      <a
+        href="#about"
+        aria-label="Scroll to learn more"
+        className="hidden md:flex absolute bottom-2 left-1/2 -translate-x-1/2 z-10 h-9 w-9 items-center justify-center rounded-full text-white/70 hover:text-white animate-bounce"
+      >
+        <FaChevronDown />
+      </a>
     </div>
   );
 };

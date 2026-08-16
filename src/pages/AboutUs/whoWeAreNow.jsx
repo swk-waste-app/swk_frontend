@@ -1,4 +1,5 @@
-import image1 from "../../assets/images/image13.png"
+import { Link } from "react-router-dom"
+import image1 from "../../assets/images/hero-3.webp"
 const WhoWeAre = () => {
   return (
     <div className="relative bg-green-900 text-white h-screen flex flex-col justify-center items-center">
@@ -23,12 +24,12 @@ const WhoWeAre = () => {
         </p>
 
         
-        <div className="mt-8">
-          <a href="/" className="text-black hover:underline">
+        <div className="mt-8 text-sm text-gray-200">
+          <Link to="/" className="hover:underline hover:text-white">
             Home
-          </a>
+          </Link>
           <span className="mx-2">•</span>
-          <span>Who We Are</span>
+          <span className="text-white font-semibold">Who We Are</span>
         </div>
       </div>
     </div>

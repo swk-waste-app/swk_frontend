@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { apiClient } from '../../services/config';
 
 const BlogsPage = () => {
   const [articles, setArticles] = useState([]);
@@ -10,12 +10,9 @@ const BlogsPage = () => {
 
   const fetchSWKNews = async () => {
     try {
-      const response = await axios.get(`https://swk-backend.onrender.com/api/news/news`, {
+      const response = await apiClient.get('/news', {
         params: {
-          query: 'recycling', 
-        },
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_GNEWS_API_KEY}`,
+          query: 'recycling',
         },
       });
       if (Array.isArray(response.data)) {
