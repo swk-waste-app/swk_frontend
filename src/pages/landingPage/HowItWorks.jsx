@@ -1,4 +1,5 @@
 import { FaCalendarCheck, FaGift, FaTruck, FaUserPlus } from 'react-icons/fa';
+import Reveal from '../../components/Reveal';
 
 const STEPS = [
   {
@@ -29,14 +30,14 @@ const HowItWorks = () => {
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[560px] w-[560px] rounded-full bg-green-700/20 blur-3xl" />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <Reveal className="text-center max-w-2xl mx-auto mb-16">
           <p className="text-green-300 font-bold uppercase text-sm tracking-widest">How It Works</p>
           <h2 className="text-3xl md:text-4xl font-extrabold mt-3">From Sign-Up to Sustainable, in Four Steps</h2>
-        </div>
+        </Reveal>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {STEPS.map(({ icon: Icon, title, text }, i) => (
-            <div key={title} className="relative flex flex-col items-center text-center px-4">
+            <Reveal key={title} delay={i * 120} className="relative flex flex-col items-center text-center px-4">
               {i < STEPS.length - 1 && (
                 <span className="hidden lg:block absolute top-9 left-[60%] w-full h-px bg-white/15" />
               )}
@@ -46,7 +47,7 @@ const HowItWorks = () => {
               <span className="mt-4 text-xs font-bold text-green-300 tracking-widest">STEP {i + 1}</span>
               <h3 className="mt-2 text-lg font-bold">{title}</h3>
               <p className="mt-2 text-sm text-gray-300 leading-relaxed">{text}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

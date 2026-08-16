@@ -48,6 +48,10 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-green-950/80" />
       <div className="absolute inset-0 bg-gradient-to-t from-green-950 via-transparent to-transparent opacity-60" />
 
+      {/* Ambient glows for depth */}
+      <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-green-400/20 blur-3xl animate-blob" />
+      <div className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl animate-blob" style={{ animationDelay: '4s' }} />
+
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-16">
         <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-green-200 backdrop-blur-sm">

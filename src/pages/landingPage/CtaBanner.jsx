@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaStore } from 'react-icons/fa';
+import Reveal from '../../components/Reveal';
 
 const CtaBanner = () => {
   return (
     <section className="px-5 sm:px-8 py-16 lg:py-20 bg-white">
-      <div className="relative max-w-7xl mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-green-900 px-8 py-14 sm:px-16 sm:py-16 text-center shadow-2xl">
+      <Reveal className="relative max-w-7xl mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-green-900 px-8 py-14 sm:px-16 sm:py-16 text-center shadow-2xl">
         <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 animate-blob" />
         <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-green-400/20 animate-blob" style={{ animationDelay: '3s' }} />
 
@@ -32,7 +33,7 @@ const CtaBanner = () => {
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 };

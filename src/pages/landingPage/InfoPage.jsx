@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaCommentDots, FaLeaf, FaRecycle, FaTruck } from 'react-icons/fa';
 import ChatForm from '../../components/ContactUsForm';
+import Reveal from '../../components/Reveal';
 import aboutImg from '../../assets/images/about-team.webp';
 import { Link } from 'react-router-dom';
 
@@ -19,7 +20,7 @@ const AboutSection = () => {
       <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-green-100 blur-3xl opacity-60" />
 
       <div className="relative flex flex-col lg:flex-row items-center gap-12 px-6 py-20 lg:py-28 lg:px-16 max-w-7xl mx-auto">
-        <div className="relative w-full lg:w-1/2 flex justify-center items-center">
+        <Reveal className="relative w-full lg:w-1/2 flex justify-center items-center">
           <div className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-green-200 to-green-50 -z-10 hidden sm:block" />
           <img
             src={aboutImg}
@@ -31,9 +32,9 @@ const AboutSection = () => {
             <h2 className="text-3xl font-extrabold text-green-700">3+</h2>
             <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide">Years of Service</p>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="w-full lg:w-1/2 text-gray-700 dark:text-gray-300">
+        <Reveal delay={150} className="w-full lg:w-1/2 text-gray-700 dark:text-gray-300">
           <h3 className="uppercase text-sm text-green-600 font-bold tracking-widest">Who We Are</h3>
           <h1 className="text-3xl lg:text-5xl font-extrabold text-green-800 dark:text-white mt-3 leading-tight">
             The Future of Eco&#8209;Conscious Living, Made Local
@@ -71,7 +72,7 @@ const AboutSection = () => {
               Create your account &rarr;
             </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {!isChatOpen && (

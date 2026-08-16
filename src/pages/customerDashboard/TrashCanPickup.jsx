@@ -1,5 +1,6 @@
 import { FaArrowsAltH, FaCloudSun, FaRulerCombined } from 'react-icons/fa';
-import guideImg from '../../assets/images/trashcan-guide.webp';
+import TrashCanDiagram from '../../components/TrashCanDiagram';
+import Reveal from '../../components/Reveal';
 
 const TIPS = [
   {
@@ -23,7 +24,7 @@ const TrashCanPlacement = () => {
   return (
     <section className="bg-white py-24 lg:py-28 px-5">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
-        <div>
+        <Reveal>
           <p className="text-green-600 font-bold uppercase text-sm tracking-widest">Pro Tip</p>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-green-800 mt-3 leading-tight">
             The Placement of Your Trash Can Matters
@@ -46,17 +47,14 @@ const TrashCanPlacement = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
 
-        <div className="relative">
+        <Reveal delay={150} className="relative">
           <div className="absolute -inset-4 rounded-3xl bg-green-50 -z-10 hidden sm:block" />
-          <img
-            src={guideImg}
-            alt="Trash can placement guide"
-            loading="lazy"
-            className="mx-auto rounded-2xl shadow-lg w-full max-w-lg"
-          />
-        </div>
+          <div className="mx-auto rounded-2xl shadow-lg w-full max-w-lg overflow-hidden ring-1 ring-green-100">
+            <TrashCanDiagram />
+          </div>
+        </Reveal>
       </div>
     </section>
   );
