@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { FaEye, FaEyeSlash, FaGoogle, FaUser, FaStore } from 'react-icons/fa';
 import { AiOutlineMail, AiOutlineLock } from 'react-icons/ai';
-import { apiLogin } from '../../services/Auth';
+import { apiLogin, startGoogleSignIn, googleErrorMessage } from '../../services/Auth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import image1 from '../../assets/images/image1.png';
 import logo from '../../assets/images/SWK_LOGO__5_.png';
-
-const BACKEND_URL = 'https://swk-backend.onrender.com';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(searchParams.get('error') === 'google_failed' ? 'Google sign-in failed. Please try again.' : '');
+  const [errorMessage, setErrorMessage] = useState(
+    searchParams.get('error') === 'google_failed' ? googleErrorMessage(searchParams.get('reason')) : ''
+  );
   const [successMessage, setSuccessMessage] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
 
@@ -49,8 +49,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    localStorage.setItem('pendingRole', selectedRole);
-    window.location.href = `${BACKEND_URL}/api/auth/google`;
+    startGoogleSignIn(selectedRole);
   };
 
   return (

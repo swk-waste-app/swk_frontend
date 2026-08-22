@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { IoMdContact } from "react-icons/io";
 import { FaGoogle, FaEye, FaEyeSlash, FaUser, FaStore } from "react-icons/fa";
-import { apiSignup } from '../../services/Auth';
+import { apiSignup, startGoogleSignIn } from '../../services/Auth';
 import { useNavigate, Link } from 'react-router-dom';
 import image1 from "../../assets/images/image2.png";
 import { AiOutlineMail, AiOutlineLock } from 'react-icons/ai';
 import logo from '../../assets/images/SWK_LOGO__5_.png';
-
-const BACKEND_URL = 'https://swk-backend.onrender.com';
 
 export default function SignupPage() {
   const [loading, setLoading] = useState(false);
@@ -56,8 +54,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = () => {
-    localStorage.setItem('pendingRole', selectedRole);
-    window.location.href = `${BACKEND_URL}/api/auth/google`;
+    startGoogleSignIn(selectedRole);
   };
 
   return (
