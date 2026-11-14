@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 sm:px-10 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="md:col-span-2 pr-0 md:pr-8">
-            <img src={logo} alt="Taka Kipawa" className="h-14 w-auto object-contain bg-white rounded-lg p-1.5" />
+            <img src={logo} alt="Taka Kipawa" className="h-14 w-auto object-contain bg-white dark:bg-gray-900 rounded-lg p-1.5" />
             <p className="text-green-100/80 text-sm leading-relaxed mt-5 max-w-sm">
               Taka Kipawa is committed to revolutionizing waste management through sustainable practices &mdash;
               building a cleaner, greener future for Ghanaian communities through recycling and upcycling.

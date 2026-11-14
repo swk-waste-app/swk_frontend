@@ -5,10 +5,10 @@ import { FaTrash, FaEye, FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch } fr
 import { apiDeleteScheduledTicket, apiGetUsersScheduledProducts } from '../../services/product';
 
 const STATUS_COLORS = {
-    'Scheduled': { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
-    'In Progress': { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-    'Completed': { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-    'Cancelled': { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+    'Scheduled': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+    'In Progress': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-500' },
+    'Completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+    'Cancelled': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
 };
 
 const WASTE_TYPE_EMOJI = {
@@ -101,31 +101,31 @@ const WasteCollectionList = () => {
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-800">My Pickup Schedules</h3>
-                        <p className="text-sm text-gray-500 mt-1">{tickets.length} total schedules</p>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">My Pickup Schedules</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{tickets.length} total schedules</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                         {/* Search */}
                         <div className="relative">
-                            <FaSearch className="absolute left-3 top-3 text-gray-400 text-sm" />
+                            <FaSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-500 text-sm" />
                             <input
                                 type="text"
                                 placeholder="Search location..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 w-full sm:w-48"
+                                className="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 w-full sm:w-48"
                             />
                         </div>
                         {/* Filter */}
                         <select
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                         >
                             <option value="All">All Status</option>
                             <option value="Scheduled">Scheduled</option>
@@ -139,9 +139,9 @@ const WasteCollectionList = () => {
 
             {/* Content */}
             {filtered.length === 0 ? (
-                <div className="text-center py-16 text-gray-400">
+                <div className="text-center py-16 text-gray-400 dark:text-gray-500">
                     <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
-                    <p className="font-medium text-gray-500">No pickups found</p>
+                    <p className="font-medium text-gray-500 dark:text-gray-400">No pickups found</p>
                     <p className="text-sm mt-1">
                         {tickets.length === 0 ? 'Schedule your first waste pickup to get started!' : 'Try adjusting your search or filter.'}
                     </p>
@@ -153,13 +153,13 @@ const WasteCollectionList = () => {
                         {filtered.map((ticket) => {
                             const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
                             return (
-                                <div key={ticket._id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                                <div key={ticket._id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 hover:shadow-md transition-shadow">
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex items-center gap-2">
                                             <span className="text-2xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
                                             <div>
-                                                <p className="font-medium text-gray-800 text-sm">{ticket.wasteType || 'General'}</p>
-                                                <p className="text-xs text-gray-500">{ticket._id?.slice(-8)}</p>
+                                                <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{ticket.wasteType || 'General'}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{ticket._id?.slice(-8)}</p>
                                             </div>
                                         </div>
                                         <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
@@ -167,7 +167,7 @@ const WasteCollectionList = () => {
                                             {ticket.status}
                                         </span>
                                     </div>
-                                    <div className="space-y-2 text-sm text-gray-600">
+                                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                                         <div className="flex items-center gap-2">
                                             <FaCalendarAlt className="text-green-500 text-xs" />
                                             <span>{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
@@ -183,7 +183,7 @@ const WasteCollectionList = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-gray-100">
+                                    <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
                                         <Link to={`/customerDashboard/schedule/${ticket._id}`}
                                             className="flex items-center gap-1 text-xs text-blue-600 hover:underline">
                                             <FaEye size={12} /> View
@@ -204,38 +204,38 @@ const WasteCollectionList = () => {
                     <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Waste Type</th>
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Weight</th>
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Waste Type</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date & Time</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Weight</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                    <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filtered.map((ticket) => {
                                     const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
                                     return (
-                                        <tr key={ticket._id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={ticket._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
-                                                    <span className="text-sm font-medium text-gray-800">{ticket.wasteType || 'General'}</span>
+                                                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{ticket.wasteType || 'General'}</span>
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <p className="text-sm text-gray-800">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                                <p className="text-xs text-gray-500">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                                                <p className="text-sm text-gray-800 dark:text-gray-100">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <div className="flex items-center gap-1 text-sm text-gray-700">
+                                                <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
                                                     <FaMapMarkerAlt className="text-green-500 text-xs flex-shrink-0" />
                                                     <span className="truncate max-w-32">{ticket.location}</span>
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className="text-sm text-gray-700">
+                                                <span className="text-sm text-gray-700 dark:text-gray-200">
                                                     {ticket.estimatedWeight > 0 ? `${ticket.estimatedWeight} kg` : '—'}
                                                 </span>
                                             </td>
@@ -248,13 +248,13 @@ const WasteCollectionList = () => {
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-3">
                                                     <Link to={`/customerDashboard/schedule/${ticket._id}`}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View details">
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="View details">
                                                         <FaEye size={14} />
                                                     </Link>
                                                     <button
                                                         onClick={() => handleDelete(ticket._id)}
                                                         disabled={deletingId === ticket._id || ticket.status === 'Completed'}
-                                                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
+                                                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-30"
                                                         title="Delete">
                                                         <FaTrash size={14} />
                                                     </button>

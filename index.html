@@ -2,11 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./src/assets/images/recycling-truck.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="./src/assets/images/recycling-truck.png" sizes="16x16">
-    <link rel="apple-touch-icon" href="./src/assets/images/recycling-truck.png">
+    <link rel="icon" type="image/png" href="/favicon-64.png" sizes="64x64">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#065f46" />
+    <meta name="theme-color" content="#15803d" />
+    <script>
+      // Apply the saved (or system) theme before first paint to avoid a flash.
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) { /* storage unavailable */ }
+    </script>
     <title>Taka Kipawa | Sustainable Waste Management &amp; Upcycling Marketplace in Ghana</title>
     <meta name="description" content="Taka Kipawa (SWK Ghana) makes waste management effortless. Schedule pickups, shop upcycled products, and join a community building a cleaner, greener Ghana." />
     <meta property="og:type" content="website" />

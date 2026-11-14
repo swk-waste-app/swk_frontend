@@ -1,60 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { FaHome, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaBell, FaStore, FaShoppingBag, FaPlus, FaBookOpen } from 'react-icons/fa';
-import { apiGetUserStats } from '../../services/product';
+import { FaHome, FaTrashAlt, FaBlog, FaFileAlt, FaSignOutAlt, FaBars, FaTimes, FaStore, FaShoppingBag, FaPlus, FaBookOpen, FaRobot } from 'react-icons/fa';
+import NotificationBell from '../../components/NotificationBell';
+import ThemeToggle from '../../components/ThemeToggle';
 
 const SideBar = ({ profile, role }) => {
     const navigate = useNavigate();
     const [isSidebarOpen, setSidebarOpen] = useState(false);
-    const [notifications, setNotifications] = useState([]);
-    const [showNotifications, setShowNotifications] = useState(false);
     const location = useLocation();
-
-    useEffect(() => {
-        if (role !== 'admin') {
-            fetchNotifications();
-        }
-    }, [role]);
-
-    const fetchNotifications = async () => {
-        try {
-            const response = await apiGetUserStats();
-            const notifs = [];
-            if (response.data?.stats?.scheduledPickups > 0) {
-                notifs.push({
-                    id: 1,
-                    message: `You have ${response.data.stats.scheduledPickups} scheduled pickup${response.data.stats.scheduledPickups > 1 ? 's' : ''}`,
-                    type: 'pickup',
-                    time: 'Pending'
-                });
-            }
-            if (response.data?.stats?.inProgressPickups > 0) {
-                notifs.push({
-                    id: 2,
-                    message: `${response.data.stats.inProgressPickups} pickup${response.data.stats.inProgressPickups > 1 ? 's are' : ' is'} in progress`,
-                    type: 'progress',
-                    time: 'Active'
-                });
-            }
-            if (!response.data?.stats?.totalPickups) {
-                notifs.push({
-                    id: 3,
-                    message: 'Welcome! Schedule your first waste pickup',
-                    type: 'welcome',
-                    time: 'New'
-                });
-            }
-            setNotifications(notifs);
-        } catch (error) {
-            console.error('Error fetching notifications:', error);
-        }
-    };
 
     const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
     const LogOut = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
+        // The offline API cache holds this user's personal data; drop it so the
+        // next person on a shared device can never be served it.
+        if ('caches' in window) caches.delete('swk-api').catch(() => {});
         setTimeout(() => { navigate("/"); }, 1000);
     };
 
@@ -86,15 +48,9 @@ const overviewActive = role === 'admin'
                     {isSidebarOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
                 </button>
                 <h1 className="font-bold text-lg">Taka Kipawa</h1>
-                <div className="relative">
-                    <button onClick={() => setShowNotifications(!showNotifications)} className="relative">
-                        <FaBell size={20} />
-                        {notifications.length > 0 && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">
-                                {notifications.length}
-                            </span>
-                        )}
-                    </button>
+                <div className="flex items-center gap-1">
+                    <ThemeToggle className="text-white hover:bg-green-700" />
+                    <NotificationBell placement="header" />
                 </div>
             </div>
 
@@ -127,46 +83,12 @@ const overviewActive = role === 'admin'
                                 )}
                             </div>
                         </div>
-                        {/* Notification Bell — only for non-admin */}
-                        {role !== 'admin' && (
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowNotifications(!showNotifications)}
-                                    className="text-white hover:text-yellow-300 transition-colors relative">
-                                    <FaBell size={18} />
-                                    {notifications.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
-                                            {notifications.length}
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Notification Dropdown */}
-                    {showNotifications && role !== 'admin' && (
-                        <div className="mx-2 mt-2 bg-white rounded-xl shadow-lg overflow-hidden">
-                            <div className="p-3 bg-gray-50 border-b flex items-center justify-between">
-                                <p className="text-xs font-semibold text-gray-700">Notifications</p>
-                                <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600">
-                                    <FaTimes size={12} />
-                                </button>
-                            </div>
-                            {notifications.map(notif => (
-                                <div key={notif.id} className="p-3 border-b hover:bg-gray-50 flex items-start gap-2">
-                                    <span className="text-lg">
-                                        {notif.type === 'pickup' ? '🗓️' :
-                                         notif.type === 'progress' ? '🔄' : '👋'}
-                                    </span>
-                                    <div>
-                                        <p className="text-xs text-gray-700">{notif.message}</p>
-                                        <p className="text-xs text-green-600 mt-1">{notif.time}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        {/* Theme + real notifications (all roles) */}
+                        <div className="hidden lg:flex items-center gap-0.5">
+                            <ThemeToggle className="text-white hover:bg-green-700" />
+                            <NotificationBell placement="sidebar" />
                         </div>
-                    )}
+                    </div>
 
                     {/* Navigation */}
                     <nav className="mt-4 pb-20">
@@ -177,6 +99,15 @@ const overviewActive = role === 'admin'
                             }`}>
                                 <FaHome className="mr-3 text-sm" />
                                 <Link to={overviewPath} onClick={() => setSidebarOpen(false)} className="block w-full">Overview</Link>
+                            </li>
+
+                            {/* AI Scanner — all roles */}
+                            <li className={navLinkClass("/scan")}>
+                                <FaRobot className="mr-3 text-sm" />
+                                <Link to="/customerDashboard/scan" onClick={() => setSidebarOpen(false)} className="block w-full flex items-center justify-between">
+                                    AI Scanner
+                                    <span className="text-[9px] font-bold uppercase tracking-wider bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded-full">New</span>
+                                </Link>
                             </li>
 
                             {/* User Links */}

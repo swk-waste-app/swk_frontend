@@ -77,17 +77,17 @@ const ScheduleDetailPage = () => {
   if (!schedule) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl text-gray-600">Schedule not found</p>
+        <p className="text-xl text-gray-600 dark:text-gray-300">Schedule not found</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+    <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
 
       {/* Back Button */}
       <button onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+        className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
         <FaArrowLeft /> Back to Waste Collection
       </button>
 
@@ -116,21 +116,21 @@ const ScheduleDetailPage = () => {
       </div>
 
       {/* Status Tracker */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">📍 Pickup Progress</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-6">📍 Pickup Progress</h2>
         <div className="relative">
           <div className="flex items-center justify-between">
             {STATUS_STEPS.map((step, index) => (
               <div key={step} className="flex flex-col items-center flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 ${
                   index < currentStep ? 'bg-green-500 border-green-500 text-white' :
-                  index === currentStep ? 'bg-white border-green-500 text-green-600' :
-                  'bg-gray-100 border-gray-300 text-gray-400'
+                  index === currentStep ? 'bg-white dark:bg-gray-900 border-green-500 text-green-600' :
+                  'bg-gray-100 dark:bg-gray-800 border-gray-300 text-gray-400 dark:text-gray-500'
                 }`}>
                   {index < currentStep ? '✓' : index + 1}
                 </div>
                 <p className={`text-xs mt-2 font-medium text-center ${
-                  index <= currentStep ? 'text-green-600' : 'text-gray-400'
+                  index <= currentStep ? 'text-green-600' : 'text-gray-400 dark:text-gray-500'
                 }`}>{step}</p>
                 {index < STATUS_STEPS.length - 1 && (
                   <div className={`absolute h-0.5 top-5 ${
@@ -155,52 +155,52 @@ const ScheduleDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Pickup Details */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">📋 Pickup Details</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">📋 Pickup Details</h2>
           <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
               <FaCalendar className="text-green-500 mt-1" />
               <div>
-                <p className="text-xs text-gray-500">Pickup Date & Time</p>
-                <p className="font-medium text-gray-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Pickup Date & Time</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">
                   {new Date(schedule.pickupDate).toLocaleDateString('en-GB', {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
                   })}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {new Date(schedule.pickupDate).toLocaleTimeString('en-GB', {
                     hour: '2-digit', minute: '2-digit'
                   })}
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
               <FaMapMarkerAlt className="text-green-500 mt-1" />
               <div>
-                <p className="text-xs text-gray-500">Location</p>
-                <p className="font-medium text-gray-800">{schedule.location}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Location</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{schedule.location}</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
               <FaRecycle className="text-green-500 mt-1" />
               <div>
-                <p className="text-xs text-gray-500">Waste Type</p>
-                <p className="font-medium text-gray-800">{schedule.wasteType || 'General'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Waste Type</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100">{schedule.wasteType || 'General'}</p>
               </div>
             </div>
             {schedule.estimatedWeight > 0 && (
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
                 <FaWeight className="text-green-500 mt-1" />
                 <div>
-                  <p className="text-xs text-gray-500">Estimated Weight</p>
-                  <p className="font-medium text-gray-800">{schedule.estimatedWeight} kg</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Estimated Weight</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100">{schedule.estimatedWeight} kg</p>
                 </div>
               </div>
             )}
             {schedule.notes && (
-              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
                 <p className="text-xs text-blue-500 mb-1">Notes</p>
-                <p className="text-sm text-gray-700">{schedule.notes}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">{schedule.notes}</p>
               </div>
             )}
           </div>
@@ -209,44 +209,44 @@ const ScheduleDetailPage = () => {
         {/* Contact & Points */}
         <div className="space-y-6">
           {/* Contact Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">👤 Contact Information</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">👤 Contact Information</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                   <FaUser className="text-green-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Name</p>
-                  <p className="font-medium text-gray-800">{userProfile?.name || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Name</p>
+                  <p className="font-medium text-gray-800 dark:text-gray-100">{userProfile?.name || 'N/A'}</p>
                 </div>
               </div>
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-500">Email</p>
-                <p className="text-sm text-gray-800">{userProfile?.email || 'N/A'}</p>
+              <div className="p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
+                <p className="text-sm text-gray-800 dark:text-gray-100">{userProfile?.email || 'N/A'}</p>
               </div>
-              <div className="p-3 bg-gray-50 rounded-xl">
-                <p className="text-xs text-gray-500">Phone</p>
-                <p className="text-sm text-gray-800">{userProfile?.contactNumber || 'Not provided'}</p>
+              <div className="p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
+                <p className="text-sm text-gray-800 dark:text-gray-100">{userProfile?.contactNumber || 'Not provided'}</p>
               </div>
             </div>
           </div>
 
           {/* Points Preview */}
-          <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-6 border border-green-200">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">🏆 Points Preview</h2>
+          <div className="bg-gradient-to-r from-green-50 dark:from-green-950/50 to-teal-50 dark:to-teal-950/50 rounded-2xl p-6 border border-green-200 dark:border-green-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">🏆 Points Preview</h2>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold text-green-600">~{estimatedPoints}</p>
-                <p className="text-sm text-gray-600">points on completion</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">points on completion</p>
               </div>
-              <div className="text-right text-sm text-gray-500">
+              <div className="text-right text-sm text-gray-500 dark:text-gray-400">
                 <p>Based on {schedule.estimatedWeight || 5}kg</p>
                 <p>10 pts per kg</p>
               </div>
             </div>
             {schedule.status !== 'Completed' && (
-              <p className="text-xs text-green-600 mt-3 bg-green-100 px-3 py-2 rounded-lg">
+              <p className="text-xs text-green-600 mt-3 bg-green-100 dark:bg-green-900/30 px-3 py-2 rounded-lg">
                 ✨ Complete this pickup to earn your points and level up!
               </p>
             )}
@@ -254,15 +254,15 @@ const ScheduleDetailPage = () => {
 
           {/* Rating (only if completed) */}
           {schedule.status === 'Completed' && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">⭐ Rate this Pickup</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">⭐ Rate this Pickup</h2>
               {ratingSubmitted || schedule.rating ? (
                 <p className="text-center text-sm text-green-600">
                   You rated this {schedule.rating || rating} star{(schedule.rating || rating) > 1 ? 's' : ''} ✓
                 </p>
               ) : (
                 <>
-                  <p className="text-sm text-gray-500 mb-4">How was your pickup experience?</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">How was your pickup experience?</p>
                   <div className="flex gap-2 justify-center mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -281,7 +281,7 @@ const ScheduleDetailPage = () => {
                     onChange={(e) => setFeedback(e.target.value)}
                     placeholder="Leave a comment (optional)..."
                     rows={3}
-                    className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-300 mb-3"
+                    className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-green-300 mb-3"
                   />
                   <button
                     onClick={handleSubmitRating}
@@ -333,14 +333,14 @@ const ScheduleDetailPage = () => {
                 }
               }
             }}
-            className="flex-1 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl font-medium hover:bg-red-100 transition-colors">
+            className="flex-1 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800 rounded-xl font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
             ✕ Cancel Pickup
           </button>
         </div>
       )}
 
       {/* Schedule ID Footer */}
-      <div className="text-center text-xs text-gray-400 pb-4">
+      <div className="text-center text-xs text-gray-400 dark:text-gray-500 pb-4">
         Schedule ID: {schedule._id}
       </div>
     </div>

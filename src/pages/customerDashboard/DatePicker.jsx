@@ -79,7 +79,7 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
 
                         {/* Modal Header */}
                         <div className="bg-gradient-to-r from-green-600 to-teal-500 p-6 text-white">
@@ -99,7 +99,7 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
 
                             {/* Pickup Date */}
                             <div>
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">📅 Pickup Date & Time</label>
+                                <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">📅 Pickup Date & Time</label>
                                 <DatePicker
                                     selected={pickupDate}
                                     onChange={(date) => setPickupDate(date)}
@@ -107,22 +107,22 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
                                     dateFormat="Pp"
                                     minDate={new Date()}
                                     placeholderText="Select date and time"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                                     required
                                 />
                             </div>
 
                             {/* Location */}
                             <div>
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">📍 Location</label>
+                                <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">📍 Location</label>
                                 <div className="relative">
-                                    <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
+                                    <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
                                     <input
                                         type="text"
                                         value={location}
                                         onChange={(e) => setLocation(e.target.value)}
                                         placeholder="Enter your pickup location"
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                                         required
                                     />
                                 </div>
@@ -130,11 +130,11 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
 
                             {/* Waste Type */}
                             <div>
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">♻️ Waste Type</label>
+                                <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">♻️ Waste Type</label>
                                 <select
                                     value={wasteType}
                                     onChange={(e) => setWasteType(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                                 >
                                     {WASTE_TYPES.map(type => (
                                         <option key={type} value={type}>{type}</option>
@@ -144,14 +144,14 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
 
                             {/* Estimated Weight */}
                             <div>
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">⚖️ Estimated Weight (kg) <span className="text-gray-400 font-normal">Optional</span></label>
+                                <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">⚖️ Estimated Weight (kg) <span className="text-gray-400 dark:text-gray-500 font-normal">Optional</span></label>
                                 <input
                                     type="number"
                                     value={estimatedWeight}
                                     onChange={(e) => setEstimatedWeight(e.target.value)}
                                     placeholder="e.g. 5"
                                     min="0"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                                 />
                                 {estimatedWeight > 0 && (
                                     <p className="text-xs text-green-600 mt-1">
@@ -162,13 +162,13 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
 
                             {/* Notes */}
                             <div>
-                                <label className="block text-gray-700 text-sm font-semibold mb-2">📝 Notes <span className="text-gray-400 font-normal">Optional</span></label>
+                                <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">📝 Notes <span className="text-gray-400 dark:text-gray-500 font-normal">Optional</span></label>
                                 <textarea
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     placeholder="Any special instructions for the pickup agent..."
                                     rows={2}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 resize-none"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 resize-none"
                                 />
                             </div>
 
@@ -177,7 +177,7 @@ const WasteSchedulePage = ({ onScheduleAdded }) => {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                                    className="flex-1 py-2 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
                                 >
                                     Cancel
                                 </button>

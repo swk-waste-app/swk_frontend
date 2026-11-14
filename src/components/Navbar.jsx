@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import logo from '../assets/images/SWK_LOGO__5_.png';
+import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
@@ -32,14 +33,14 @@ const Navbar = ({ forceSolid = false }) => {
   const linkClass = ({ isActive }) =>
     `text-sm font-semibold transition-colors duration-200 ${
       scrolled
-        ? isActive ? 'text-green-700' : 'text-gray-700 hover:text-green-700'
+        ? isActive ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-300'
         : isActive ? 'text-white' : 'text-white/90 hover:text-white'
     }`;
 
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
+        scrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
       }`}
     >
       <nav className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
@@ -56,11 +57,14 @@ const Navbar = ({ forceSolid = false }) => {
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
+          <ThemeToggle
+            className={scrolled ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-white hover:bg-white/10'}
+          />
           <Link
             to="/signin"
             className={`text-sm font-semibold px-5 py-2.5 rounded-full border transition-all duration-200 ${
               scrolled
-                ? 'border-green-700 text-green-700 hover:bg-green-50'
+                ? 'border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
                 : 'border-white/70 text-white hover:bg-white/10'
             }`}
           >
@@ -74,34 +78,39 @@ const Navbar = ({ forceSolid = false }) => {
           </Link>
         </div>
 
-        <button
-          type="button"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          onClick={() => setMenuOpen((v) => !v)}
-          className={`lg:hidden p-2 rounded-lg ${scrolled ? 'text-green-800' : 'text-white'}`}
-        >
-          {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
-        </button>
+        <div className="lg:hidden flex items-center gap-1">
+          <ThemeToggle
+            className={scrolled ? 'text-gray-600 dark:text-gray-300' : 'text-white'}
+          />
+          <button
+            type="button"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen((v) => !v)}
+            className={`p-2 rounded-lg ${scrolled ? 'text-green-800 dark:text-green-300' : 'text-white'}`}
+          >
+            {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+          </button>
+        </div>
       </nav>
 
       {menuOpen && (
-        <div className="lg:hidden absolute top-full inset-x-0 bg-white shadow-xl border-t border-gray-100 animate-fade-in">
+        <div className="lg:hidden absolute top-full inset-x-0 bg-white dark:bg-gray-900 shadow-xl border-t border-gray-100 dark:border-gray-800 animate-fade-in">
           <div className="flex flex-col px-6 py-6 gap-5">
             {NAV_LINKS.map((link) => (
               <NavLink
                 key={link.label}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className="text-gray-700 font-semibold text-base hover:text-green-700"
+                className="text-gray-700 dark:text-gray-200 font-semibold text-base hover:text-green-700 dark:hover:text-green-300"
               >
                 {link.label}
               </NavLink>
             ))}
-            <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
               <Link
                 to="/signin"
                 onClick={() => setMenuOpen(false)}
-                className="text-center text-sm font-semibold px-5 py-3 rounded-full border border-green-700 text-green-700"
+                className="text-center text-sm font-semibold px-5 py-3 rounded-full border border-green-700 text-green-700 dark:text-green-400"
               >
                 Sign In
               </Link>

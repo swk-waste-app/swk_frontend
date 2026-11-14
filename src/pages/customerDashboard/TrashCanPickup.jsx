@@ -22,14 +22,14 @@ const TIPS = [
 
 const TrashCanPlacement = () => {
   return (
-    <section className="bg-white py-24 lg:py-28 px-5">
+    <section className="bg-white dark:bg-gray-900 py-24 lg:py-28 px-5">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
         <Reveal>
           <p className="text-green-600 font-bold uppercase text-sm tracking-widest">Pro Tip</p>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-green-800 mt-3 leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-green-800 dark:text-green-300 mt-3 leading-tight">
             The Placement of Your Trash Can Matters
           </h1>
-          <p className="text-lg text-gray-600 mt-5 leading-relaxed">
+          <p className="text-lg text-gray-600 dark:text-gray-300 mt-5 leading-relaxed">
             Positioning your bin correctly ensures efficient collection of garbage, recyclables and yard
             waste &mdash; and keeps our crews safe.
           </p>
@@ -37,12 +37,12 @@ const TrashCanPlacement = () => {
           <div className="mt-9 space-y-5">
             {TIPS.map(({ icon: Icon, title, text }) => (
               <div key={title} className="flex items-start gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                   <Icon size={18} />
                 </span>
                 <div>
-                  <h3 className="font-bold text-gray-900">{title}</h3>
-                  <p className="text-gray-600 text-sm mt-1 leading-relaxed">{text}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-50">{title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 leading-relaxed">{text}</p>
                 </div>
               </div>
             ))}
@@ -50,7 +50,7 @@ const TrashCanPlacement = () => {
         </Reveal>
 
         <Reveal delay={150} className="relative">
-          <div className="absolute -inset-4 rounded-3xl bg-green-50 -z-10 hidden sm:block" />
+          <div className="absolute -inset-4 rounded-3xl bg-green-50 dark:bg-green-900/20 -z-10 hidden sm:block" />
           <div className="mx-auto rounded-2xl shadow-lg w-full max-w-lg overflow-hidden ring-1 ring-green-100">
             <TrashCanDiagram />
           </div>

@@ -70,7 +70,7 @@ const VendorDashboard = () => {
     const vendorRank = leaderboard.findIndex(u => u.name === vendorName) + 1;
 
     return (
-        <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
 
             {/* Header Banner */}
             <div className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -85,7 +85,7 @@ const VendorDashboard = () => {
                         <p className="text-green-200 text-sm mt-1">{vendorName || 'Vendor'}&apos;s Upcycling Store</p>
                     </div>
                     {vendorRank > 0 && (
-                        <div className="bg-white bg-opacity-20 rounded-xl px-4 py-3 text-center">
+                        <div className="bg-white dark:bg-gray-900 bg-opacity-20 rounded-xl px-4 py-3 text-center">
                             <p className="text-green-200 text-xs">Community Rank</p>
                             <p className="text-white font-bold text-2xl">#{vendorRank}</p>
                         </div>
@@ -106,36 +106,36 @@ const VendorDashboard = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <Link to="/customerDashboard/addProduct"
-                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
                         <FaPlus className="text-green-600 group-hover:text-white" />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500">Action</p>
-                        <p className="text-sm font-semibold text-gray-800">Add Product</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Action</p>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Add Product</p>
                     </div>
                     <FaArrowRight className="text-gray-300 ml-auto group-hover:text-green-600 transition-colors" />
                 </Link>
                 <Link to="/customerDashboard/vendorProduct"
-                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center group-hover:bg-teal-600 transition-colors">
+                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
+                    <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center group-hover:bg-teal-600 transition-colors">
                         <FaStore className="text-teal-600 group-hover:text-white" />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500">Manage</p>
-                        <p className="text-sm font-semibold text-gray-800">My Products</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Manage</p>
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">My Products</p>
                     </div>
                     <FaArrowRight className="text-gray-300 ml-auto group-hover:text-teal-600 transition-colors" />
                 </Link>
                 {vendorId && (
                     <Link to={`/customerDashboard/store/${vendorId}`}
-                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
+                        className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
                             <FaShoppingBag className="text-purple-600 group-hover:text-white" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500">Public</p>
-                            <p className="text-sm font-semibold text-gray-800">My Store</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Public</p>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">My Store</p>
                         </div>
                         <FaArrowRight className="text-gray-300 ml-auto group-hover:text-purple-600 transition-colors" />
                     </Link>
@@ -144,41 +144,41 @@ const VendorDashboard = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-600">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-green-600">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase tracking-wider">Total Products</p>
-                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalProducts}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Total Products</p>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{totalProducts}</h3>
                             <p className="text-xs text-green-600 mt-1">{availableProducts} available</p>
                         </div>
                         <FaBoxOpen className="text-green-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase tracking-wider">Total Views</p>
-                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalViews}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Total Views</p>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{totalViews}</h3>
                             <p className="text-xs text-blue-600 mt-1">Across all products</p>
                         </div>
                         <FaEye className="text-blue-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase tracking-wider">Items Sold</p>
-                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{totalSold}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Items Sold</p>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{totalSold}</h3>
                             <p className="text-xs text-orange-600 mt-1">All time</p>
                         </div>
                         <FaStore className="text-orange-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase tracking-wider">Revenue</p>
-                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mt-1">GH₵ {totalRevenue.toFixed(2)}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Revenue</p>
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">GH₵ {totalRevenue.toFixed(2)}</h3>
                             <p className="text-xs text-purple-600 mt-1">Avg price: GH₵ {avgPrice}</p>
                         </div>
                         <FaMoneyBillWave className="text-purple-500 text-2xl opacity-80" />
@@ -187,26 +187,26 @@ const VendorDashboard = () => {
             </div>
 
             {/* Upcycling Impact */}
-            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 border border-green-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">🌍 Your Upcycling Impact</h3>
+            <div className="bg-gradient-to-r from-green-50 dark:from-green-950/50 to-teal-50 dark:to-teal-950/50 rounded-xl p-6 border border-green-200 dark:border-green-800">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🌍 Your Upcycling Impact</h3>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="text-center">
                         <p className="text-3xl font-bold text-green-600">{upcycledProducts}</p>
-                        <p className="text-xs text-gray-600 mt-1">♻️ Upcycled Products</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">♻️ Upcycled Products</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-blue-600">{outOfStock}</p>
-                        <p className="text-xs text-gray-600 mt-1">📦 Out of Stock</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">📦 Out of Stock</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-yellow-600">
                             {totalProducts > 0 ? Math.round((upcycledProducts / totalProducts) * 100) : 0}%
                         </p>
-                        <p className="text-xs text-gray-600 mt-1">🌱 Upcycled Rate</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">🌱 Upcycled Rate</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-teal-600">{categoryData.length}</p>
-                        <p className="text-xs text-gray-600 mt-1">🏷️ Categories</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">🏷️ Categories</p>
                     </div>
                 </div>
             </div>
@@ -215,8 +215,8 @@ const VendorDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                 {/* Category Breakdown Chart */}
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 Products by Category</h3>
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">📊 Products by Category</h3>
                     {categoryData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={categoryData}>
@@ -228,7 +228,7 @@ const VendorDashboard = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                        <div className="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-gray-500">
                             <FaStore className="text-4xl mb-2 opacity-30" />
                             <p>No products yet</p>
                             <Link to="/customerDashboard/addProduct"
@@ -240,9 +240,9 @@ const VendorDashboard = () => {
                 </div>
 
                 {/* Top Products by Views */}
-                <div className="bg-white rounded-xl p-6 shadow-sm">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">👁️ Top Products</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">👁️ Top Products</h3>
                         <Link to="/customerDashboard/vendorProduct"
                             className="text-green-600 text-sm hover:underline">View all →</Link>
                     </div>
@@ -250,7 +250,7 @@ const VendorDashboard = () => {
                         <div className="space-y-3">
                             {topProducts.map((product, index) => (
                                 <div key={product._id || index}
-                                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
                                         index === 0 ? 'bg-yellow-400' :
                                         index === 1 ? 'bg-gray-400' : 'bg-orange-400'
@@ -258,18 +258,18 @@ const VendorDashboard = () => {
                                         {index + 1}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-800 truncate">{product.title}</p>
-                                        <p className="text-xs text-gray-500">{product.category} • GH₵ {product.price}</p>
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{product.title}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{product.category} • GH₵ {product.price}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-bold text-green-600">{product.views || 0} views</p>
-                                        <p className="text-xs text-gray-500">{product.sold || 0} sold</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{product.sold || 0} sold</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-8 text-gray-400">
+                        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
                             <FaBoxOpen className="text-4xl mx-auto mb-2 opacity-30" />
                             <p>No products yet</p>
                         </div>
@@ -279,9 +279,9 @@ const VendorDashboard = () => {
 
             {/* All Products Summary */}
             {products.length > 0 && (
-                <div className="bg-white rounded-xl p-6 shadow-sm">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800">📦 Product Inventory</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">📦 Product Inventory</h3>
                         <Link to="/customerDashboard/addProduct"
                             className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
                             <FaPlus size={10} /> Add New
@@ -290,9 +290,9 @@ const VendorDashboard = () => {
                     <div className="space-y-3">
                         {products.slice(0, 5).map((product, index) => (
                             <div key={product._id || index}
-                                className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-950 rounded-xl">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center overflow-hidden">
+                                    <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center overflow-hidden">
                                         {product.image ? (
                                             <img
                                                 src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_400,q_auto,f_auto/${product.image}`}
@@ -305,24 +305,24 @@ const VendorDashboard = () => {
                                         )}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-800">{product.title}</p>
-                                        <p className="text-xs text-gray-500">{product.category}</p>
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{product.title}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{product.category}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 text-right">
                                     <div>
                                         <p className="text-sm font-bold text-green-600">GH₵ {product.price}</p>
-                                        <p className="text-xs text-gray-500">{product.inventory} in stock</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{product.inventory} in stock</p>
                                     </div>
                                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                                         product.inventory > 0
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-red-100 text-red-700'
+                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                            : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                     }`}>
                                         {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
                                     </span>
                                     {product.isUpcycled && (
-                                        <span className="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded-full">
+                                        <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 px-2 py-1 rounded-full">
                                             ♻️ Upcycled
                                         </span>
                                     )}

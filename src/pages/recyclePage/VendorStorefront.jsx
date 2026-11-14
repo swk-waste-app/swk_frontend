@@ -62,23 +62,23 @@ const VendorStorefront = () => {
     const upcycledCount = products.filter(p => p.isUpcycled).length;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-8">
             <div className="p-4 space-y-6">
 
                 {/* Back */}
                 <button onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+                    className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
                     <FaArrowLeft /> Back to Marketplace
                 </button>
 
                 {/* Vendor Header */}
                 <div className="rounded-2xl p-6 text-white relative overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
-                    <div className="absolute -right-6 -top-6 w-40 h-40 bg-white opacity-5 rounded-full" />
-                    <div className="absolute -right-2 top-8 w-24 h-24 bg-white opacity-5 rounded-full" />
+                    <div className="absolute -right-6 -top-6 w-40 h-40 bg-white dark:bg-gray-900 opacity-5 rounded-full" />
+                    <div className="absolute -right-2 top-8 w-24 h-24 bg-white dark:bg-gray-900 opacity-5 rounded-full" />
 
                     <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 border-2 border-white border-opacity-40 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                        <div className="w-16 h-16 rounded-full bg-white dark:bg-gray-900 bg-opacity-20 border-2 border-white border-opacity-40 flex items-center justify-center text-2xl font-bold flex-shrink-0">
                             {vendor?.name?.[0]?.toUpperCase() || '?'}
                         </div>
                         <div>
@@ -96,17 +96,17 @@ const VendorStorefront = () => {
 
                     {/* Stats row */}
                     <div className="mt-5 grid grid-cols-3 gap-4 relative z-10">
-                        <div className="bg-white bg-opacity-10 rounded-xl p-3 text-center">
+                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
                             <FaBoxOpen className="mx-auto mb-1 text-green-200" />
                             <p className="text-xl font-bold">{vendor?.totalProducts || 0}</p>
                             <p className="text-green-200 text-xs">Products</p>
                         </div>
-                        <div className="bg-white bg-opacity-10 rounded-xl p-3 text-center">
+                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
                             <FaShoppingBag className="mx-auto mb-1 text-green-200" />
                             <p className="text-xl font-bold">{vendor?.totalSold || 0}</p>
                             <p className="text-green-200 text-xs">Items Sold</p>
                         </div>
-                        <div className="bg-white bg-opacity-10 rounded-xl p-3 text-center">
+                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
                             <FaRecycle className="mx-auto mb-1 text-green-200" />
                             <p className="text-xl font-bold">{upcycledCount}</p>
                             <p className="text-green-200 text-xs">Upcycled</p>
@@ -116,16 +116,16 @@ const VendorStorefront = () => {
 
                 {/* Search */}
                 <div className="relative">
-                    <FaSearch className="absolute left-4 top-3.5 text-gray-400" />
+                    <FaSearch className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" />
                     <input
                         type="text"
                         placeholder={`Search in ${vendor?.name || 'this'} store...`}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-11 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 bg-white shadow-sm"
+                        className="w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 shadow-sm"
                     />
                     {search && (
-                        <button onClick={() => setSearch('')} className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600">
+                        <button onClick={() => setSearch('')} className="absolute right-4 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600">
                             <FaTimes />
                         </button>
                     )}
@@ -136,19 +136,19 @@ const VendorStorefront = () => {
                     <button
                         onClick={() => setUpcycledOnly(u => !u)}
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                            upcycledOnly ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'
+                            upcycledOnly ? 'bg-green-600 text-white' : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
                         }`}>
                         <FaRecycle size={12} /> Upcycled Only
                     </button>
                     <select
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-full text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                        className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
                         <option value="newest">Newest First</option>
                         <option value="price_low">Price: Low to High</option>
                         <option value="price_high">Price: High to Low</option>
                     </select>
-                    <p className="ml-auto text-sm text-gray-500">
+                    <p className="ml-auto text-sm text-gray-500 dark:text-gray-400">
                         {filtered.length} product{filtered.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -173,9 +173,9 @@ const VendorStorefront = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 text-gray-400">
+                    <div className="text-center py-20 text-gray-400 dark:text-gray-500">
                         <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
-                        <p className="font-medium text-gray-500">
+                        <p className="font-medium text-gray-500 dark:text-gray-400">
                             {search ? 'No products match your search' : 'No products listed yet'}
                         </p>
                         {search && (

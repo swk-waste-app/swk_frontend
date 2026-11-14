@@ -44,6 +44,7 @@ const CustDushboardLayout = () => {
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("role");
+          if ('caches' in window) caches.delete('swk-api').catch(() => {});
           navigate("/signin");
         }
       } finally {
@@ -62,7 +63,7 @@ const CustDushboardLayout = () => {
       {isloading || isBlocked ? (
         <p>Loading...</p>
       ) : (
-        <div className='bg-gray-50 min-h-screen'>
+        <div className='bg-gray-50 dark:bg-gray-950 min-h-screen'>
           <SideBar profile={profile} role={role} />
         </div>
       )}

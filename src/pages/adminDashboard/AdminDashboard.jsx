@@ -4,10 +4,10 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch } from 'react-icons/
 import Swal from 'sweetalert2';
 
 const STATUS_COLORS = {
-    'Scheduled': { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
-    'In Progress': { bg: 'bg-yellow-100', text: 'text-yellow-700', dot: 'bg-yellow-500' },
-    'Completed': { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-    'Cancelled': { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+    'Scheduled': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+    'In Progress': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-500' },
+    'Completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+    'Cancelled': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
 };
 
 const WASTE_TYPE_EMOJI = {
@@ -84,7 +84,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
 
             {/* Header */}
             <div className="rounded-2xl p-6 text-white"
@@ -101,44 +101,44 @@ const AdminDashboard = () => {
 
             {/* Status Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100 cursor-pointer hover:shadow-md transition-shadow"
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center border border-blue-100 dark:border-blue-800 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => setStatusFilter('Scheduled')}>
                     <p className="text-3xl font-bold text-blue-600">{tickets.filter(t => t.status === 'Scheduled').length}</p>
-                    <p className="text-sm text-blue-700 mt-1">🗓️ Scheduled</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">🗓️ Scheduled</p>
                 </div>
-                <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100 cursor-pointer hover:shadow-md transition-shadow"
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 text-center border border-yellow-100 dark:border-yellow-800 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => setStatusFilter('In Progress')}>
                     <p className="text-3xl font-bold text-yellow-600">{tickets.filter(t => t.status === 'In Progress').length}</p>
-                    <p className="text-sm text-yellow-700 mt-1">🔄 In Progress</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">🔄 In Progress</p>
                 </div>
-                <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100 cursor-pointer hover:shadow-md transition-shadow"
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border border-green-100 dark:border-green-800 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => setStatusFilter('Completed')}>
                     <p className="text-3xl font-bold text-green-600">{tickets.filter(t => t.status === 'Completed').length}</p>
-                    <p className="text-sm text-green-700 mt-1">✅ Completed</p>
+                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">✅ Completed</p>
                 </div>
-                <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100 cursor-pointer hover:shadow-md transition-shadow"
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border border-red-100 dark:border-red-800 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => setStatusFilter('Cancelled')}>
                     <p className="text-3xl font-bold text-red-600">{tickets.filter(t => t.status === 'Cancelled').length}</p>
-                    <p className="text-sm text-red-700 mt-1">❌ Cancelled</p>
+                    <p className="text-sm text-red-700 dark:text-red-400 mt-1">❌ Cancelled</p>
                 </div>
             </div>
 
             {/* Search and Filter */}
-            <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center">
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center">
                 <div className="relative flex-1">
-                    <FaSearch className="absolute left-3 top-3 text-gray-400 text-sm" />
+                    <FaSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-500 text-sm" />
                     <input
                         type="text"
                         placeholder="Search by location or waste type..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                        className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                     />
                 </div>
                 <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500">
                     <option value="All">All Status</option>
                     <option value="Scheduled">Scheduled</option>
                     <option value="In Progress">In Progress</option>
@@ -147,17 +147,17 @@ const AdminDashboard = () => {
                 </select>
                 {statusFilter !== 'All' && (
                     <button onClick={() => setStatusFilter('All')}
-                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm hover:bg-gray-200">
+                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl text-sm hover:bg-gray-200">
                         Clear Filter
                     </button>
                 )}
             </div>
 
             {/* Tickets Table */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                 <div className="p-4 border-b flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800">All Pickup Tickets</h3>
-                    <span className="text-sm text-gray-500">{filtered.length} results</span>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">All Pickup Tickets</h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} results</span>
                 </div>
 
                 {/* Mobile Cards */}
@@ -165,13 +165,13 @@ const AdminDashboard = () => {
                     {filtered.map(ticket => {
                         const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
                         return (
-                            <div key={ticket._id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                            <div key={ticket._id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 hover:shadow-md transition-shadow">
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
                                         <div>
-                                            <p className="font-medium text-gray-800 text-sm">{ticket.wasteType || 'General Waste'}</p>
-                                            <p className="text-xs text-gray-400">ID: {ticket._id?.slice(-8)}</p>
+                                            <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{ticket.wasteType || 'General Waste'}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">ID: {ticket._id?.slice(-8)}</p>
                                         </div>
                                     </div>
                                     <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
@@ -179,7 +179,7 @@ const AdminDashboard = () => {
                                         {ticket.status}
                                     </span>
                                 </div>
-                                <div className="space-y-1 text-sm text-gray-600 mb-3">
+                                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-3">
                                     <div className="flex items-center gap-2">
                                         <FaCalendarAlt className="text-green-500 text-xs" />
                                         <span>{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -192,15 +192,15 @@ const AdminDashboard = () => {
                                 {ticket.status !== 'Completed' && ticket.status !== 'Cancelled' && (
                                     <div className="flex gap-2">
                                         <button onClick={() => handleStatusChange(ticket._id, 'In Progress')}
-                                            className="flex-1 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-medium hover:bg-yellow-200">
+                                            className="flex-1 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs font-medium hover:bg-yellow-200">
                                             🔄 In Progress
                                         </button>
                                         <button onClick={() => handleStatusChange(ticket._id, 'Completed')}
-                                            className="flex-1 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200">
+                                            className="flex-1 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium hover:bg-green-200">
                                             ✅ Complete
                                         </button>
                                         <button onClick={() => handleStatusChange(ticket._id, 'Cancelled')}
-                                            className="flex-1 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200">
+                                            className="flex-1 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-200">
                                             ❌ Cancel
                                         </button>
                                     </div>
@@ -214,38 +214,38 @@ const AdminDashboard = () => {
                 <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full">
                         <thead>
-                            <tr className="bg-gray-50 border-b">
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Waste Type</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Location</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Weight</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                            <tr className="bg-gray-50 dark:bg-gray-950 border-b">
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Waste Type</th>
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Location</th>
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Weight</th>
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filtered.map(ticket => {
                                 const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
                                 return (
-                                    <tr key={ticket._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={ticket._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
-                                                <span className="text-sm font-medium text-gray-800">{ticket.wasteType || 'General Waste'}</span>
+                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{ticket.wasteType || 'General Waste'}</span>
                                             </div>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <p className="text-sm text-gray-800">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                            <p className="text-xs text-gray-400">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
+                                            <p className="text-sm text-gray-800 dark:text-gray-100">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <div className="flex items-center gap-1 text-sm text-gray-700">
+                                            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
                                                 <FaMapMarkerAlt className="text-green-500 text-xs flex-shrink-0" />
                                                 <span className="truncate max-w-xs">{ticket.location}</span>
                                             </div>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className="text-sm text-gray-700">
+                                            <span className="text-sm text-gray-700 dark:text-gray-200">
                                                 {ticket.estimatedWeight > 0 ? `${ticket.estimatedWeight} kg` : '—'}
                                             </span>
                                         </td>
@@ -259,20 +259,20 @@ const AdminDashboard = () => {
                                             {ticket.status !== 'Completed' && ticket.status !== 'Cancelled' ? (
                                                 <div className="flex gap-2">
                                                     <button onClick={() => handleStatusChange(ticket._id, 'In Progress')}
-                                                        className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-medium hover:bg-yellow-200 transition-colors">
+                                                        className="px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs font-medium hover:bg-yellow-200 transition-colors">
                                                         🔄 In Progress
                                                     </button>
                                                     <button onClick={() => handleStatusChange(ticket._id, 'Completed')}
-                                                        className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
+                                                        className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
                                                         ✅ Complete
                                                     </button>
                                                     <button onClick={() => handleStatusChange(ticket._id, 'Cancelled')}
-                                                        className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors">
+                                                        className="px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors">
                                                         ❌ Cancel
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-400 italic">No actions available</span>
+                                                <span className="text-xs text-gray-400 dark:text-gray-500 italic">No actions available</span>
                                             )}
                                         </td>
                                     </tr>
@@ -283,7 +283,7 @@ const AdminDashboard = () => {
                 </div>
 
                 {filtered.length === 0 && (
-                    <div className="text-center py-16 text-gray-400">
+                    <div className="text-center py-16 text-gray-400 dark:text-gray-500">
                         <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
                         <p className="font-medium">No tickets found</p>
                         <p className="text-sm mt-1">Try adjusting your search or filter</p>

@@ -41,7 +41,7 @@ const AdminLogin = () => {
             <div className="w-full max-w-md">
 
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
 
                     {/* Header Banner */}
                     <div className="bg-gradient-to-r from-green-800 to-green-600 p-8 flex flex-col items-center">
@@ -55,39 +55,39 @@ const AdminLogin = () => {
 
                     {/* Form */}
                     <div className="p-8 space-y-4">
-                        <p className="text-gray-500 text-sm text-center">Sign in with your admin credentials</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Sign in with your admin credentials</p>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-3">
-                                <AiOutlineMail className="text-gray-400 w-5 h-5 mr-2 flex-shrink-0" />
+                            <div className="flex items-center bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
+                                <AiOutlineMail className="text-gray-400 dark:text-gray-500 w-5 h-5 mr-2 flex-shrink-0" />
                                 <input
                                     type="email"
                                     name="email"
                                     placeholder="Admin email"
                                     required
-                                    className="bg-transparent w-full focus:outline-none text-gray-700 text-sm"
+                                    className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200 text-sm"
                                 />
                             </div>
 
-                            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-3">
-                                <AiOutlineLock className="text-gray-400 w-5 h-5 mr-2 flex-shrink-0" />
+                            <div className="flex items-center bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
+                                <AiOutlineLock className="text-gray-400 dark:text-gray-500 w-5 h-5 mr-2 flex-shrink-0" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     name="password"
                                     placeholder="Password"
                                     required
-                                    className="bg-transparent w-full focus:outline-none text-gray-700 text-sm"
+                                    className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200 text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(p => !p)}
-                                    className="text-gray-400 ml-2 hover:text-gray-600">
+                                    className="text-gray-400 dark:text-gray-500 ml-2 hover:text-gray-600">
                                     {showPassword ? <FaEye /> : <FaEyeSlash />}
                                 </button>
                             </div>
 
                             {error && (
-                                <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-3 rounded-xl">
+                                <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-red-600 text-sm p-3 rounded-xl">
                                     {error}
                                 </div>
                             )}
@@ -102,7 +102,7 @@ const AdminLogin = () => {
                     </div>
                 </div>
 
-                <p className="text-center text-gray-600 text-xs mt-6">© SWK Ghana Corporate</p>
+                <p className="text-center text-gray-600 dark:text-gray-300 text-xs mt-6">© SWK Ghana Corporate</p>
             </div>
         </div>
     );

@@ -88,11 +88,11 @@ const WasteEditPage = () => {
     }
 
     return (
-        <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
 
             {/* Back Button */}
             <button onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+                className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
                 <FaArrowLeft /> Back
             </button>
 
@@ -104,12 +104,12 @@ const WasteEditPage = () => {
             </div>
 
             {/* Form */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
                 <form onSubmit={handleSubmit} className="space-y-5">
 
                     {/* Pickup Date */}
                     <div>
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">
                             <FaCalendarAlt className="text-green-500" /> Pickup Date & Time
                         </label>
                         <DatePicker
@@ -120,21 +120,21 @@ const WasteEditPage = () => {
                             timeIntervals={15}
                             dateFormat="MMMM d, yyyy h:mm aa"
                             minDate={new Date()}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                             required
                         />
                     </div>
 
                     {/* Location */}
                     <div>
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">
                             <FaMapMarkerAlt className="text-green-500" /> Location
                         </label>
                         <input
                             type="text"
                             value={formData.location}
                             onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                             placeholder="Enter pickup location"
                             required
                         />
@@ -142,13 +142,13 @@ const WasteEditPage = () => {
 
                     {/* Waste Type */}
                     <div>
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">
                             <FaRecycle className="text-green-500" /> Waste Type
                         </label>
                         <select
                             value={formData.wasteType}
                             onChange={(e) => setFormData(prev => ({ ...prev, wasteType: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                         >
                             {WASTE_TYPES.map(type => (
                                 <option key={type} value={type}>{type}</option>
@@ -158,14 +158,14 @@ const WasteEditPage = () => {
 
                     {/* Estimated Weight */}
                     <div>
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
-                            ⚖️ Estimated Weight (kg) <span className="text-gray-400 font-normal">Optional</span>
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">
+                            ⚖️ Estimated Weight (kg) <span className="text-gray-400 dark:text-gray-500 font-normal">Optional</span>
                         </label>
                         <input
                             type="number"
                             value={formData.estimatedWeight}
                             onChange={(e) => setFormData(prev => ({ ...prev, estimatedWeight: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
                             placeholder="e.g. 5"
                             min="0"
                         />
@@ -178,13 +178,13 @@ const WasteEditPage = () => {
 
                     {/* Notes */}
                     <div>
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-semibold mb-2">
-                            <FaStickyNote className="text-green-500" /> Notes <span className="text-gray-400 font-normal">Optional</span>
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">
+                            <FaStickyNote className="text-green-500" /> Notes <span className="text-gray-400 dark:text-gray-500 font-normal">Optional</span>
                         </label>
                         <textarea
                             value={formData.notes}
                             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 resize-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 resize-none"
                             placeholder="Any special instructions..."
                             rows={3}
                         />
@@ -195,7 +195,7 @@ const WasteEditPage = () => {
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
-                            className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+                            className="flex-1 py-3 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium">
                             Cancel
                         </button>
                         <button

@@ -35,7 +35,7 @@ const ProductDetailPage = () => {
   if (!product) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen gap-3">
-        <p className="text-xl text-gray-600">Product not found</p>
+        <p className="text-xl text-gray-600 dark:text-gray-300">Product not found</p>
         <button onClick={() => navigate(-1)} className="text-green-600 hover:underline text-sm">Go back</button>
       </div>
     );
@@ -44,12 +44,12 @@ const ProductDetailPage = () => {
   const vendor = product.user;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-10">
 
       {/* Back */}
       <div className="p-4">
         <button onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+          className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
           <FaArrowLeft /> Back
         </button>
       </div>
@@ -57,7 +57,7 @@ const ProductDetailPage = () => {
       <div className="px-4 max-w-4xl mx-auto space-y-4">
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
           <div className="md:flex">
 
             {/* Image */}
@@ -74,12 +74,12 @@ const ProductDetailPage = () => {
                     <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium">♻️ Upcycled</span>
                   )}
                   {product.condition && (
-                    <span className="bg-white text-gray-700 text-xs px-3 py-1 rounded-full font-medium shadow">{product.condition}</span>
+                    <span className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs px-3 py-1 rounded-full font-medium shadow">{product.condition}</span>
                   )}
                 </div>
                 <div className="absolute top-3 right-3">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    product.inventory > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    product.inventory > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                   }`}>
                     {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
                   </span>
@@ -90,9 +90,9 @@ const ProductDetailPage = () => {
             {/* Details */}
             <div className="md:w-3/5 p-6 space-y-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">{product.title}</h1>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{product.title}</h1>
                 {product.wasteType && (
-                  <span className="inline-block mt-2 bg-teal-50 text-teal-700 text-xs px-3 py-1 rounded-full">
+                  <span className="inline-block mt-2 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-xs px-3 py-1 rounded-full">
                     {product.wasteType}
                   </span>
                 )}
@@ -102,24 +102,24 @@ const ProductDetailPage = () => {
                 GH₵ {Number(product.price || 0).toFixed(2)}
               </p>
 
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                 {product.description || 'No description provided.'}
               </p>
 
-              <div className="space-y-2 py-3 border-y border-gray-100">
+              <div className="space-y-2 py-3 border-y border-gray-100 dark:border-gray-800">
                 {product.location && (
-                  <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                     <FaMapMarkerAlt className="text-green-500 flex-shrink-0" />
                     <span>{product.location}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                   <FaCalendar className="text-green-500 flex-shrink-0" />
                   <span>Listed {new Date(product.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric', month: 'long', day: 'numeric'
                   })}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
                   <FaBox className="text-green-500 flex-shrink-0" />
                   <span>{product.inventory} units available</span>
                 </div>
@@ -127,16 +127,16 @@ const ProductDetailPage = () => {
 
               {/* Vendor Panel */}
               {vendor && (
-                <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
+                <div className="bg-gray-50 dark:bg-gray-950 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                       {vendor.name?.[0]?.toUpperCase() || '?'}
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Sold by</p>
-                      <p className="font-semibold text-gray-800">{vendor.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Sold by</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-100">{vendor.name}</p>
                       {vendor.location && (
-                        <p className="text-xs text-gray-400">📍 {vendor.location}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">📍 {vendor.location}</p>
                       )}
                     </div>
                   </div>
@@ -153,14 +153,14 @@ const ProductDetailPage = () => {
 
         {/* Before / After Images */}
         {(product.beforeImage || product.afterImage) && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
               <FaRecycle className="text-green-500" /> Transformation
             </h2>
             <div className="grid grid-cols-2 gap-4">
               {product.beforeImage && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Before</p>
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Before</p>
                   <img
                     src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.beforeImage}`}
                     alt="Before upcycling"
@@ -171,7 +171,7 @@ const ProductDetailPage = () => {
               )}
               {product.afterImage && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">After</p>
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">After</p>
                   <img
                     src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.afterImage}`}
                     alt="After upcycling"
@@ -186,31 +186,31 @@ const ProductDetailPage = () => {
 
         {/* Upcycling Story */}
         {(product.upcyclingStory || product.materialsUsed?.length > 0) && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
               <FaRecycle className="text-green-500" /> Upcycling Story
             </h2>
             {product.upcyclingStory && (
-              <p className="text-gray-600 text-sm leading-relaxed">{product.upcyclingStory}</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{product.upcyclingStory}</p>
             )}
             {product.materialsUsed?.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Materials Used</p>
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Materials Used</p>
                 <div className="flex flex-wrap gap-2">
                   {product.materialsUsed.map((m, i) => (
-                    <span key={i} className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full">{m}</span>
+                    <span key={i} className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs px-2 py-1 rounded-full">{m}</span>
                   ))}
                 </div>
               </div>
             )}
             {product.processDescription && (
               <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Process</p>
-                <p className="text-gray-600 text-sm">{product.processDescription}</p>
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Process</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">{product.processDescription}</p>
               </div>
             )}
             {product.timeToMake && (
-              <p className="mt-3 text-xs text-gray-500">⏱️ Time to make: {product.timeToMake}</p>
+              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">⏱️ Time to make: {product.timeToMake}</p>
             )}
           </div>
         )}

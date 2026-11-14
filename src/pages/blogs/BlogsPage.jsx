@@ -53,11 +53,11 @@ const BlogsPage = () => {
       <h1 className="text-3xl font-bold mb-6 text-center text-green-600">News</h1>
 
       {currentArticles.length === 0 ? (
-        <div className="text-center text-lg text-gray-500">No articles found.</div>
+        <div className="text-center text-lg text-gray-500 dark:text-gray-400">No articles found.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentArticles.map((article, index) => (
-            <div key={index} className="border border-gray-300 p-4 rounded-lg shadow-md bg-white transition-transform transform hover:scale-105">
+            <div key={index} className="border border-gray-300 p-4 rounded-lg shadow-md bg-white dark:bg-gray-900 transition-transform transform hover:scale-105">
               {article.image && (
                 <img
                   src={article.image}
@@ -65,8 +65,8 @@ const BlogsPage = () => {
                   className="mb-3 w-full h-48 object-cover rounded-t-lg"
                 />
               )}
-              <h2 className="text-xl font-semibold text-gray-800">{article.title}</h2>
-              <p className="text-gray-600 mt-2">{article.description}</p>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{article.title}</h2>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">{article.description}</p>
               {article.url && (
                 <a
                   href={article.url}
@@ -77,7 +77,7 @@ const BlogsPage = () => {
                   Read More
                 </a>
               )}
-              <p className="text-sm text-gray-500 mt-2">{`Published: ${new Date(article.publishedAt).toLocaleString()}`}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{`Published: ${new Date(article.publishedAt).toLocaleString()}`}</p>
             </div>
           ))}
         </div>
@@ -87,7 +87,7 @@ const BlogsPage = () => {
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
-          className="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded disabled:opacity-50"
+          className="bg-gray-300 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded disabled:opacity-50"
         >
           Previous
         </button>
@@ -97,7 +97,7 @@ const BlogsPage = () => {
         <button
           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded disabled:opacity-50"
+          className="bg-gray-300 text-gray-800 dark:text-gray-100 font-semibold py-2 px-4 rounded disabled:opacity-50"
         >
           Next
         </button>

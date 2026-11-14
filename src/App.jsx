@@ -1,6 +1,8 @@
 import './App.css'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Toaster } from 'sonner'
+import OfflineBanner from './components/OfflineBanner'
 
 const Overview         = lazy(() => import('./pages/customerDashboard/Overview'))
 const GoogleCallback   = lazy(() => import('./pages/auth/GoogleCallback'))
@@ -34,6 +36,7 @@ const VendorStorefront = lazy(() => import('./pages/recyclePage/VendorStorefront
 const AdminSetup       = lazy(() => import('./pages/adminDashboard/AdminSetup'))
 const AdminLoginPage   = lazy(() => import('./pages/adminDashboard/AdminLogin'))
 const NotFound         = lazy(() => import('./pages/NotFound'))
+const WasteScanner     = lazy(() => import('./pages/ai/WasteScanner'))
 
 const Spinner = () => (
   <div className="flex justify-center items-center min-h-screen">
@@ -66,6 +69,7 @@ const router = createBrowserRouter([
     element: <CustDushboardLayout/>,
     children: [
       { path: "overview", element: <Overview /> },
+      { path: "scan", element: <WasteScanner /> },
       { path: "adminoverview", element: <AdminOverview /> },
       { path: "vendoroverview", element: <VendorDashboard /> },
       { path: "blogs", element: <BlogsPage /> },
@@ -87,10 +91,24 @@ const router = createBrowserRouter([
   { path: "*", element: <NotFound /> },
 ])
 
+// Keeps the toast theme in sync with the dark-mode toggle (which dispatches
+// a 'swk-theme' event whenever the user flips it).
+const ThemedToaster = () => {
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  useEffect(() => {
+    const onTheme = (e) => setDark(Boolean(e.detail?.dark))
+    window.addEventListener('swk-theme', onTheme)
+    return () => window.removeEventListener('swk-theme', onTheme)
+  }, [])
+  return <Toaster position="top-right" richColors closeButton theme={dark ? 'dark' : 'light'} />
+}
+
 function App() {
   return (
     <Suspense fallback={<Spinner />}>
       <RouterProvider router={router} />
+      <ThemedToaster />
+      <OfflineBanner />
     </Suspense>
   )
 }

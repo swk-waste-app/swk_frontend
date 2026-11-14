@@ -4,7 +4,7 @@ import Reveal from '../../components/Reveal';
 
 const CtaBanner = () => {
   return (
-    <section className="px-5 sm:px-8 py-16 lg:py-20 bg-white">
+    <section className="px-5 sm:px-8 py-16 lg:py-20 bg-white dark:bg-gray-900">
       <Reveal className="relative max-w-7xl mx-auto overflow-hidden rounded-3xl bg-gradient-to-br from-green-600 via-green-700 to-green-900 px-8 py-14 sm:px-16 sm:py-16 text-center shadow-2xl">
         <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 animate-blob" />
         <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-green-400/20 animate-blob" style={{ animationDelay: '3s' }} />
@@ -21,7 +21,7 @@ const CtaBanner = () => {
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/signup"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white text-green-800 font-bold shadow-lg hover:bg-green-50 transition-all duration-200 hover:scale-105"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-gray-900 text-green-800 dark:text-green-300 font-bold shadow-lg hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-200 hover:scale-105"
             >
               Get Started <FaArrowRight size={13} />
             </Link>

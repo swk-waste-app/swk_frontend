@@ -72,15 +72,15 @@ const ContactUsForm = () => {
 
   return (
     <div className="flex justify-center items-center min-h-[80vh] px-4">
-      <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+      <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Contact Us</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Subject Field */}
           <div>
             <label
               htmlFor="subject"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
             >
               Subject
             </label>
@@ -102,7 +102,7 @@ const ContactUsForm = () => {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
             >
               Email
             </label>
@@ -124,7 +124,7 @@ const ContactUsForm = () => {
           <div>
             <label
               htmlFor="message"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
             >
               Message
             </label>

@@ -53,8 +53,8 @@ function Signup() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="flex bg-white rounded-lg shadow-lg w-full max-w-4xl">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800">
+            <div className="flex bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-4xl">
                 <div className="hidden md:block w-1/2 p-6">
                     <img src={image1} alt="Signup" className="w-full h-auto rounded-lg" />
                 </div>
@@ -104,7 +104,7 @@ function Signup() {
                             {loading ? "Loading..." : "Sign Up"}
                         </button>
                     </form>
-                    <p className="text-center mt-4 text-gray-600">
+                    <p className="text-center mt-4 text-gray-600 dark:text-gray-300">
                         Already have an account?{" "}
                         <Link to="/login" className="text-green-500 hover:underline">
                             Sign in

@@ -27,7 +27,7 @@ const VendorApiGet = ({ id, title, image, description, price, onDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden
                     transform hover:-translate-y-1 transition-all duration-300">
       {/* Image Container */}
       <div className="relative group">
@@ -42,7 +42,7 @@ const VendorApiGet = ({ id, title, image, description, price, onDelete }) => {
                         flex items-center justify-center">
           <Link 
             to={`/product/${id}`}
-            className="bg-white/90 text-gray-800 p-2 rounded-full 
+            className="bg-white/90 text-gray-800 dark:text-gray-100 p-2 rounded-full 
                      transform -translate-y-2 group-hover:translate-y-0 
                      transition-all duration-300"
           >

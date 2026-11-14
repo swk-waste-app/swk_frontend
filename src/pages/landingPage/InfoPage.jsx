@@ -17,20 +17,20 @@ const AboutSection = () => {
 
   return (
     <section id="about" className="relative overflow-hidden bg-white dark:bg-gray-900 scroll-mt-20">
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-green-100 blur-3xl opacity-60" />
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-green-100 dark:bg-green-900/30 blur-3xl opacity-60" />
 
       <div className="relative flex flex-col lg:flex-row items-center gap-12 px-6 py-20 lg:py-28 lg:px-16 max-w-7xl mx-auto">
         <Reveal className="relative w-full lg:w-1/2 flex justify-center items-center">
-          <div className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-green-200 to-green-50 -z-10 hidden sm:block" />
+          <div className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-green-200 to-green-50 dark:to-green-950/50 -z-10 hidden sm:block" />
           <img
             src={aboutImg}
             alt="SWK Taka Kipawa waste management team at work"
             loading="lazy"
             className="rounded-2xl shadow-xl w-full lg:w-5/6 object-cover aspect-[4/3]"
           />
-          <div className="absolute -bottom-6 left-4 sm:left-10 bg-white p-5 rounded-xl shadow-lg text-center border border-gray-100">
-            <h2 className="text-3xl font-extrabold text-green-700">3+</h2>
-            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide">Years of Service</p>
+          <div className="absolute -bottom-6 left-4 sm:left-10 bg-white dark:bg-gray-900 p-5 rounded-xl shadow-lg text-center border border-gray-100 dark:border-gray-800">
+            <h2 className="text-3xl font-extrabold text-green-700 dark:text-green-400">3+</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wide">Years of Service</p>
           </div>
         </Reveal>
 
@@ -54,7 +54,7 @@ const AboutSection = () => {
           <ul className="mt-8 grid sm:grid-cols-1 gap-3">
             {HIGHLIGHTS.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                   <Icon size={15} />
                 </span>
                 {text}
@@ -68,7 +68,7 @@ const AboutSection = () => {
                 More About Us
               </button>
             </Link>
-            <Link to="/signup" className="font-semibold text-green-700 hover:text-green-800 underline underline-offset-4">
+            <Link to="/signup" className="font-semibold text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 underline underline-offset-4">
               Create your account &rarr;
             </Link>
           </div>
@@ -81,7 +81,7 @@ const AboutSection = () => {
           tabIndex={0}
           onClick={toggleChat}
           onKeyDown={(e) => e.key === 'Enter' && toggleChat()}
-          className="fixed bottom-4 right-4 z-40 flex items-center gap-2 bg-white text-gray-700 py-3 px-4 rounded-full shadow-xl cursor-pointer border border-gray-100 hover:shadow-2xl transition-shadow dark:bg-gray-800 dark:text-gray-300"
+          className="fixed bottom-4 right-4 z-40 flex items-center gap-2 bg-white text-gray-700 py-3 px-4 rounded-full shadow-xl cursor-pointer border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-shadow dark:bg-gray-800 dark:text-gray-300"
         >
           <FaCommentDots className="text-2xl text-green-600" />
           <span className="hidden lg:inline text-sm font-semibold">Chat with us 👋</span>

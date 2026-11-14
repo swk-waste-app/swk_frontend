@@ -60,25 +60,25 @@ const LoginPage = () => {
       </div>
 
       {/* Right Form */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gray-50 p-8">
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-950 p-8">
         <div className="flex flex-col items-center mb-6">
           <img src={logo} alt="Taka Kipawa Logo" className="h-24 w-auto object-contain" />
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">Sign in to your account</p>
         </div>
 
         <div className="w-full max-w-sm">
 
           {/* Role Selector */}
           <div className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 mb-3 text-center">I am signing in as a:</p>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 text-center">I am signing in as a:</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedRole('user')}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                   selectedRole === 'user'
-                    ? 'border-green-500 bg-green-50 text-green-700'
-                    : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300'
                 }`}>
                 <FaUser size={24} />
                 <span className="text-sm font-medium">User</span>
@@ -89,8 +89,8 @@ const LoginPage = () => {
                 onClick={() => setSelectedRole('vendor')}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                   selectedRole === 'vendor'
-                    ? 'border-purple-500 bg-purple-50 text-purple-700'
-                    : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300'
                 }`}>
                 <FaStore size={24} />
                 <span className="text-sm font-medium">Vendor</span>
@@ -103,46 +103,46 @@ const LoginPage = () => {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-200 rounded-xl bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 mb-4 shadow-sm">
+            className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 transition-all duration-200 mb-4 shadow-sm">
             <FaGoogle className="text-red-500" size={18} />
-            <span className="text-gray-700 font-medium">Continue with Google</span>
+            <span className="text-gray-700 dark:text-gray-200 font-medium">Continue with Google</span>
           </button>
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-gray-400 text-sm">or sign in with email</span>
+            <span className="text-gray-400 dark:text-gray-500 text-sm">or sign in with email</span>
             <div className="flex-1 h-px bg-gray-200"></div>
           </div>
 
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-              <AiOutlineMail className="text-gray-400 h-5 w-5 mr-2 flex-shrink-0" />
+            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
+              <AiOutlineMail className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
               <input
                 type="email"
                 placeholder="Email address"
                 name="email"
-                className="bg-transparent w-full focus:outline-none text-gray-700"
+                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
                 required />
             </div>
 
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-              <AiOutlineLock className="text-gray-400 h-5 w-5 mr-2 flex-shrink-0" />
+            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
+              <AiOutlineLock className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 name="password"
-                className="bg-transparent w-full focus:outline-none text-gray-700"
+                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
                 required />
-              <span onClick={() => setShowPassword(!showPassword)} className="cursor-pointer text-gray-400 ml-2">
+              <span onClick={() => setShowPassword(!showPassword)} className="cursor-pointer text-gray-400 dark:text-gray-500 ml-2">
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </span>
             </div>
 
-            {loading && <div className="text-center text-gray-500 text-sm">Signing in...</div>}
-            {successMessage && <div className="text-center text-green-600 text-sm bg-green-50 p-2 rounded-lg">{successMessage}</div>}
-            {errorMessage && <div className="text-center text-red-600 text-sm bg-red-50 p-2 rounded-lg">{errorMessage}</div>}
+            {loading && <div className="text-center text-gray-500 dark:text-gray-400 text-sm">Signing in...</div>}
+            {successMessage && <div className="text-center text-green-600 text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">{successMessage}</div>}
+            {errorMessage && <div className="text-center text-red-600 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded-lg">{errorMessage}</div>}
 
             <button
               type="submit"
@@ -159,18 +159,18 @@ const LoginPage = () => {
           {/* Sign Up Links */}
           <div className="mt-6 text-center text-sm">
             {selectedRole === 'user' ? (
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 New user? <Link to="/signup" className="text-green-600 font-medium hover:underline">Create account</Link>
               </p>
             ) : (
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 New vendor? <Link to="/vendorsignup" className="text-purple-600 font-medium hover:underline">Register as vendor</Link>
               </p>
             )}
           </div>
         </div>
 
-        <footer className="text-center text-gray-400 mt-12 text-xs">© SWK Corporate</footer>
+        <footer className="text-center text-gray-400 dark:text-gray-500 mt-12 text-xs">© SWK Corporate</footer>
       </div>
     </div>
   );

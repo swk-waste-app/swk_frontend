@@ -66,7 +66,7 @@ const AdminOverview = () => {
     }
 
     return (
-        <div className="space-y-6 p-4 bg-gray-50 min-h-screen">
+        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
 
             {/* Header */}
             <div className="rounded-2xl p-6 text-white"
@@ -83,41 +83,41 @@ const AdminOverview = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase">Total Pickups</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{totalTickets}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Total Pickups</p>
+                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{totalTickets}</h3>
                             <p className="text-xs text-blue-600 mt-1">All time</p>
                         </div>
                         <FaRecycle className="text-blue-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-green-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-green-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase">Completed</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{completedTickets}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Completed</p>
+                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{completedTickets}</h3>
                             <p className="text-xs text-green-600 mt-1">{totalTickets > 0 ? Math.round((completedTickets/totalTickets)*100) : 0}% rate</p>
                         </div>
                         <FaCheck className="text-green-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase">Total Users</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{leaderboard.length}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Total Users</p>
+                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{leaderboard.length}</h3>
                             <p className="text-xs text-purple-600 mt-1">Registered</p>
                         </div>
                         <FaUsers className="text-purple-500 text-2xl opacity-80" />
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-l-4 border-teal-500">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-teal-500">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-gray-500 text-xs uppercase">Products</p>
-                            <h3 className="text-3xl font-bold text-gray-800 mt-1">{products.length}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Products</p>
+                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{products.length}</h3>
                             <p className="text-xs text-teal-600 mt-1">Marketplace</p>
                         </div>
                         <FaShoppingBag className="text-teal-500 text-2xl opacity-80" />
@@ -126,32 +126,32 @@ const AdminOverview = () => {
             </div>
 
             {/* Environmental Impact */}
-            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 border border-green-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">🌍 Platform Environmental Impact</h3>
+            <div className="bg-gradient-to-r from-green-50 dark:from-green-950/50 to-teal-50 dark:to-teal-950/50 rounded-xl p-6 border border-green-200 dark:border-green-800">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🌍 Platform Environmental Impact</h3>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="text-center">
                         <p className="text-3xl font-bold text-green-600">{totalWaste}</p>
-                        <p className="text-sm text-gray-600 mt-1">⚖️ kg Waste Collected</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">⚖️ kg Waste Collected</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-blue-600">{totalCarbon}</p>
-                        <p className="text-sm text-gray-600 mt-1">🌱 kg CO₂ Saved</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">🌱 kg CO₂ Saved</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-yellow-600">{Math.round(totalWaste * 0.5)}</p>
-                        <p className="text-sm text-gray-600 mt-1">🌳 Trees Equivalent</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">🌳 Trees Equivalent</p>
                     </div>
                     <div className="text-center">
                         <p className="text-3xl font-bold text-teal-600">{Math.round(totalWaste * 10)}</p>
-                        <p className="text-sm text-gray-600 mt-1">💧 Litres Water Saved</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">💧 Litres Water Saved</p>
                     </div>
                 </div>
             </div>
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">📈 Monthly Pickups</h3>
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">📈 Monthly Pickups</h3>
                     <ResponsiveContainer width="100%" height={200}>
                         <LineChart data={monthlyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -162,8 +162,8 @@ const AdminOverview = () => {
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">♻️ Waste Types Breakdown</h3>
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">♻️ Waste Types Breakdown</h3>
                     {wasteTypeData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={wasteTypeData}>
@@ -175,7 +175,7 @@ const AdminOverview = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex items-center justify-center h-48 text-gray-400">
+                        <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
                             <p>No data yet</p>
                         </div>
                     )}
@@ -184,60 +184,60 @@ const AdminOverview = () => {
 
             {/* Status Summary */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center border border-blue-100 dark:border-blue-800">
                     <p className="text-3xl font-bold text-blue-600">{scheduledTickets}</p>
-                    <p className="text-sm text-blue-700 mt-1">🗓️ Scheduled</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">🗓️ Scheduled</p>
                 </div>
-                <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 text-center border border-yellow-100 dark:border-yellow-800">
                     <p className="text-3xl font-bold text-yellow-600">{inProgressTickets}</p>
-                    <p className="text-sm text-yellow-700 mt-1">🔄 In Progress</p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">🔄 In Progress</p>
                 </div>
-                <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border border-green-100 dark:border-green-800">
                     <p className="text-3xl font-bold text-green-600">{completedTickets}</p>
-                    <p className="text-sm text-green-700 mt-1">✅ Completed</p>
+                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">✅ Completed</p>
                 </div>
-                <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border border-red-100 dark:border-red-800">
                     <p className="text-3xl font-bold text-red-600">{cancelledTickets}</p>
-                    <p className="text-sm text-red-700 mt-1">❌ Cancelled</p>
+                    <p className="text-sm text-red-700 dark:text-red-400 mt-1">❌ Cancelled</p>
                 </div>
             </div>
 
             {/* Leaderboard */}
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                 <div className="p-6 border-b">
-                    <h3 className="text-lg font-semibold text-gray-800">🏆 Community Leaderboard</h3>
-                    <p className="text-sm text-gray-500 mt-1">Top recyclers on the platform</p>
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🏆 Community Leaderboard</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top recyclers on the platform</p>
                 </div>
                 <div className="p-4 space-y-3">
                     {leaderboard.slice(0, 5).map((user, index) => (
                         <div key={index} className={`flex items-center justify-between p-4 rounded-xl ${
-                            index === 0 ? 'bg-yellow-50 border border-yellow-200' :
-                            index === 1 ? 'bg-gray-50 border border-gray-200' :
-                            index === 2 ? 'bg-orange-50 border border-orange-200' :
-                            'bg-white border border-gray-100'
+                            index === 0 ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' :
+                            index === 1 ? 'bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700' :
+                            index === 2 ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800' :
+                            'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800'
                         }`}>
                             <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                                     index === 0 ? 'bg-yellow-400 text-white' :
                                     index === 1 ? 'bg-gray-300 text-white' :
                                     index === 2 ? 'bg-orange-400 text-white' :
-                                    'bg-green-100 text-green-700'
+                                    'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                                 }`}>
                                     {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-gray-800">{user.name}</p>
-                                    <p className="text-xs text-gray-500">{user.level} • {user.badges?.length || 0} badges</p>
+                                    <p className="font-semibold text-gray-800 dark:text-gray-100">{user.name}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.level} • {user.badges?.length || 0} badges</p>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <p className="font-bold text-green-600">{user.points} pts</p>
-                                <p className="text-xs text-gray-500">{user.wasteCollected || 0} kg</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{user.wasteCollected || 0} kg</p>
                             </div>
                         </div>
                     ))}
                     {leaderboard.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
+                        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
                             <p>No users yet</p>
                         </div>
                     )}

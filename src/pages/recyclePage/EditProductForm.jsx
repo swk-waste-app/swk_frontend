@@ -82,27 +82,27 @@ const EditProductForm = () => {
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Title</label>
             <input type="text" name="title" value={product.title} onChange={handleChange} required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200" />
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Description</label>
             <textarea name="description" value={product.description} onChange={handleChange} required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200" />
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">New Image (Optional)</label>
             <input type="file" name="image" onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200" />
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Price (GH₵)</label>
             <input type="number" name="price" value={product.price} onChange={handleChange} required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200" />
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Category</label>
             <select name="category" value={product.category} onChange={handleChange} required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700">
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200">
               <option value="">Select a category</option>
               <option value="Bottles">Bottles</option>
               <option value="Papers">Papers</option>
@@ -119,7 +119,7 @@ const EditProductForm = () => {
           <div>
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Inventory</label>
             <input type="number" name="inventory" value={product.inventory} onChange={handleChange} required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700" />
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-green-500 text-gray-700 dark:text-gray-200" />
           </div>
           <div className="space-y-4">
             <button type="submit" disabled={loading}

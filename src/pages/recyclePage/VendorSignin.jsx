@@ -33,8 +33,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="flex bg-white rounded-lg shadow-lg w-full max-w-4xl">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800">
+      <div className="flex bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="w-full md:w-1/2 p-8">
           <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
           <form onSubmit={handleSubmit}>
@@ -60,7 +60,7 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="text-center mt-4 text-gray-600">
+          <p className="text-center mt-4 text-gray-600 dark:text-gray-300">
             Don’t have an account? {' '}
             <Link to="/vendorsignup" className="text-green-500 hover:underline">
               Sign up
