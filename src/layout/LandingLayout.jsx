@@ -1,25 +1,28 @@
-import Navbar from '../components/Navbar'
-import HeroSection from '../pages/landingPage/Hero'
-import AboutSection from '../pages/landingPage/InfoPage'
-import WasteManagementSection from '../pages/landingPage/WasteSection'
-import HowItWorks from '../pages/landingPage/HowItWorks'
-import TrashCanPlacement from '../pages/customerDashboard/TrashCanPickup'
-import CtaBanner from '../pages/landingPage/CtaBanner'
-import Footer from '../components/Footer'
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import Hero from '../pages/landingPage/Hero';
+import HowItWorks from '../pages/landingPage/HowItWorks';
+import Features from '../pages/landingPage/Features';
+import VendorSection from '../pages/landingPage/VendorSection';
+import CtaBanner from '../pages/landingPage/CtaBanner';
+import { useScrollOnNavigate } from './useScrollOnNavigate';
 
 const LandingLayout = () => {
+  useScrollOnNavigate();
+
   return (
-    <div>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <HeroSection />
-      <AboutSection />
-      <WasteManagementSection />
-      <HowItWorks />
-      <TrashCanPlacement />
-      <CtaBanner />
+      <main className="flex-1">
+        <Hero />
+        <HowItWorks />
+        <Features />
+        <VendorSection />
+        <CtaBanner />
+      </main>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default LandingLayout
+export default LandingLayout;

@@ -1,104 +1,74 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegEdit, FaTrashAlt } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { LuPencil, LuTrash2 } from 'react-icons/lu';
+import { toast } from 'sonner';
+import { Badge, Button } from '../../components/ui';
+import { confirmAction } from '../../components/ui/confirm';
+import { formatMoney, formatNumber } from '../../lib/format';
 import { apiDeleteTicket } from '../../services/product';
+import { ROUTES, apiErrorMessage, inStock } from './listingOptions';
+import { ProductImage } from './listingParts';
 
-const VendorApiGet = ({ id, title, image, description, price, onDelete }) => {
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#10B981',
-      cancelButtonColor: '#EF4444',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
+// One row of the vendor's "My listings" table. On narrow screens the price
+// and stock columns are hidden and summarised under the title instead.
+const VendorApiGet = ({ product, onDelete }) => {
+  const [deleting, setDeleting] = useState(false);
+  const available = inStock(product);
+  const status = <Badge tone={available ? 'neutral' : 'danger'}>{available ? 'In stock' : 'Out of stock'}</Badge>;
+
+  const remove = async () => {
+    const confirmed = await confirmAction({
+      title: 'Delete this listing?',
+      body: `"${product.title}" will be removed from the marketplace. This cannot be undone.`,
+      confirmLabel: 'Delete listing',
+      tone: 'danger',
     });
-    if (result.isConfirmed) {
-      try {
-        await apiDeleteTicket(id);
-        Swal.fire('Deleted!', 'Product has been deleted.', 'success');
-        if (onDelete) onDelete(id);
-      } catch {
-        Swal.fire('Error!', 'Failed to delete product.', 'error');
-      }
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      await apiDeleteTicket(product.id);
+      toast.success('Listing deleted');
+      onDelete(product.id);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'The listing was not deleted. Check your connection and try again.'));
+      setDeleting(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden
-                    transform hover:-translate-y-1 transition-all duration-300">
-      {/* Image Container */}
-      <div className="relative group">
-        <img 
-          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${image}`}
-          alt={title}
-          className="w-full h-48 object-cover transition-transform duration-500 
-                     group-hover:scale-105"
-        />
-        {/* <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 
-                        group-hover:opacity-100 transition-opacity duration-300
-                        flex items-center justify-center">
-          <Link 
-            to={`/product/${id}`}
-            className="bg-white/90 text-gray-800 dark:text-gray-100 p-2 rounded-full 
-                     transform -translate-y-2 group-hover:translate-y-0 
-                     transition-all duration-300"
-          >
-            <FaEye className="text-xl" />
-          </Link>
-        </div> */}
-      </div>
-
-      {/* Content Container */}
-      <div className="p-5 space-y-4">
-        {/* Title */}
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white 
-                       line-clamp-1 hover:line-clamp-none">
-          {title}
-        </h2>
-
-        {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
-          {description || 'No description available'}
-        </p>
-
-        {/* Price */}
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-green-600 dark:text-green-400">
-            GH₵ {price ? Number(price).toFixed(2) : '0.00'}
-          </span>
+    <tr>
+      <td>
+        <div className="flex items-center gap-3">
+          <ProductImage image={product.image} wasteType={product.wasteType} transform="w_120,q_auto,f_auto" className="h-10 w-10 rounded-lg" iconClassName="h-4 w-4" />
+          <div className="min-w-0">
+            <Link to={ROUTES.product(product.id)} className="line-clamp-2 font-medium text-gray-900 hover:underline dark:text-gray-100">{product.title}</Link>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {product.category || 'Other'}{product.isUpcycled ? ', upcycled' : ''}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs tabular-nums sm:hidden">
+              <span className="font-medium text-gray-900 dark:text-gray-100">{formatMoney(product.price)}</span>
+              {available ? <span className="text-gray-500 dark:text-gray-400">{formatNumber(product.inventory)} in stock</span> : status}
+            </div>
+          </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <Link 
-            to={`/customerDashboard/editProduct/${id}`}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2
-                     bg-green-50 dark:bg-green-900/30 
-                     text-green-600 dark:text-green-400
-                     rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50
-                     transition-colors duration-300"
-          >
-            <FaRegEdit />
-            <span className="text-sm font-medium">Edit</span>
-          </Link>
-
-          <button 
-            onClick={() => handleDelete(id)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2
-                     bg-red-50 dark:bg-red-900/30 
-                     text-red-600 dark:text-red-400
-                     rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50
-                     transition-colors duration-300"
-          >
-            <FaTrashAlt />
-            <span className="text-sm font-medium">Delete</span>
-          </button>
+      </td>
+      <td className="hidden whitespace-nowrap text-right tabular-nums sm:table-cell">{formatMoney(product.price)}</td>
+      <td className="hidden text-right tabular-nums sm:table-cell">{formatNumber(product.inventory)}</td>
+      <td className="hidden text-right tabular-nums lg:table-cell">{formatNumber(product.views)}</td>
+      <td className="hidden text-right tabular-nums lg:table-cell">{formatNumber(product.sold)}</td>
+      <td className="hidden sm:table-cell">{status}</td>
+      <td>
+        <div className="flex justify-end gap-1.5">
+          <Button as={Link} to={ROUTES.editListing(product.id)} variant="secondary" size="sm" icon={LuPencil} aria-label={`Edit ${product.title}`}>
+            <span className="hidden md:inline">Edit</span>
+          </Button>
+          <Button variant="ghost" size="sm" icon={LuTrash2} loading={deleting} onClick={remove} aria-label={`Delete ${product.title}`}>
+            <span className="hidden md:inline">Delete</span>
+          </Button>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };
 

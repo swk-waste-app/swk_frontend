@@ -1,297 +1,625 @@
-import { useEffect, useState } from 'react';
-import { apiGetScheduledProducts, apiEditScheduledProduct } from '../../services/product';
-import { FaCalendarAlt, FaMapMarkerAlt, FaRecycle, FaSearch } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import {
+  LuBan, LuCalendar, LuCircleCheck, LuClipboardList, LuMapPin, LuPhone, LuPlay,
+  LuRecycle, LuRefreshCw, LuSearch, LuTriangleAlert, LuTruck,
+} from 'react-icons/lu';
+import { Badge, Button, Card, EmptyState, Field, Modal, PageHeader, StatusBadge } from '../../components/ui';
+import { confirmAction } from '../../components/ui/confirm';
+import { Skeleton } from '../../components/Skeleton';
+import { formatDateTime, formatNumber, formatWeight } from '../../lib/format';
+import { apiErrorMessage, apiGetPickups, apiUpdatePickupStatus } from '../../services/ops';
 
-const STATUS_COLORS = {
-    'Scheduled': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-    'In Progress': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-500' },
-    'Completed': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
-    'Cancelled': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+// The pickup queue: where the operations team starts, completes and cancels
+// household pickups.
+
+const PAGE_SIZE = 200;
+// Must match the backend, which awards the points when a pickup is completed.
+const POINTS_PER_KG = 10;
+const FORM_ID = 'pickup-action-form';
+
+const TABS = [
+  { value: 'All', label: 'All' },
+  { value: 'Scheduled', label: 'Scheduled' },
+  { value: 'In Progress', label: 'In progress' },
+  { value: 'Completed', label: 'Completed' },
+  { value: 'Cancelled', label: 'Cancelled' },
+];
+
+const cx = (...parts) => parts.filter(Boolean).join(' ');
+
+const isOpen = (pickup) => pickup.status === 'Scheduled' || pickup.status === 'In Progress';
+const customerName = (pickup) => pickup.user?.name || 'Unknown household';
+const describe = (pickup) =>
+  `${pickup.wasteType} pickup for ${customerName(pickup)}, ${formatDateTime(pickup.pickupDate)}`;
+
+const weightLabel = (pickup) => {
+  if (pickup.actualWeight > 0) return formatWeight(pickup.actualWeight);
+  if (pickup.estimatedWeight > 0) return `est. ${formatWeight(pickup.estimatedWeight)}`;
+  return 'Not given';
 };
 
-const WASTE_TYPE_EMOJI = {
-    'General Waste': '🗑️', 'Recyclable Materials': '♻️', 'Organic/Food Waste': '🌿',
-    'Electronic (E-Waste)': '💻', 'Hazardous Waste': '⚠️', 'Fashion & Textiles': '👗',
-    'Plastics': '🧴', 'Metals & Scrap': '🔩', 'Glass': '🍶',
-    'Wood & Furniture': '🪵', 'Paper & Cardboard': '📄', 'Rubber': '⚫', 'Other': '📦',
+const isOverdue = (pickup) => {
+  if (pickup.status !== 'Scheduled') return false;
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  return new Date(pickup.pickupDate) < startOfToday;
 };
+
+// Pickups that need action come first: in progress, then scheduled with the
+// earliest date on top. Finished pickups follow, most recent first.
+const RANK = { 'In Progress': 0, Scheduled: 1 };
+const byUrgency = (a, b) => {
+  const rankA = RANK[a.status] ?? 2;
+  const rankB = RANK[b.status] ?? 2;
+  if (rankA !== rankB) return rankA - rankB;
+  const earliestFirst = new Date(a.pickupDate) - new Date(b.pickupDate);
+  return rankA < 2 ? earliestFirst : -earliestFirst;
+};
+
+const searchText = (pickup) => {
+  const phone = pickup.user?.contactNumber || '';
+  return [pickup.user?.name, phone, phone.replace(/\D/g, ''), pickup.user?.email, pickup.location, pickup.wasteType, pickup.agentName]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+};
+
+// The dialog focuses its own panel when it opens; this moves on to the field.
+const useFocusOnOpen = () => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      ref.current?.focus();
+      ref.current?.select();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  return ref;
+};
+
+const StartDialog = ({ pickup, collectors, saving, onClose, onSubmit }) => {
+  const [agentName, setAgentName] = useState(pickup.agentName || '');
+  const inputRef = useFocusOnOpen();
+
+  return (
+    <Modal
+      open
+      size="sm"
+      onClose={onClose}
+      title="Start pickup"
+      description={describe(pickup)}
+      footer={(
+        <>
+          <Button variant="secondary" onClick={onClose}>Back</Button>
+          <Button type="submit" form={FORM_ID} icon={LuPlay} loading={saving}>Start pickup</Button>
+        </>
+      )}
+    >
+      <form id={FORM_ID} onSubmit={(event) => { event.preventDefault(); onSubmit(agentName.trim()); }}>
+        <Field label="Collector or crew" htmlFor="pickup-collector" optional hint="The household is told who is coming.">
+          <input
+            id="pickup-collector"
+            ref={inputRef}
+            className="input"
+            list="pickup-collectors"
+            maxLength={80}
+            autoComplete="off"
+            placeholder="e.g. Truck 2"
+            value={agentName}
+            onChange={(event) => setAgentName(event.target.value)}
+          />
+          <datalist id="pickup-collectors">
+            {collectors.map((name) => <option key={name} value={name} />)}
+          </datalist>
+        </Field>
+      </form>
+    </Modal>
+  );
+};
+
+const CompleteDialog = ({ pickup, saving, onClose, onSubmit }) => {
+  const [weight, setWeight] = useState(String(pickup.actualWeight || pickup.estimatedWeight || ''));
+  const [error, setError] = useState('');
+  const inputRef = useFocusOnOpen();
+
+  const kg = Number(weight);
+  const valid = weight.trim() !== '' && Number.isFinite(kg) && kg >= 0;
+  const points = valid ? Math.round(kg * POINTS_PER_KG) : 0;
+  const estimate = pickup.estimatedWeight > 0 ? pickup.estimatedWeight : 0;
+  const farAboveEstimate = valid && estimate > 0 && kg > estimate * 3;
+
+  const submit = (event) => {
+    event.preventDefault();
+    if (!valid) {
+      setError('Enter the weight collected in kg. Use 0 if nothing was collected.');
+      return;
+    }
+    onSubmit(kg);
+  };
+
+  return (
+    <Modal
+      open
+      size="sm"
+      onClose={onClose}
+      title="Complete pickup"
+      description={describe(pickup)}
+      footer={(
+        <>
+          <Button variant="secondary" onClick={onClose}>Back</Button>
+          <Button type="submit" form={FORM_ID} icon={LuCircleCheck} loading={saving}>Complete pickup</Button>
+        </>
+      )}
+    >
+      <form id={FORM_ID} noValidate onSubmit={submit}>
+        <Field
+          label="Actual weight (kg)"
+          htmlFor="pickup-weight"
+          error={error}
+          hint={estimate ? `The household estimated ${formatWeight(estimate)}.` : 'The household did not give an estimate.'}
+        >
+          <input
+            id="pickup-weight"
+            ref={inputRef}
+            className="input tabular-nums"
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="any"
+            value={weight}
+            onChange={(event) => { setWeight(event.target.value); setError(''); }}
+          />
+        </Field>
+        <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2.5 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+          {customerName(pickup)} will receive{' '}
+          <strong className="font-semibold tabular-nums text-gray-900 dark:text-gray-50">{formatNumber(points)} points</strong>{' '}
+          ({POINTS_PER_KG} per kg). Points are awarded once and cannot be changed afterwards.
+        </p>
+        {farAboveEstimate && (
+          <p className="mt-3 flex items-start gap-2 text-sm text-amber-800 dark:text-amber-300">
+            <LuTriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            This is more than three times the estimate. Check the figure before completing.
+          </p>
+        )}
+      </form>
+    </Modal>
+  );
+};
+
+const Phone = ({ pickup }) => {
+  const phone = pickup.user?.contactNumber;
+  if (!phone) return <p className="text-xs text-gray-500 dark:text-gray-400">No phone number</p>;
+  return (
+    <a href={`tel:${phone}`} className="inline-flex items-center gap-1 text-xs text-gray-600 hover:underline dark:text-gray-400">
+      <LuPhone className="h-3 w-3" aria-hidden="true" />
+      {phone}
+    </a>
+  );
+};
+
+const PickupDate = ({ pickup }) => (
+  <span className="inline-flex flex-wrap items-center gap-2">
+    <span className="whitespace-nowrap tabular-nums">{formatDateTime(pickup.pickupDate)}</span>
+    {isOverdue(pickup) && <Badge tone="warning">Overdue</Badge>}
+  </span>
+);
+
+const Collector = ({ pickup }) =>
+  pickup.agentName || <span className="text-gray-400 dark:text-gray-500">Unassigned</span>;
+
+const PickupActions = ({ pickup, busy, onStart, onComplete, onCancel }) => {
+  if (pickup.status === 'Completed') {
+    return (
+      <span className="text-xs tabular-nums text-gray-500 dark:text-gray-400">
+        {formatNumber(pickup.pointsEarned)} points awarded
+      </span>
+    );
+  }
+  if (!isOpen(pickup)) return null;
+
+  const name = customerName(pickup);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {pickup.status === 'Scheduled' ? (
+        <Button size="sm" icon={LuPlay} loading={busy} aria-label={`Start pickup for ${name}`} onClick={() => onStart(pickup)}>
+          Start
+        </Button>
+      ) : (
+        <Button size="sm" icon={LuCircleCheck} loading={busy} aria-label={`Complete pickup for ${name}`} onClick={() => onComplete(pickup)}>
+          Complete
+        </Button>
+      )}
+      <Button size="sm" variant="ghost" icon={LuBan} disabled={busy} aria-label={`Cancel pickup for ${name}`} onClick={() => onCancel(pickup)}>
+        Cancel
+      </Button>
+    </div>
+  );
+};
+
+const PickupCard = ({ pickup, actions }) => (
+  <Card as="li" className="flex flex-col gap-3 p-4">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-gray-900 dark:text-gray-100">{customerName(pickup)}</p>
+        <Phone pickup={pickup} />
+      </div>
+      <StatusBadge status={pickup.status} />
+    </div>
+    <ul className="space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
+      <li className="flex items-start gap-2">
+        <LuRecycle className="mt-0.5 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        <span>{pickup.wasteType}, <span className="tabular-nums">{weightLabel(pickup)}</span></span>
+      </li>
+      <li className="flex items-start gap-2">
+        <LuCalendar className="mt-0.5 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        <PickupDate pickup={pickup} />
+      </li>
+      <li className="flex items-start gap-2">
+        <LuMapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        <span className="min-w-0 break-words">{pickup.location}</span>
+      </li>
+      <li className="flex items-start gap-2">
+        <LuTruck className="mt-0.5 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+        <span><Collector pickup={pickup} /></span>
+      </li>
+    </ul>
+    {pickup.notes && (
+      <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+        Note from the household: {pickup.notes}
+      </p>
+    )}
+    {pickup.status !== 'Cancelled' && (
+      <div className="border-t border-gray-100 pt-3 dark:border-gray-800">{actions}</div>
+    )}
+  </Card>
+);
+
+const QueueSkeleton = () => (
+  <Card className="divide-y divide-gray-100 dark:divide-gray-800" aria-busy="true" aria-label="Loading pickups">
+    {Array.from({ length: 6 }, (_, row) => (
+      <div key={row} className="flex items-center gap-4 px-4 py-4">
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-4 w-40 max-w-full" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+        <Skeleton className="hidden h-4 w-28 sm:block" />
+        <Skeleton className="hidden h-4 w-36 lg:block" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="hidden h-8 w-32 sm:block" />
+      </div>
+    ))}
+  </Card>
+);
 
 const AdminDashboard = () => {
-    const [tickets, setTickets] = useState([]);
-    const [filtered, setFiltered] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('All');
+  const [pickups, setPickups] = useState([]);
+  const [view, setView] = useState('loading'); // loading | ready | error
+  const [loadError, setLoadError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [query, setQuery] = useState('');
+  const [busy, setBusy] = useState([]);
+  const [dialog, setDialog] = useState(null); // { type: 'start' | 'complete', pickup }
+  const [params, setParams] = useSearchParams();
+  const loaded = useRef(false);
+  const inFlight = useRef(new Set());
 
-    useEffect(() => {
-        fetchTickets();
-    }, []);
+  // The status filter lives in the URL so the overview can link straight to it.
+  const requested = params.get('status');
+  const filter = TABS.some((tab) => tab.value === requested) ? requested : 'All';
+  const setFilter = (value) => setParams(value === 'All' ? {} : { status: value }, { replace: true });
 
-    useEffect(() => {
-        let result = tickets;
-        if (search) {
-            result = result.filter(t =>
-                t.location?.toLowerCase().includes(search.toLowerCase()) ||
-                t.wasteType?.toLowerCase().includes(search.toLowerCase())
-            );
-        }
-        if (statusFilter !== 'All') {
-            result = result.filter(t => t.status === statusFilter);
-        }
-        setFiltered(result);
-    }, [tickets, search, statusFilter]);
-
-    const fetchTickets = async () => {
-        try {
-            const response = await apiGetScheduledProducts();
-            setTickets(response.data || []);
-        } catch (error) {
-            console.error('Error fetching tickets:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleStatusChange = async (ticketId, newStatus) => {
-        const result = await Swal.fire({
-            title: 'Update Status',
-            text: `Mark this ticket as "${newStatus}"?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#026937',
-            cancelButtonColor: '#EF4444',
-            confirmButtonText: 'Yes, update it!'
-        });
-        if (result.isConfirmed) {
-            try {
-                await apiEditScheduledProduct(ticketId, { status: newStatus });
-                const response = await apiGetScheduledProducts();
-                setTickets(response.data || []);
-                Swal.fire({ icon: 'success', title: 'Updated!', timer: 1500, showConfirmButton: false });
-            } catch {
-                Swal.fire({ icon: 'error', title: 'Failed to update status' });
-            }
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            </div>
-        );
+  const load = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const { data } = await apiGetPickups({ limit: PAGE_SIZE });
+      const list = Array.isArray(data) ? data : [];
+      loaded.current = true;
+      setPickups(list);
+      setHasMore(list.length === PAGE_SIZE);
+      setView('ready');
+    } catch (error) {
+      const message = apiErrorMessage(error, 'Pickups could not be loaded. Try again.');
+      // A failed refresh keeps the list that is already on screen.
+      if (loaded.current) toast.error(message);
+      else {
+        setLoadError(message);
+        setView('error');
+      }
+    } finally {
+      setRefreshing(false);
     }
+  }, []);
 
-    return (
-        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
+  useEffect(() => { load(); }, [load]);
 
-            {/* Header */}
-            <div className="rounded-2xl p-6 text-white"
-                style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-green-200 text-sm uppercase tracking-wider">Admin Portal</p>
-                        <h1 className="text-3xl font-bold mt-1">Ticket Management</h1>
-                        <p className="text-green-200 text-sm mt-1">{tickets.length} total pickup tickets</p>
-                    </div>
-                    <div className="text-6xl opacity-20">🎫</div>
-                </div>
-            </div>
+  const retry = () => {
+    setView('loading');
+    load();
+  };
 
-            {/* Status Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center border border-blue-100 dark:border-blue-800 cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setStatusFilter('Scheduled')}>
-                    <p className="text-3xl font-bold text-blue-600">{tickets.filter(t => t.status === 'Scheduled').length}</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">🗓️ Scheduled</p>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 text-center border border-yellow-100 dark:border-yellow-800 cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setStatusFilter('In Progress')}>
-                    <p className="text-3xl font-bold text-yellow-600">{tickets.filter(t => t.status === 'In Progress').length}</p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">🔄 In Progress</p>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border border-green-100 dark:border-green-800 cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setStatusFilter('Completed')}>
-                    <p className="text-3xl font-bold text-green-600">{tickets.filter(t => t.status === 'Completed').length}</p>
-                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">✅ Completed</p>
-                </div>
-                <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border border-red-100 dark:border-red-800 cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setStatusFilter('Cancelled')}>
-                    <p className="text-3xl font-bold text-red-600">{tickets.filter(t => t.status === 'Cancelled').length}</p>
-                    <p className="text-sm text-red-700 dark:text-red-400 mt-1">❌ Cancelled</p>
-                </div>
-            </div>
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const { data } = await apiGetPickups({ limit: PAGE_SIZE, skip: pickups.length });
+      const more = Array.isArray(data) ? data : [];
+      setPickups((list) => {
+        const seen = new Set(list.map((pickup) => pickup._id));
+        return [...list, ...more.filter((pickup) => !seen.has(pickup._id))];
+      });
+      setHasMore(more.length === PAGE_SIZE);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'More pickups could not be loaded. Try again.'));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
-            {/* Search and Filter */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center">
-                <div className="relative flex-1">
-                    <FaSearch className="absolute left-3 top-3 text-gray-400 dark:text-gray-500 text-sm" />
-                    <input
-                        type="text"
-                        placeholder="Search by location or waste type..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
-                    />
-                </div>
-                <select
-                    value={statusFilter}
-                    onChange={e => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="All">All Status</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-                {statusFilter !== 'All' && (
-                    <button onClick={() => setStatusFilter('All')}
-                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl text-sm hover:bg-gray-200">
-                        Clear Filter
-                    </button>
-                )}
-            </div>
+  const closeDialog = useCallback(() => setDialog(null), []);
 
-            {/* Tickets Table */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
-                <div className="p-4 border-b flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">All Pickup Tickets</h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{filtered.length} results</span>
-                </div>
+  // Sends one status change, updates that row in place and reports the result.
+  const changeStatus = async (pickup, body, successMessage) => {
+    const id = pickup._id;
+    if (inFlight.current.has(id)) return false;
+    inFlight.current.add(id);
+    setBusy([...inFlight.current]);
+    try {
+      const { data } = await apiUpdatePickupStatus(id, body);
+      const updated = data?.pickup || { ...pickup, ...body };
+      setPickups((list) => list.map((item) => (item._id === id ? updated : item)));
+      toast.success(successMessage);
+      return true;
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'The pickup could not be updated. Try again.'));
+      // Someone else already closed it: show what the server has now.
+      if (error.response?.status === 409) load();
+      return false;
+    } finally {
+      inFlight.current.delete(id);
+      setBusy([...inFlight.current]);
+    }
+  };
 
-                {/* Mobile Cards */}
-                <div className="block lg:hidden p-4 space-y-4">
-                    {filtered.map(ticket => {
-                        const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
-                        return (
-                            <div key={ticket._id} className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 hover:shadow-md transition-shadow">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-2xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
-                                        <div>
-                                            <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{ticket.wasteType || 'General Waste'}</p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500">ID: {ticket._id?.slice(-8)}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
-                                        {ticket.status}
-                                    </span>
-                                </div>
-                                <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300 mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <FaCalendarAlt className="text-green-500 text-xs" />
-                                        <span>{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <FaMapMarkerAlt className="text-green-500 text-xs" />
-                                        <span>{ticket.location}</span>
-                                    </div>
-                                </div>
-                                {ticket.status !== 'Completed' && ticket.status !== 'Cancelled' && (
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleStatusChange(ticket._id, 'In Progress')}
-                                            className="flex-1 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs font-medium hover:bg-yellow-200">
-                                            🔄 In Progress
-                                        </button>
-                                        <button onClick={() => handleStatusChange(ticket._id, 'Completed')}
-                                            className="flex-1 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium hover:bg-green-200">
-                                            ✅ Complete
-                                        </button>
-                                        <button onClick={() => handleStatusChange(ticket._id, 'Cancelled')}
-                                            className="flex-1 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-200">
-                                            ❌ Cancel
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+  const startPickup = async (agentName) => {
+    if (await changeStatus(dialog.pickup, { status: 'In Progress', agentName }, 'Pickup started')) closeDialog();
+  };
 
-                {/* Desktop Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="bg-gray-50 dark:bg-gray-950 border-b">
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Waste Type</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Date</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Location</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Weight</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                                <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {filtered.map(ticket => {
-                                const statusStyle = STATUS_COLORS[ticket.status] || STATUS_COLORS['Scheduled'];
-                                return (
-                                    <tr key={ticket._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl">{WASTE_TYPE_EMOJI[ticket.wasteType] || '🗑️'}</span>
-                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{ticket.wasteType || 'General Waste'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <p className="text-sm text-gray-800 dark:text-gray-100">{new Date(ticket.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(ticket.pickupDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-200">
-                                                <FaMapMarkerAlt className="text-green-500 text-xs flex-shrink-0" />
-                                                <span className="truncate max-w-xs">{ticket.location}</span>
-                                            </div>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <span className="text-sm text-gray-700 dark:text-gray-200">
-                                                {ticket.estimatedWeight > 0 ? `${ticket.estimatedWeight} kg` : '—'}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium w-fit ${statusStyle.bg} ${statusStyle.text}`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
-                                                {ticket.status}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            {ticket.status !== 'Completed' && ticket.status !== 'Cancelled' ? (
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => handleStatusChange(ticket._id, 'In Progress')}
-                                                        className="px-3 py-1.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-lg text-xs font-medium hover:bg-yellow-200 transition-colors">
-                                                        🔄 In Progress
-                                                    </button>
-                                                    <button onClick={() => handleStatusChange(ticket._id, 'Completed')}
-                                                        className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors">
-                                                        ✅ Complete
-                                                    </button>
-                                                    <button onClick={() => handleStatusChange(ticket._id, 'Cancelled')}
-                                                        className="px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors">
-                                                        ❌ Cancel
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 italic">No actions available</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-
-                {filtered.length === 0 && (
-                    <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-                        <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
-                        <p className="font-medium">No tickets found</p>
-                        <p className="text-sm mt-1">Try adjusting your search or filter</p>
-                    </div>
-                )}
-            </div>
-        </div>
+  const completePickup = async (actualWeight) => {
+    const points = formatNumber(Math.round(actualWeight * POINTS_PER_KG));
+    const done = await changeStatus(
+      dialog.pickup,
+      { status: 'Completed', actualWeight },
+      `Pickup completed. ${points} points awarded to ${customerName(dialog.pickup)}.`,
     );
+    if (done) closeDialog();
+  };
+
+  const cancelPickup = async (pickup) => {
+    const confirmed = await confirmAction({
+      title: 'Cancel this pickup?',
+      body: `The ${describe(pickup)} will be cancelled and the household will be notified. A cancelled pickup cannot be reopened.`,
+      confirmLabel: 'Cancel pickup',
+      cancelLabel: 'Keep pickup',
+      tone: 'danger',
+    });
+    if (confirmed) changeStatus(pickup, { status: 'Cancelled' }, 'Pickup cancelled');
+  };
+
+  const matches = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const digits = needle.replace(/[\s()+-]/g, '');
+    const list = needle
+      ? pickups.filter((pickup) => {
+        const text = searchText(pickup);
+        return text.includes(needle) || (digits !== '' && text.includes(digits));
+      })
+      : pickups;
+    return [...list].sort(byUrgency);
+  }, [pickups, query]);
+
+  const counts = useMemo(() => {
+    const tally = { All: matches.length };
+    matches.forEach((pickup) => { tally[pickup.status] = (tally[pickup.status] || 0) + 1; });
+    return tally;
+  }, [matches]);
+
+  const collectors = useMemo(
+    () => [...new Set(pickups.map((pickup) => pickup.agentName).filter(Boolean))].sort(),
+    [pickups],
+  );
+
+  const visible = filter === 'All' ? matches : matches.filter((pickup) => pickup.status === filter);
+
+  const actionsFor = (pickup) => (
+    <PickupActions
+      pickup={pickup}
+      busy={busy.includes(pickup._id)}
+      onStart={(target) => setDialog({ type: 'start', pickup: target })}
+      onComplete={(target) => setDialog({ type: 'complete', pickup: target })}
+      onCancel={cancelPickup}
+    />
+  );
+
+  const clearFilters = () => {
+    setQuery('');
+    setFilter('All');
+  };
+
+  let content;
+  if (view === 'loading') {
+    content = <QueueSkeleton />;
+  } else if (view === 'error') {
+    content = (
+      <Card>
+        <EmptyState
+          icon={LuTriangleAlert}
+          title="Pickups could not be loaded"
+          description={loadError}
+          action={<Button variant="secondary" icon={LuRefreshCw} onClick={retry}>Try again</Button>}
+        />
+      </Card>
+    );
+  } else if (pickups.length === 0) {
+    content = (
+      <Card>
+        <EmptyState
+          icon={LuClipboardList}
+          title="No pickups yet"
+          description="Pickups appear here as soon as a household books one."
+        />
+      </Card>
+    );
+  } else if (visible.length === 0) {
+    content = (
+      <Card>
+        <EmptyState
+          icon={LuSearch}
+          title="No pickups match"
+          description="Nothing fits the current search and status filter."
+          action={<Button variant="secondary" onClick={clearFilters}>Clear search and filter</Button>}
+        />
+      </Card>
+    );
+  } else {
+    content = (
+      <>
+        <Card className="hidden overflow-hidden xl:block">
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Waste type</th>
+                  <th scope="col">Pickup date</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Weight</th>
+                  <th scope="col">Collector</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((pickup) => (
+                  <tr key={pickup._id}>
+                    <td>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{customerName(pickup)}</p>
+                      <Phone pickup={pickup} />
+                    </td>
+                    <td>{pickup.wasteType}</td>
+                    <td><PickupDate pickup={pickup} /></td>
+                    <td className="max-w-[16rem]">
+                      <p className="line-clamp-2">{pickup.location}</p>
+                      {pickup.notes && (
+                        <p className="mt-0.5 line-clamp-1 text-xs text-gray-500 dark:text-gray-400" title={pickup.notes}>
+                          Note: {pickup.notes}
+                        </p>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap tabular-nums">{weightLabel(pickup)}</td>
+                    <td><Collector pickup={pickup} /></td>
+                    <td><StatusBadge status={pickup.status} /></td>
+                    <td>{actionsFor(pickup)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        <ul className="grid gap-3 md:grid-cols-2 xl:hidden">
+          {visible.map((pickup) => (
+            <PickupCard key={pickup._id} pickup={pickup} actions={actionsFor(pickup)} />
+          ))}
+        </ul>
+
+        {hasMore && (
+          <div className="mt-4 flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Showing the {formatNumber(pickups.length)} most recent pickups by pickup date. Search and counts cover these only.
+            </p>
+            <Button variant="secondary" loading={loadingMore} onClick={loadMore}>Load older pickups</Button>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="page">
+      <PageHeader
+        title="Pickups"
+        description="Start, complete and cancel household pickups. Pickups that need action are listed first."
+        actions={(
+          <Button variant="secondary" icon={LuRefreshCw} loading={refreshing && view === 'ready'} disabled={view === 'loading'} onClick={load}>
+            Refresh
+          </Button>
+        )}
+      />
+
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="-mx-4 overflow-x-auto px-4 scrollbar-hide sm:mx-0 sm:px-0">
+          <div role="group" aria-label="Filter by status" className="inline-flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+            {TABS.map((tab) => {
+              const active = filter === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setFilter(tab.value)}
+                  className={cx(
+                    'flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                    active
+                      ? 'bg-white text-gray-900 shadow-card dark:bg-gray-950 dark:text-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100',
+                  )}
+                >
+                  {tab.label}
+                  <span className="text-xs tabular-nums text-gray-500 dark:text-gray-400">
+                    {view === 'ready' ? formatNumber(counts[tab.value] || 0) : ''}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="relative w-full lg:w-80">
+          <LuSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+          <input
+            type="search"
+            className="input pl-9"
+            placeholder="Search name, phone, location or type"
+            aria-label="Search pickups"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+      </div>
+
+      {content}
+
+      {dialog?.type === 'start' && (
+        <StartDialog
+          pickup={dialog.pickup}
+          collectors={collectors}
+          saving={busy.includes(dialog.pickup._id)}
+          onClose={closeDialog}
+          onSubmit={startPickup}
+        />
+      )}
+      {dialog?.type === 'complete' && (
+        <CompleteDialog
+          pickup={dialog.pickup}
+          saving={busy.includes(dialog.pickup._id)}
+          onClose={closeDialog}
+          onSubmit={completePickup}
+        />
+      )}
+    </div>
+  );
 };
 
 export default AdminDashboard;

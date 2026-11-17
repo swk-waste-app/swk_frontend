@@ -1,250 +1,358 @@
-import { useEffect, useState } from 'react';
-import { apiGetScheduledProducts, apiGetProducts, apiGetLeaderboard } from '../../services/product';
-import { FaRecycle, FaCheck, FaUsers, FaShoppingBag } from 'react-icons/fa';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  LuCalendar, LuChevronRight, LuCircleCheck, LuClipboardList, LuCloud, LuRefreshCw,
+  LuScale, LuStore, LuTriangleAlert, LuTruck, LuUsers,
+} from 'react-icons/lu';
+import { Badge, Button, Card, EmptyState, PageHeader, StatCard, StatusBadge } from '../../components/ui';
+import { Skeleton } from '../../components/Skeleton';
+import { brand } from '../../config/brand';
+import { formatDateTime, formatNumber, formatWeight } from '../../lib/format';
+import { apiErrorMessage, apiGetOpsSummary } from '../../services/ops';
+import { apiGetLeaderboard } from '../../services/product';
+
+// The operations overview: today's workload, collection totals and accounts,
+// all read from the summary endpoint.
+
+const QUEUE_PATH = '/customerDashboard/adminview';
+
+const SERIES_COLOUR = 'rgb(var(--brand-600))';
+const GRID_COLOUR = 'rgb(var(--gray-200))';
+const AXIS_TICK = { fontSize: 12, fill: 'rgb(var(--gray-500))' };
+const HOVER_BAND = { fill: 'rgb(var(--gray-500) / 0.12)' };
+// The grid colour above suits a light card; this softens it on a dark one.
+const CHART_FRAME = 'dark:[&_.recharts-cartesian-grid_line]:stroke-gray-800';
+
+const monthName = new Intl.DateTimeFormat(brand.locale, { month: 'short' });
+// "2026-03" to "Mar".
+const monthLabel = (key) => {
+  const [year, month] = key.split('-').map(Number);
+  return monthName.format(new Date(year, month - 1, 1));
+};
+
+const pickupWord = (count) => (count === 1 ? 'pickup' : 'pickups');
+
+const ChartTooltip = ({ active, payload, label, format }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="card px-3 py-2 text-xs shadow-pop">
+      <p className="font-medium text-gray-900 dark:text-gray-100">{label}</p>
+      <p className="mt-0.5 tabular-nums text-gray-600 dark:text-gray-400">{format(payload[0].value)}</p>
+    </div>
+  );
+};
+
+const Panel = ({ title, description, aside, children }) => (
+  <Card className="flex flex-col overflow-hidden">
+    <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+      <div className="min-w-0">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">{title}</h2>
+        {description && <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">{description}</p>}
+      </div>
+      {aside}
+    </div>
+    {children}
+  </Card>
+);
+
+const ChartEmpty = ({ children }) => (
+  <p className="flex h-40 items-center justify-center px-5 text-center text-sm text-gray-500 dark:text-gray-400">{children}</p>
+);
+
+const MonthlyPickups = ({ monthly }) => {
+  const data = monthly.map(({ month, count }) => ({ label: monthLabel(month), count }));
+  const hasData = data.some((point) => point.count > 0);
+
+  return (
+    <Panel title="Pickups per month" description="By pickup date, last six months. Cancelled pickups are left out.">
+      {hasData ? (
+        <div className={`h-64 px-2 py-4 ${CHART_FRAME}`} role="img" aria-label="Bar chart of pickups per month for the last six months">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: -12 }}>
+              <CartesianGrid vertical={false} stroke={GRID_COLOUR} />
+              <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <Tooltip cursor={HOVER_BAND} content={<ChartTooltip format={(value) => `${formatNumber(value)} ${pickupWord(value)}`} />} />
+              <Bar dataKey="count" fill={SERIES_COLOUR} radius={[4, 4, 0, 0]} maxBarSize={44} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <ChartEmpty>No pickups in the last six months.</ChartEmpty>
+      )}
+    </Panel>
+  );
+};
+
+const WasteByType = ({ types }) => {
+  const data = types.filter((type) => type.weightKg > 0).slice(0, 8);
+
+  return (
+    <Panel title="Waste collected by type" description="Weight from completed pickups, in kg.">
+      {data.length > 0 ? (
+        <div
+          className={`px-2 py-4 ${CHART_FRAME}`}
+          style={{ height: data.length * 36 + 56 }}
+          role="img"
+          aria-label="Bar chart of the weight collected for each waste type"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }}>
+              <CartesianGrid horizontal={false} stroke={GRID_COLOUR} />
+              <XAxis type="number" tick={AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={(value) => formatNumber(value)} />
+              <YAxis type="category" dataKey="wasteType" width={136} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+              <Tooltip cursor={HOVER_BAND} content={<ChartTooltip format={formatWeight} />} />
+              <Bar dataKey="weightKg" fill={SERIES_COLOUR} radius={[0, 4, 4, 0]} maxBarSize={20} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <ChartEmpty>No completed pickups yet.</ChartEmpty>
+      )}
+    </Panel>
+  );
+};
+
+const NeedsAttention = ({ pickups, total }) => (
+  <Panel
+    title="Needs attention"
+    description="In progress, or scheduled for today or earlier."
+    aside={total > 0 ? <Badge tone="warning">{formatNumber(total)}</Badge> : null}
+  >
+    {pickups.length === 0 ? (
+      <EmptyState icon={LuCircleCheck} title="Nothing needs attention" description="No pickups are in progress or due today." />
+    ) : (
+      <>
+        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+          {pickups.map((pickup) => (
+            <li key={pickup._id}>
+              <Link
+                to={`${QUEUE_PATH}?status=${encodeURIComponent(pickup.status)}`}
+                className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                    {pickup.user?.name || 'Unknown household'}
+                  </p>
+                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                    {pickup.wasteType}, {formatDateTime(pickup.pickupDate)}, {pickup.location}
+                  </p>
+                </div>
+                <StatusBadge status={pickup.status} />
+                <LuChevronRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {total > pickups.length && (
+          <div className="border-t border-gray-100 px-5 py-3 dark:border-gray-800">
+            <Link to={QUEUE_PATH} className="link text-sm">See all {formatNumber(total)} in the pickup queue</Link>
+          </div>
+        )}
+      </>
+    )}
+  </Panel>
+);
+
+const TopRecyclers = ({ recyclers }) => (
+  <Panel title="Top recyclers" description="Households with the most points.">
+    {recyclers.length === 0 ? (
+      <EmptyState icon={LuUsers} title="No households yet" description="Households appear here once they have signed up." />
+    ) : (
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th scope="col" className="w-12">Rank</th>
+              <th scope="col">Household</th>
+              <th scope="col" className="hidden sm:table-cell">Level</th>
+              <th scope="col" className="text-right">Points</th>
+              <th scope="col" className="text-right">Collected</th>
+            </tr>
+          </thead>
+          <tbody>
+            {recyclers.map((recycler, index) => (
+              <tr key={recycler.id || recycler._id || index}>
+                <td className="tabular-nums text-gray-500 dark:text-gray-400">{index + 1}</td>
+                <td className="font-medium text-gray-900 dark:text-gray-100">{recycler.name}</td>
+                <td className="hidden sm:table-cell">{recycler.level}</td>
+                <td className="text-right tabular-nums">{formatNumber(recycler.points)}</td>
+                <td className="whitespace-nowrap text-right tabular-nums">{formatWeight(recycler.wasteCollected)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </Panel>
+);
+
+const OverviewSkeleton = () => (
+  <div aria-busy="true" aria-label="Loading the overview">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {Array.from({ length: 8 }, (_, index) => (
+        <Card key={index} className="space-y-3 p-5">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-7 w-16" />
+          <Skeleton className="h-3 w-24 max-w-full" />
+        </Card>
+      ))}
+    </div>
+    <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      {Array.from({ length: 4 }, (_, index) => (
+        <Card key={index} className="space-y-4 p-5">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-44 w-full" />
+        </Card>
+      ))}
+    </div>
+  </div>
+);
 
 const AdminOverview = () => {
-    const [tickets, setTickets] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [leaderboard, setLeaderboard] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState(null);
+  const [recyclers, setRecyclers] = useState([]);
+  const [view, setView] = useState('loading'); // loading | ready | error
+  const [loadError, setLoadError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const loaded = useRef(false);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
-        try {
-            const [ticketsRes, productsRes, leaderboardRes] = await Promise.all([
-                apiGetScheduledProducts(),
-                apiGetProducts(),
-                apiGetLeaderboard()
-            ]);
-            setTickets(ticketsRes.data || []);
-            setProducts(productsRes.data || []);
-            setLeaderboard(leaderboardRes.data || []);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const totalTickets = tickets.length;
-    const completedTickets = tickets.filter(t => t.status === 'Completed').length;
-    const scheduledTickets = tickets.filter(t => t.status === 'Scheduled').length;
-    const inProgressTickets = tickets.filter(t => t.status === 'In Progress').length;
-    const cancelledTickets = tickets.filter(t => t.status === 'Cancelled').length;
-    const totalWaste = tickets.filter(t => t.status === 'Completed').reduce((sum, t) => sum + (t.actualWeight || 0), 0);
-    const totalCarbon = tickets.filter(t => t.status === 'Completed').reduce((sum, t) => sum + (t.carbonSaved || 0), 0);
-
-    const wasteTypeData = Object.entries(
-        tickets.reduce((acc, t) => {
-            const type = (t.wasteType || 'General Waste').split(' ')[0];
-            acc[type] = (acc[type] || 0) + 1;
-            return acc;
-        }, {})
-    ).map(([name, count]) => ({ name, count })).slice(0, 6);
-
-    const monthlyData = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - (5 - i));
-        const month = date.toLocaleString('default', { month: 'short' });
-        const count = tickets.filter(t => {
-            const d = new Date(t.createdAt);
-            return d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear();
-        }).length;
-        return { month, count };
-    });
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            </div>
-        );
+  const load = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // The page is still useful without the leaderboard, so its failure is not fatal.
+      const [summaryResponse, leaderboardResponse] = await Promise.all([
+        apiGetOpsSummary(),
+        apiGetLeaderboard().catch(() => ({ data: [] })),
+      ]);
+      loaded.current = true;
+      setSummary(summaryResponse.data);
+      setRecyclers(Array.isArray(leaderboardResponse.data) ? leaderboardResponse.data : []);
+      setView('ready');
+    } catch (error) {
+      const message = apiErrorMessage(error, 'The overview could not be loaded. Try again.');
+      // A failed refresh keeps the figures that are already on screen.
+      if (loaded.current) toast.error(message);
+      else {
+        setLoadError(message);
+        setView('error');
+      }
+    } finally {
+      setRefreshing(false);
     }
+  }, []);
 
-    return (
-        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
+  useEffect(() => { load(); }, [load]);
 
-            {/* Header */}
-            <div className="rounded-2xl p-6 text-white"
-                style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-green-200 text-sm uppercase tracking-wider">Admin Portal</p>
-                        <h1 className="text-3xl font-bold mt-1">Platform Overview</h1>
-                        <p className="text-green-200 text-sm mt-1">Taka Kipawa — Waste Management & Upcycling Marketplace</p>
-                    </div>
-                    <div className="text-6xl opacity-20">🌍</div>
-                </div>
-            </div>
+  const retry = () => {
+    setView('loading');
+    load();
+  };
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Total Pickups</p>
-                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{totalTickets}</h3>
-                            <p className="text-xs text-blue-600 mt-1">All time</p>
-                        </div>
-                        <FaRecycle className="text-blue-500 text-2xl opacity-80" />
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Completed</p>
-                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{completedTickets}</h3>
-                            <p className="text-xs text-green-600 mt-1">{totalTickets > 0 ? Math.round((completedTickets/totalTickets)*100) : 0}% rate</p>
-                        </div>
-                        <FaCheck className="text-green-500 text-2xl opacity-80" />
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Total Users</p>
-                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{leaderboard.length}</h3>
-                            <p className="text-xs text-purple-600 mt-1">Registered</p>
-                        </div>
-                        <FaUsers className="text-purple-500 text-2xl opacity-80" />
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-teal-500">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs uppercase">Products</p>
-                            <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{products.length}</h3>
-                            <p className="text-xs text-teal-600 mt-1">Marketplace</p>
-                        </div>
-                        <FaShoppingBag className="text-teal-500 text-2xl opacity-80" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Environmental Impact */}
-            <div className="bg-gradient-to-r from-green-50 dark:from-green-950/50 to-teal-50 dark:to-teal-950/50 rounded-xl p-6 border border-green-200 dark:border-green-800">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🌍 Platform Environmental Impact</h3>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-green-600">{totalWaste}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">⚖️ kg Waste Collected</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-blue-600">{totalCarbon}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">🌱 kg CO₂ Saved</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-yellow-600">{Math.round(totalWaste * 0.5)}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">🌳 Trees Equivalent</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-3xl font-bold text-teal-600">{Math.round(totalWaste * 10)}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">💧 Litres Water Saved</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">📈 Monthly Pickups</h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={monthlyData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="count" stroke="#026937" strokeWidth={2} dot={{ fill: '#026937' }} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">♻️ Waste Types Breakdown</h3>
-                    {wasteTypeData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={wasteTypeData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                                <YAxis tick={{ fontSize: 12 }} />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#00BFA5" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div className="flex items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-                            <p>No data yet</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Status Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center border border-blue-100 dark:border-blue-800">
-                    <p className="text-3xl font-bold text-blue-600">{scheduledTickets}</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">🗓️ Scheduled</p>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 text-center border border-yellow-100 dark:border-yellow-800">
-                    <p className="text-3xl font-bold text-yellow-600">{inProgressTickets}</p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">🔄 In Progress</p>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border border-green-100 dark:border-green-800">
-                    <p className="text-3xl font-bold text-green-600">{completedTickets}</p>
-                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">✅ Completed</p>
-                </div>
-                <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border border-red-100 dark:border-red-800">
-                    <p className="text-3xl font-bold text-red-600">{cancelledTickets}</p>
-                    <p className="text-sm text-red-700 dark:text-red-400 mt-1">❌ Cancelled</p>
-                </div>
-            </div>
-
-            {/* Leaderboard */}
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
-                <div className="p-6 border-b">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🏆 Community Leaderboard</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top recyclers on the platform</p>
-                </div>
-                <div className="p-4 space-y-3">
-                    {leaderboard.slice(0, 5).map((user, index) => (
-                        <div key={index} className={`flex items-center justify-between p-4 rounded-xl ${
-                            index === 0 ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800' :
-                            index === 1 ? 'bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700' :
-                            index === 2 ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800' :
-                            'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800'
-                        }`}>
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                                    index === 0 ? 'bg-yellow-400 text-white' :
-                                    index === 1 ? 'bg-gray-300 text-white' :
-                                    index === 2 ? 'bg-orange-400 text-white' :
-                                    'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                }`}>
-                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-gray-800 dark:text-gray-100">{user.name}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.level} • {user.badges?.length || 0} badges</p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="font-bold text-green-600">{user.points} pts</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{user.wasteCollected || 0} kg</p>
-                            </div>
-                        </div>
-                    ))}
-                    {leaderboard.length === 0 && (
-                        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-                            <p>No users yet</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+  let content;
+  if (view === 'loading') {
+    content = <OverviewSkeleton />;
+  } else if (view === 'error') {
+    content = (
+      <Card>
+        <EmptyState
+          icon={LuTriangleAlert}
+          title="The overview could not be loaded"
+          description={loadError}
+          action={<Button variant="secondary" icon={LuRefreshCw} onClick={retry}>Try again</Button>}
+        />
+      </Card>
     );
+  } else {
+    const { pickups, impact, users } = summary;
+    const status = pickups.byStatus;
+    const open = status.Scheduled + status['In Progress'];
+    const closed = status.Completed + status.Cancelled;
+
+    content = (
+      <>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            label="Pickups today"
+            value={formatNumber(pickups.today)}
+            hint="With a pickup date of today"
+            icon={LuCalendar}
+          />
+          <StatCard
+            label="Awaiting collection"
+            value={formatNumber(open)}
+            hint={`${formatNumber(status['In Progress'])} in progress, ${formatNumber(status.Scheduled)} scheduled`}
+            icon={LuTruck}
+          />
+          <StatCard
+            label="Completion rate"
+            value={closed > 0 ? `${Math.round((status.Completed / closed) * 100)}%` : 'None yet'}
+            hint={closed > 0
+              ? `${formatNumber(status.Completed)} completed, ${formatNumber(status.Cancelled)} cancelled`
+              : 'No pickup has been completed or cancelled'}
+            icon={LuCircleCheck}
+          />
+          <StatCard
+            label="All pickups"
+            value={formatNumber(pickups.total)}
+            hint="Booked to date"
+            icon={LuClipboardList}
+          />
+          <StatCard
+            label="Waste collected"
+            value={formatWeight(impact.weightKg)}
+            hint="From completed pickups"
+            icon={LuScale}
+          />
+          <StatCard
+            label="Estimated CO2e avoided"
+            value={`${formatNumber(impact.carbonKg, 1)} kg`}
+            hint="Estimated from the weight collected, not measured"
+            icon={LuCloud}
+          />
+          <StatCard
+            label="Households"
+            value={formatNumber(users.households)}
+            hint="Registered accounts"
+            icon={LuUsers}
+          />
+          <StatCard
+            label="Vendors"
+            value={formatNumber(users.vendors)}
+            hint="Marketplace sellers"
+            icon={LuStore}
+          />
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <NeedsAttention pickups={summary.attention || []} total={pickups.needsAttention} />
+          <MonthlyPickups monthly={summary.monthly || []} />
+          <WasteByType types={summary.byWasteType || []} />
+          <TopRecyclers recyclers={recyclers} />
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="page">
+      <PageHeader
+        title="Operations overview"
+        description={`Today's workload, collection totals and accounts for ${brand.operator}.`}
+        actions={(
+          <>
+            <Button variant="secondary" icon={LuRefreshCw} loading={refreshing && view === 'ready'} disabled={view === 'loading'} onClick={load}>
+              Refresh
+            </Button>
+            <Button as={Link} to={QUEUE_PATH} icon={LuTruck}>Open pickup queue</Button>
+          </>
+        )}
+      />
+      {content}
+    </div>
+  );
 };
 
 export default AdminOverview;

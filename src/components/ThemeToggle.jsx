@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaMoon, FaSun } from 'react-icons/fa';
+import { LuMoon, LuSun } from 'react-icons/lu';
 
 const storedTheme = () => {
   try { return localStorage.getItem('theme'); } catch { return null; }
@@ -13,6 +13,8 @@ const initialDark = () => {
   return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
 };
 
+// Pass `className` to recolour the button for a non-neutral surface; without
+// it the button uses the neutral ghost style.
 const ThemeToggle = ({ className = '' }) => {
   const [dark, setDark] = useState(initialDark);
 
@@ -24,15 +26,17 @@ const ThemeToggle = ({ className = '' }) => {
     window.dispatchEvent(new CustomEvent('swk-theme', { detail: { dark: next } }));
   };
 
+  const Icon = dark ? LuSun : LuMoon;
+
   return (
     <button
       type="button"
       onClick={toggle}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={dark ? 'Light mode' : 'Dark mode'}
-      className={`p-2 rounded-full transition-colors duration-200 ${className}`}
+      className={`btn h-9 w-9 p-0 ${className || 'btn-ghost'}`}
     >
-      {dark ? <FaSun size={16} /> : <FaMoon size={16} />}
+      <Icon className="h-5 w-5" aria-hidden="true" />
     </button>
   );
 };

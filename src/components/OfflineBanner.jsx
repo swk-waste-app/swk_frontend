@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaWifi } from 'react-icons/fa';
+import { LuWifiOff } from 'react-icons/lu';
 
 // Shown whenever the browser loses connectivity; the service worker keeps
 // serving cached pages and API data underneath.
@@ -20,9 +20,12 @@ const OfflineBanner = () => {
   if (!offline) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[100] bg-amber-500 text-white text-center text-sm font-semibold py-2 px-4 flex items-center justify-center gap-2">
-      <FaWifi className="opacity-80" />
-      You&apos;re offline — showing saved data where available.
+    <div
+      role="status"
+      className="fixed inset-x-0 bottom-0 z-[100] flex items-center justify-center gap-2 border-t border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm font-medium text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
+    >
+      <LuWifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+      You are offline. Showing saved data where available.
     </div>
   );
 };

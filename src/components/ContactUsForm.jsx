@@ -1,170 +1,109 @@
 import { useState } from 'react';
-import Swal from 'sweetalert2';
+import { LuSend } from 'react-icons/lu';
+import { toast } from 'sonner';
+import { brand } from '../config/brand';
+import { Button, Field } from './ui';
 
-const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMPTY = { name: '', email: '', subject: '', message: '' };
+const FIELD_ORDER = ['name', 'email', 'subject', 'message'];
 
+const validate = ({ name, email, subject, message }) => {
+  const errors = {};
+  if (!name.trim()) errors.name = 'Enter your name.';
+  if (!email.trim()) errors.email = 'Enter your email address.';
+  else if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Enter a valid email address, such as name@example.com.';
+  if (!subject.trim()) errors.subject = 'Enter a subject.';
+  if (!message.trim()) errors.message = 'Enter your message.';
+  return errors;
+};
+
+// Sends a message to the operator through web3forms. Renders only the form,
+// so the page that uses it decides on the heading and the surrounding card.
 const ContactUsForm = () => {
-  const [formData, setFormData] = useState({
-    subject: '',
-    message: '',
-    email: '',
-  });
-  const [loading, setLoading] = useState(false);
+  const [values, setValues] = useState(EMPTY);
+  const [touched, setTouched] = useState({});
+  const [sending, setSending] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
+  const errors = validate(values);
+  const errorFor = (name) => (touched[name] ? errors[name] : undefined);
+
+  const control = (name) => ({
+    id: `contact-${name}`,
+    name,
+    value: values[name],
+    className: 'input',
+    'aria-invalid': Boolean(errorFor(name)),
+    onChange: (e) => setValues((prev) => ({ ...prev, [name]: e.target.value })),
+    onBlur: () => setTouched((prev) => ({ ...prev, [name]: true })),
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setTouched({ name: true, email: true, subject: true, message: true });
+    const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
+    if (firstInvalid) {
+      document.getElementById(`contact-${firstInvalid}`)?.focus();
+      return;
+    }
 
+    setSending(true);
     try {
-      if (!WEB3FORMS_ACCESS_KEY) {
-        throw new Error('Contact form is not configured yet. Please try again later.');
-      }
-
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Taka Kipawa contact: ${formData.subject}`,
-          from_name: 'Taka Kipawa Website',
-          email: formData.email,
-          message: formData.message,
+          access_key: ACCESS_KEY,
+          subject: `${brand.name} contact: ${values.subject.trim()}`,
+          from_name: `${brand.name} website`,
+          name: values.name.trim(),
+          email: values.email.trim(),
+          message: values.message.trim(),
         }),
       });
       const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to send message');
-      }
+      if (!response.ok || !result.success) throw new Error(result.message || 'Request failed');
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Message Sent!',
-        text: 'We will get back to you soon.',
-        confirmButtonColor: '#10B981'
-      });
-
-      // Clear form
-      setFormData({
-        subject: '',
-        message: '',
-        email: ''
-      });
-
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: error.message || 'Failed to send message',
-        confirmButtonColor: '#10B981'
-      });
+      toast.success('Message sent. We will reply by email.');
+      setValues(EMPTY);
+      setTouched({});
+    } catch {
+      toast.error(`Message not sent. Check your connection and try again, or email ${brand.supportEmail}.`);
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
+  if (!ACCESS_KEY) {
+    return (
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        The contact form is not set up on this site. Email{' '}
+        <span className="select-all font-medium text-gray-900 dark:text-gray-100">{brand.supportEmail}</span> instead.
+      </p>
+    );
+  }
+
   return (
-    <div className="flex justify-center items-center min-h-[80vh] px-4">
-      <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Contact Us</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Subject Field */}
-          <div>
-            <label
-              htmlFor="subject"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-            >
-              Subject
-            </label>
-            <input
-              type="text"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent
-                         transition duration-200"
-              placeholder="Enter subject"
-            />
-          </div>
-
-          {/* Email Field */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent
-                         transition duration-200"
-              placeholder="your@email.com"
-            />
-          </div>
-
-          {/* Message Field */}
-          <div>
-            <label
-              htmlFor="message"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-            >
-              Message
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows="4"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent
-                         transition duration-200 resize-none"
-              placeholder="Type your message here..."
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 px-6 rounded-lg text-white font-medium
-                       transition duration-200 ${
-                         loading
-                           ? 'bg-green-400 cursor-not-allowed'
-                           : 'bg-green-600 hover:bg-green-700'
-                       }`}
-          >
-            {loading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin" />
-                Sending...
-              </div>
-            ) : (
-              'Send Message'
-            )}
-          </button>
-        </form>
+    <form onSubmit={handleSubmit} noValidate className="grid gap-5 sm:grid-cols-2">
+      <Field label="Your name" htmlFor="contact-name" error={errorFor('name')}>
+        <input type="text" autoComplete="name" {...control('name')} />
+      </Field>
+      <Field label="Email address" htmlFor="contact-email" error={errorFor('email')}>
+        <input type="email" autoComplete="email" inputMode="email" {...control('email')} />
+      </Field>
+      <Field label="Subject" htmlFor="contact-subject" error={errorFor('subject')} className="sm:col-span-2">
+        <input type="text" {...control('subject')} />
+      </Field>
+      <Field label="Message" htmlFor="contact-message" error={errorFor('message')} className="sm:col-span-2">
+        <textarea rows={5} {...control('message')} />
+      </Field>
+      <div className="sm:col-span-2">
+        <Button type="submit" icon={LuSend} loading={sending}>
+          {sending ? 'Sending' : 'Send message'}
+        </Button>
       </div>
-    </div>
+    </form>
   );
 };
 

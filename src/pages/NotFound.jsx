@@ -1,29 +1,27 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { LuArrowLeft } from 'react-icons/lu';
+import { Button } from '../components/ui';
+import BrandMark from '../components/BrandMark';
 
 const NotFound = () => {
-    const navigate = useNavigate();
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 text-center">
-            <div className="text-8xl font-bold text-green-600 mb-2">404</div>
-            <div className="text-5xl mb-6">♻️</div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Page not found</h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm">
-                Looks like this page was recycled. Let&#39;s get you back on track.
-            </p>
-            <div className="flex gap-3">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="px-6 py-3 border border-green-600 text-green-600 rounded-xl font-medium hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
-                    Go Back
-                </button>
-                <button
-                    onClick={() => navigate('/')}
-                    className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors">
-                    Home
-                </button>
-            </div>
-        </div>
-    );
+  const navigate = useNavigate();
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12 text-center">
+      <Link to="/" className="rounded-lg text-gray-900 dark:text-gray-50">
+        <BrandMark />
+      </Link>
+      <p className="eyebrow mt-10">Error 404</p>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">Page not found</h1>
+      <p className="mt-2 max-w-sm text-sm text-gray-600 dark:text-gray-400">
+        This address does not match any page. Check the link, or start again from the home page.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button variant="secondary" icon={LuArrowLeft} onClick={() => navigate(-1)}>Go back</Button>
+        <Button as={Link} to="/">Go to home page</Button>
+      </div>
+    </main>
+  );
 };
 
 export default NotFound;

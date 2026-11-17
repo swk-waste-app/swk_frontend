@@ -1,112 +1,129 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBookOpen, FaLeaf } from 'react-icons/fa';
+import { LuBookOpen, LuImage, LuRefreshCw, LuTriangleAlert } from 'react-icons/lu';
 import { apiGetEducationResources } from '../../services/education';
+import { brand } from '../../config/brand';
+import { mediaUrl } from '../../lib/format';
+import { Badge, Button, Card, EmptyState, PageHeader } from '../../components/ui';
 import { SkeletonTile } from '../../components/Skeleton';
 import EcoChat from '../../components/EcoChat';
 
+// Values match the categories the API accepts; labels are shown in sentence case.
 const CATEGORIES = ['All', 'Recycling Tips', 'Composting', 'Waste Sorting', 'Sustainability', 'Workshops', 'General'];
+const SKELETON_KEYS = [0, 1, 2, 3, 4, 5];
 
-const cloudinaryUrl = (image) =>
-  `https://res.cloudinary.com/dwgj3lovn/image/upload/w_700,q_auto,f_auto/${image}`;
+const sentenceCase = (text = '') => text.charAt(0) + text.slice(1).toLowerCase();
+
+const CHIP = 'rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors';
+const CHIP_ACTIVE = 'border-brand-700 bg-brand-700 text-white dark:border-brand-500 dark:bg-brand-500 dark:text-gray-950';
+const CHIP_IDLE = 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800';
 
 const EducationHub = () => {
   const [resources, setResources] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('loading');
   const [category, setCategory] = useState('All');
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    setStatus('loading');
     apiGetEducationResources(category === 'All' ? undefined : category)
-      .then((res) => { if (!cancelled) setResources(Array.isArray(res.data) ? res.data : []); })
-      .catch(() => { if (!cancelled) setError('Failed to load resources. Please try again shortly.'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .then((res) => {
+        if (cancelled) return;
+        setResources(Array.isArray(res.data) ? res.data : []);
+        setStatus('ready');
+      })
+      .catch(() => { if (!cancelled) setStatus('error'); });
     return () => { cancelled = true; };
-  }, [category]);
+  }, [category, attempt]);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
-      <div className="bg-green-950 text-white py-16 px-5 sm:px-8 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-green-200">
-          <FaLeaf size={12} /> Education &amp; Awareness
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mt-5">Learn to Waste Less, Recycle Right</h1>
-        <p className="text-green-100/80 mt-3 max-w-xl mx-auto">
-          Practical guides, sorting tips and workshop updates from the Taka Kipawa team &mdash; built to help
-          Kipawa and beyond live more sustainably.
-        </p>
+    <div className="page">
+      <PageHeader
+        title="Education"
+        description={`Guides on sorting, recycling and composting, published by ${brand.operator}.`}
+      />
+
+      <div role="group" aria-label="Filter by category" className="mb-6 flex flex-wrap gap-2">
+        {CATEGORIES.map((name) => (
+          <button
+            key={name}
+            type="button"
+            aria-pressed={category === name}
+            onClick={() => setCategory(name)}
+            className={`${CHIP} ${category === name ? CHIP_ACTIVE : CHIP_IDLE}`}
+          >
+            {sentenceCase(name)}
+          </button>
+        ))}
       </div>
 
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 py-14">
-        <div className="flex flex-wrap gap-2 mb-10 justify-center">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors duration-200 ${
-                category === c
-                  ? 'bg-green-700 text-white border-green-700'
-                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-green-400 hover:text-green-700 dark:hover:text-green-300'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+      {status === 'loading' && (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading guides">
+          {SKELETON_KEYS.map((key) => <SkeletonTile key={key} />)}
         </div>
+      )}
 
-        {loading && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[0, 1, 2, 3, 4, 5].map((i) => <SkeletonTile key={i} />)}
-          </div>
-        )}
+      {status === 'error' && (
+        <Card>
+          <EmptyState
+            icon={LuTriangleAlert}
+            title="Guides could not be loaded"
+            description="Check your connection and try again."
+            action={(
+              <Button variant="secondary" icon={LuRefreshCw} onClick={() => setAttempt((n) => n + 1)}>Try again</Button>
+            )}
+          />
+        </Card>
+      )}
 
-        {!loading && error && (
-          <p className="text-center text-red-600">{error}</p>
-        )}
+      {status === 'ready' && resources.length === 0 && (
+        <Card>
+          <EmptyState
+            icon={LuBookOpen}
+            title="No guides here yet"
+            description={category === 'All' ? 'Nothing has been published yet.' : 'Nothing has been published in this category yet.'}
+            action={category !== 'All' && (
+              <Button variant="secondary" onClick={() => setCategory('All')}>Show all guides</Button>
+            )}
+          />
+        </Card>
+      )}
 
-        {!loading && !error && resources.length === 0 && (
-          <div className="text-center py-16 text-gray-500 dark:text-gray-400">
-            <FaBookOpen className="mx-auto mb-4 text-4xl text-gray-300" />
-            No resources published in this category yet &mdash; check back soon.
-          </div>
-        )}
-
-        {!loading && !error && resources.length > 0 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {resources.map((item) => (
+      {status === 'ready' && resources.length > 0 && (
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {resources.map((item) => (
+            <li key={item._id} className="flex">
               <Link
                 to={`/education/${item._id}`}
-                key={item._id}
-                className="group flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-md ring-1 ring-gray-100 dark:ring-gray-800 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+                className="card group flex w-full flex-col overflow-hidden transition-colors hover:border-gray-300 dark:hover:border-gray-700"
               >
-                <div className="h-44 overflow-hidden bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                <div className="flex h-44 items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600">
                   {item.image ? (
                     <img
-                      src={cloudinaryUrl(item.image)}
-                      alt={item.title}
+                      src={mediaUrl(item.image, 'w_700,q_auto,f_auto')}
+                      alt=""
                       loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <FaLeaf className="text-5xl text-green-200" />
+                    <LuImage className="h-8 w-8" aria-hidden="true" />
                   )}
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <span className="text-xs font-bold uppercase tracking-wide text-green-600">{item.category}</span>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-50 mt-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 leading-relaxed flex-1 line-clamp-3">{item.summary}</p>
-                  <span className="mt-4 text-green-700 dark:text-green-400 font-semibold text-sm">Read more &rarr;</span>
+                <div className="flex flex-1 flex-col items-start p-5">
+                  {item.category && <Badge>{sentenceCase(item.category)}</Badge>}
+                  <h2 className="mt-3 font-sans text-base font-semibold text-gray-900 group-hover:underline dark:text-gray-50">
+                    {item.title}
+                  </h2>
+                  <p className="mt-1.5 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-400">{item.summary}</p>
                 </div>
               </Link>
-            ))}
-          </div>
-        )}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      {/* AI assistant — renders only when the server has a key configured */}
+      {/* Assistant: renders only when the server has it switched on. */}
       <EcoChat />
     </div>
   );

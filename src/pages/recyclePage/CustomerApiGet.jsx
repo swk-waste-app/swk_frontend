@@ -1,86 +1,61 @@
 import { Link } from 'react-router-dom';
+import { Skeleton } from '../../components/Skeleton';
+import { Badge } from '../../components/ui';
+import { formatMoney } from '../../lib/format';
+import { ROUTES, inStock } from './listingOptions';
+import { ProductImage } from './listingParts';
 
-const ApiGet = ({ id, title, inventory, image, description, price, isUpcycled, wasteType, location, condition, vendorName, vendorId }) => {
+const GRID = 'grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-4';
+
+// One listing in the marketplace or on a vendor's store. The title link is
+// stretched over the whole card; the vendor link sits above it.
+const ProductCard = ({ product, showVendor = true }) => {
+  const vendor = product.user;
+  const available = inStock(product);
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-
-      {/* Image */}
-      <div className="relative overflow-hidden rounded-t-xl h-48">
-        <img
-          src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${image}`}
-          alt={title}
-          className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
-          onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=No+Image'; }}
-        />
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {isUpcycled && (
-            <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-              ♻️ Upcycled
-            </span>
-          )}
-          {condition && (
-            <span className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs px-2 py-1 rounded-full font-medium shadow-sm">
-              {condition}
-            </span>
-          )}
-        </div>
-        <div className="absolute top-2 right-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            inventory > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-          }`}>
-            {inventory > 0 ? 'In Stock' : 'Out of Stock'}
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 space-y-2 flex-grow flex flex-col">
-
-        {/* Vendor attribution */}
-        {vendorName && vendorId && (
-          <Link to={`/customerDashboard/store/${vendorId}`} className="flex items-center gap-1.5 w-fit group">
-            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              {vendorName[0].toUpperCase()}
-            </div>
-            <span className="text-xs text-green-700 dark:text-green-400 font-medium group-hover:underline truncate max-w-[120px]">
-              {vendorName}
-            </span>
-          </Link>
-        )}
-
-        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 line-clamp-1">{title}</h2>
-
-        {wasteType && (
-          <span className="inline-block bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-xs px-2 py-1 rounded-full w-fit">
-            {wasteType}
-          </span>
-        )}
-
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-green-600">
-            GH₵ {price ? Number(price).toFixed(2) : '0.00'}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">{inventory} left</span>
-        </div>
-
-        <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 flex-grow">
-          {description || 'No description available'}
-        </p>
-
-        {location && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-            📍 {location}
+    <article className="card relative flex flex-col overflow-hidden transition-colors hover:border-gray-300 dark:hover:border-gray-700">
+      <ProductImage image={product.image} alt={product.title} wasteType={product.wasteType} className="aspect-[4/3] w-full" />
+      {product.isUpcycled && <Badge tone="brand" className="absolute left-2 top-2 dark:bg-brand-900">Upcycled</Badge>}
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+        <Badge tone={available ? 'neutral' : 'danger'} className="w-fit">{available ? 'In stock' : 'Out of stock'}</Badge>
+        <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <Link to={ROUTES.product(product.id)} className="after:absolute after:inset-0">{product.title}</Link>
+        </h3>
+        {showVendor && vendor?.id && vendor.name && (
+          <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+            Sold by <Link to={ROUTES.store(vendor.id)} className="link relative z-10">{vendor.name}</Link>
           </p>
         )}
-
-        <Link
-          to={`/customerDashboard/product/${id}`}
-          className="block w-full mt-auto px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors text-center font-medium">
-          View Details
-        </Link>
+        <div className="mt-auto flex items-baseline justify-between gap-2 pt-1">
+          <p className="text-base font-semibold tabular-nums text-gray-900 dark:text-gray-50">{formatMoney(product.price)}</p>
+          {available && <p className="text-xs tabular-nums text-gray-500 dark:text-gray-400">{product.inventory} left</p>}
+        </div>
       </div>
-    </div>
+    </article>
   );
 };
 
-export default ApiGet;
+export const ProductGrid = ({ products, showVendor = true }) => (
+  <div className={GRID}>
+    {products.map((product) => <ProductCard key={product.id} product={product} showVendor={showVendor} />)}
+  </div>
+);
+
+export const ProductGridSkeleton = ({ count = 8 }) => (
+  <div className={GRID} aria-hidden="true">
+    {Array.from({ length: count }, (_, i) => (
+      <div key={i} className="card overflow-hidden">
+        <Skeleton className="aspect-[4/3] w-full rounded-none" />
+        <div className="grid gap-2.5 p-3 sm:p-4">
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+export default ProductCard;

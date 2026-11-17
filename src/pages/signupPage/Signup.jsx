@@ -1,206 +1,148 @@
 import { useState } from 'react';
-import { IoMdContact } from "react-icons/io";
-import { FaGoogle, FaEye, FaEyeSlash, FaUser, FaStore } from "react-icons/fa";
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { LuHouse, LuStore } from 'react-icons/lu';
+import { toast } from 'sonner';
 import { apiSignup, startGoogleSignIn } from '../../services/Auth';
-import { useNavigate, Link } from 'react-router-dom';
-import image1 from "../../assets/images/image2.png";
-import { AiOutlineMail, AiOutlineLock } from 'react-icons/ai';
-import logo from '../../assets/images/SWK_LOGO__5_.png';
+import { Button, Field } from '../../components/ui';
+import AuthLayout, { FormAlert, GoogleOption, PasswordInput, TextInput } from '../auth/AuthLayout';
+import { apiErrorMessage, isEmail } from '../auth/validation';
 
-export default function SignupPage() {
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('user');
-  const [errorMessage, setErrorMessage] = useState('');
+const ACCOUNT_TYPES = [
+  { value: 'user', label: 'Household', icon: LuHouse, summary: 'Book waste pickups, earn reward points and shop the marketplace.' },
+  { value: 'vendor', label: 'Vendor', icon: LuStore, summary: 'List upcycled goods for sale in the marketplace.' },
+];
+
+const EMPTY = { name: '', email: '', contactNumber: '', password: '', confirm: '' };
+
+const validate = ({ name, email, contactNumber, password, confirm }) => {
+  const errors = {};
+  if (!name.trim()) errors.name = 'Enter your name.';
+  if (!isEmail(email)) errors.email = 'Enter a valid email address.';
+  if (contactNumber.length < 7) errors.contactNumber = 'Enter your phone number, digits only.';
+  if (password.length < 6) errors.password = 'Use at least 6 characters.';
+  if (confirm !== password) errors.confirm = 'The passwords do not match.';
+  return errors;
+};
+
+// The one sign-up screen. `defaultType` (or ?type=vendor) preselects the
+// vendor account type.
+const Signup = ({ defaultType = 'user' }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [type, setType] = useState(
+    defaultType === 'vendor' || searchParams.get('type') === 'vendor' ? 'vendor' : 'user'
+  );
+  const [values, setValues] = useState(EMPTY);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [serverErrors, setServerErrors] = useState({});
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const errors = { ...(submitted ? validate(values) : {}), ...serverErrors };
+  const field = (name, clean = (v) => v) => ({
+    name,
+    value: values[name],
+    invalid: Boolean(errors[name]),
+    onChange: (e) => {
+      setValues((v) => ({ ...v, [name]: clean(e.target.value) }));
+      setServerErrors({});
+    },
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    setServerErrors({});
+    if (Object.keys(validate(values)).length > 0) return;
+
     setLoading(true);
-    setErrorMessage('');
-
-    const formData = new FormData(event.target);
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const confirmpass = formData.get("confirmpass");
-    const contactNumber = formData.get("contactNumber");
-
-    if (!name || !email) {
-      setErrorMessage("Please make sure all fields are filled");
-      setLoading(false);
-      return;
-    }
-    if (password !== confirmpass) {
-      setErrorMessage("Passwords do not match. Try again!");
-      setLoading(false);
-      return;
-    }
-
-    const payload = { name, email, password, contactNumber, role: selectedRole };
-
     try {
-      const response = await apiSignup(payload);
-      if (response.data?.accessToken) {
-        localStorage.setItem("token", response.data.accessToken);
-      }
+      await apiSignup({
+        name: values.name.trim(),
+        email: values.email,
+        password: values.password,
+        contactNumber: values.contactNumber,
+        role: type,
+      });
+      toast.success('Account created. Sign in to continue.');
+      navigate('/signin');
+    } catch (error) {
+      setServerErrors(
+        error.response?.status === 409
+          ? { email: 'An account with this email already exists. Sign in instead.' }
+          : { form: apiErrorMessage(error, 'Could not create your account. Try again in a moment.') }
+      );
+    } finally {
       setLoading(false);
-      navigate("/signin");
-    } catch (err) {
-      console.log("error: ", err.response?.data || err);
-      setLoading(false);
-      setErrorMessage(err.response?.data?.message || "An error occurred. Please try again.");
     }
-  };
-
-  const handleGoogleSignup = () => {
-    startGoogleSignIn(selectedRole);
   };
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-
-      {/* Left Image */}
-      <div className="hidden md:block w-1/2 h-screen overflow-hidden">
-        <img src={image1} alt="Sign Up" className="w-full h-full object-cover" />
-      </div>
-
-      {/* Right Form */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-950 p-8 overflow-y-auto">
-        <div className="flex flex-col items-center mb-4">
-          <img src={logo} alt="Taka Kipawa Logo" className="h-20 w-auto object-contain" />
-          <p className="text-gray-600 dark:text-gray-300 mt-2">Join us in managing waste responsibly</p>
-        </div>
-
-        <div className="w-full max-w-sm">
-
-          {/* Role Selector */}
-          <div className="mb-5">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 text-center">I want to sign up as a:</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setSelectedRole('user')}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                  selectedRole === 'user'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300'
-                }`}>
-                <FaUser size={20} />
-                <span className="text-sm font-medium">User</span>
-                <span className="text-xs text-center opacity-70">Schedule pickups & buy products</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedRole('vendor')}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                  selectedRole === 'vendor'
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:border-gray-300'
-                }`}>
-                <FaStore size={20} />
-                <span className="text-sm font-medium">Vendor</span>
-                <span className="text-xs text-center opacity-70">Sell recycled & upcycled products</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Google Sign Up */}
-          <button
-            type="button"
-            onClick={handleGoogleSignup}
-            className="w-full flex items-center justify-center gap-3 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 transition-all duration-200 mb-4 shadow-sm">
-            <FaGoogle className="text-red-500" size={18} />
-            <span className="text-gray-700 dark:text-gray-200 font-medium">Continue with Google</span>
-          </button>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-gray-400 dark:text-gray-500 text-sm">or sign up with email</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
+    <AuthLayout title="Create an account" description="Choose the kind of account you need.">
+      <fieldset className="mb-6">
+        <legend className="sr-only">Account type</legend>
+        <div className="grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
+          {ACCOUNT_TYPES.map(({ value, label, icon: Icon }) => (
+            <label key={value} className="cursor-pointer">
               <input
-                type="text"
-                placeholder="Full Name"
-                name="name"
-                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
-                required />
-            </div>
-
-            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
-              <AiOutlineMail className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
-              <input
-                type="email"
-                placeholder="Email address"
-                name="email"
-                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
-                required />
-            </div>
-
-            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
-              <AiOutlineLock className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password (min 6 characters)"
-                name="password"
-                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
-                required />
-              <span onClick={() => setShowPassword(!showPassword)} className="cursor-pointer text-gray-400 dark:text-gray-500 ml-2">
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                type="radio"
+                name="accountType"
+                value={value}
+                checked={type === value}
+                onChange={() => setType(value)}
+                className="peer sr-only"
+              />
+              <span className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors peer-checked:bg-white peer-checked:text-gray-900 peer-checked:shadow-card peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-500 dark:text-gray-400 dark:peer-checked:bg-gray-950 dark:peer-checked:text-gray-50">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {label}
               </span>
-            </div>
-
-            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
-              <AiOutlineLock className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                name="confirmpass"
-                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
-                required />
-            </div>
-
-            <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm">
-              <IoMdContact className="text-gray-400 dark:text-gray-500 h-5 w-5 mr-2 flex-shrink-0" />
-              <input
-                type="number"
-                placeholder="Contact Number"
-                name="contactNumber"
-                className="bg-transparent w-full focus:outline-none text-gray-700 dark:text-gray-200"
-                required />
-            </div>
-
-            {errorMessage && (
-              <div className="text-center text-red-600 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded-lg">
-                {errorMessage}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-3 text-white font-semibold rounded-xl transition duration-200 disabled:opacity-50 ${
-                selectedRole === 'vendor'
-                  ? 'bg-purple-600 hover:bg-purple-700'
-                  : 'bg-green-600 hover:bg-green-700'
-              }`}>
-              {loading ? 'Creating account...' : `Sign up as ${selectedRole === 'vendor' ? 'Vendor' : 'User'}`}
-            </button>
-          </form>
-
-          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
-            Already have an account?
-            <Link to="/signin" className="text-green-600 font-medium hover:underline ml-1">Sign in</Link>
-          </p>
+            </label>
+          ))}
         </div>
+        <p className="help" aria-live="polite">{ACCOUNT_TYPES.find((t) => t.value === type).summary}</p>
+      </fieldset>
 
-        <footer className="text-center text-gray-400 dark:text-gray-500 mt-8 text-xs">© SWK Corporate</footer>
-      </div>
-    </div>
+      <GoogleOption onClick={() => startGoogleSignIn(type)} dividerText="or sign up with email" />
+
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+        {errors.form && <FormAlert>{errors.form}</FormAlert>}
+
+        <Field label="Full name" htmlFor="signup-name" error={errors.name}>
+          <TextInput id="signup-name" type="text" autoComplete="name" {...field('name')} />
+        </Field>
+
+        <Field label="Email" htmlFor="signup-email" error={errors.email}>
+          <TextInput id="signup-email" type="email" autoComplete="email" {...field('email')} />
+        </Field>
+
+        <Field label="Phone number" htmlFor="signup-phone" error={errors.contactNumber} hint="Digits only, no spaces or symbols.">
+          <TextInput
+            id="signup-phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
+            maxLength={15}
+            {...field('contactNumber', (v) => v.replace(/\D/g, ''))}
+          />
+        </Field>
+
+        <Field label="Password" htmlFor="signup-password" error={errors.password} hint="At least 6 characters.">
+          <PasswordInput id="signup-password" autoComplete="new-password" {...field('password')} />
+        </Field>
+
+        <Field label="Confirm password" htmlFor="signup-confirm" error={errors.confirm}>
+          <PasswordInput id="signup-confirm" autoComplete="new-password" {...field('confirm')} />
+        </Field>
+
+        <Button type="submit" loading={loading} className="mt-2 w-full">
+          {type === 'vendor' ? 'Create vendor account' : 'Create household account'}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        Already have an account? <Link to="/signin" className="link">Sign in</Link>
+      </p>
+    </AuthLayout>
   );
-}
+};
+
+export default Signup;

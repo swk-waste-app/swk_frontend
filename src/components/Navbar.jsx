@@ -1,127 +1,83 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { FaBars, FaTimes } from 'react-icons/fa';
-import logo from '../assets/images/SWK_LOGO__5_.png';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { LuMenu, LuX } from 'react-icons/lu';
+import { Button } from './ui';
+import BrandMark from './BrandMark';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
-  { label: 'Home', to: '/' },
-  { label: 'Who We Are', to: '/who-we-are' },
-  { label: 'Services', to: '/#services' },
+  { label: 'How it works', to: '/#how-it-works' },
   { label: 'Education', to: '/education' },
-  { label: 'Blog', to: '/blog' },
+  { label: 'News', to: '/blog' },
+  { label: 'About', to: '/who-we-are' },
 ];
 
-const Navbar = ({ forceSolid = false }) => {
-  const [scrolledPast, setScrolledPast] = useState(false);
+const ACTIVE = 'text-brand-700 dark:text-brand-400';
+const IDLE = 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white';
+
+// Links to a section of the home page are never shown as the current page.
+const NavItem = ({ link, className }) =>
+  link.to.includes('#') ? (
+    <Link to={link.to} className={`${className} ${IDLE}`}>{link.label}</Link>
+  ) : (
+    <NavLink to={link.to} className={({ isActive }) => `${className} ${isActive ? ACTIVE : IDLE}`}>
+      {link.label}
+    </NavLink>
+  );
+
+const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const scrolled = forceSolid || scrolledPast;
+  const location = useLocation();
+
+  useEffect(() => { setMenuOpen(false); }, [location]);
 
   useEffect(() => {
-    if (forceSolid) return;
-    const onScroll = () => setScrolledPast(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [forceSolid]);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (!menuOpen) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  const linkClass = ({ isActive }) =>
-    `text-sm font-semibold transition-colors duration-200 ${
-      scrolled
-        ? isActive ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-200 hover:text-green-700 dark:hover:text-green-300'
-        : isActive ? 'text-white' : 'text-white/90 hover:text-white'
-    }`;
-
   return (
-    <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
-      }`}
-    >
-      <nav className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src={logo} alt="Taka Kipawa" className="h-11 sm:h-12 w-auto object-contain" />
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="min-w-0 rounded-lg text-gray-900 dark:text-gray-50">
+          <BrandMark />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-9">
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
           {NAV_LINKS.map((link) => (
-            <NavLink key={link.label} to={link.to} className={linkClass} end={link.to === '/'}>
-              {link.label}
-            </NavLink>
+            <NavItem key={link.to} link={link} className="rounded-md px-3 py-2 text-sm font-medium transition-colors" />
           ))}
-        </div>
+        </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
-          <ThemeToggle
-            className={scrolled ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-white hover:bg-white/10'}
-          />
-          <Link
-            to="/signin"
-            className={`text-sm font-semibold px-5 py-2.5 rounded-full border transition-all duration-200 ${
-              scrolled
-                ? 'border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
-                : 'border-white/70 text-white hover:bg-white/10'
-            }`}
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm font-semibold px-5 py-2.5 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md shadow-green-600/30 transition-all duration-200"
-          >
-            Get Started
-          </Link>
-        </div>
-
-        <div className="lg:hidden flex items-center gap-1">
-          <ThemeToggle
-            className={scrolled ? 'text-gray-600 dark:text-gray-300' : 'text-white'}
-          />
+        <div className="flex shrink-0 items-center gap-1 lg:gap-2">
+          <ThemeToggle />
+          <Button as={Link} to="/signin" variant="ghost" className="hidden lg:inline-flex">Sign in</Button>
+          <Button as={Link} to="/signup" className="hidden lg:inline-flex">Get started</Button>
           <button
             type="button"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMenuOpen((v) => !v)}
-            className={`p-2 rounded-lg ${scrolled ? 'text-green-800 dark:text-green-300' : 'text-white'}`}
+            aria-expanded={menuOpen}
+            aria-controls="site-menu"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="btn btn-ghost px-2.5 lg:hidden"
           >
-            {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+            {menuOpen ? <LuX className="h-5 w-5" aria-hidden="true" /> : <LuMenu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
-      </nav>
+      </div>
 
       {menuOpen && (
-        <div className="lg:hidden absolute top-full inset-x-0 bg-white dark:bg-gray-900 shadow-xl border-t border-gray-100 dark:border-gray-800 animate-fade-in">
-          <div className="flex flex-col px-6 py-6 gap-5">
+        <div id="site-menu" className="border-t border-gray-200 px-4 py-4 animate-fade-in dark:border-gray-800 sm:px-6 lg:hidden">
+          <nav aria-label="Main" className="flex flex-col">
             {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.label}
-                to={link.to}
-                onClick={() => setMenuOpen(false)}
-                className="text-gray-700 dark:text-gray-200 font-semibold text-base hover:text-green-700 dark:hover:text-green-300"
-              >
-                {link.label}
-              </NavLink>
+              <NavItem key={link.to} link={link} className="rounded-md px-2 py-2.5 text-base font-medium" />
             ))}
-            <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-              <Link
-                to="/signin"
-                onClick={() => setMenuOpen(false)}
-                className="text-center text-sm font-semibold px-5 py-3 rounded-full border border-green-700 text-green-700 dark:text-green-400"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                onClick={() => setMenuOpen(false)}
-                className="text-center text-sm font-semibold px-5 py-3 rounded-full text-white bg-gradient-to-r from-green-500 to-green-600"
-              >
-                Get Started
-              </Link>
-            </div>
+          </nav>
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+            <Button as={Link} to="/signin" variant="secondary">Sign in</Button>
+            <Button as={Link} to="/signup">Get started</Button>
           </div>
         </div>
       )}

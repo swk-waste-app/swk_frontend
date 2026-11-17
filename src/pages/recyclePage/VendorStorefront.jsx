@@ -1,194 +1,101 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { apiGetVendorProfile, apiGetVendorProducts } from '../../services/product';
-import ApiGet from './CustomerApiGet';
-import { FaArrowLeft, FaSearch, FaStore, FaTimes, FaRecycle, FaBoxOpen, FaShoppingBag } from 'react-icons/fa';
+import { useCallback, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { LuArrowLeft, LuMapPin, LuPackage, LuSearch, LuShoppingBag, LuStore } from 'react-icons/lu';
+import { Skeleton } from '../../components/Skeleton';
+import { Button, Card, EmptyState, PageHeader, StatCard } from '../../components/ui';
+import { formatNumber } from '../../lib/format';
+import { apiGetVendorProducts, apiGetVendorProfile } from '../../services/product';
+import { ProductGrid, ProductGridSkeleton } from './CustomerApiGet';
+import ListingFilters from './ListingFilters';
+import { EMPTY_FILTERS, ROUTES, filterListings, useLoader } from './listingOptions';
+import { LoadError } from './listingParts';
 
 const VendorStorefront = () => {
-    const { vendorId } = useParams();
-    const navigate = useNavigate();
-    const [vendor, setVendor] = useState(null);
-    const [products, setProducts] = useState([]);
-    const [filtered, setFiltered] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [sortBy, setSortBy] = useState('newest');
-    const [upcycledOnly, setUpcycledOnly] = useState(false);
+  const { vendorId } = useParams();
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
-    useEffect(() => {
-        const fetchAll = async () => {
-            try {
-                const [vendorRes, productsRes] = await Promise.all([
-                    apiGetVendorProfile(vendorId),
-                    apiGetVendorProducts(vendorId)
-                ]);
-                setVendor(vendorRes.data);
-                const prods = productsRes.data || [];
-                setProducts(prods);
-                setFiltered(prods);
-            } catch {
-                navigate(-1);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAll();
-    }, [vendorId, navigate]);
-
-    useEffect(() => {
-        let result = [...products];
-        if (search) {
-            const q = search.toLowerCase();
-            result = result.filter(p =>
-                p.title?.toLowerCase().includes(q) ||
-                p.description?.toLowerCase().includes(q)
-            );
-        }
-        if (upcycledOnly) result = result.filter(p => p.isUpcycled);
-        if (sortBy === 'price_low') result.sort((a, b) => a.price - b.price);
-        else if (sortBy === 'price_high') result.sort((a, b) => b.price - a.price);
-        else result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setFiltered(result);
-    }, [search, products, sortBy, upcycledOnly]);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            </div>
-        );
+  // Resolves to null when the vendor does not exist.
+  const load = useCallback(async () => {
+    try {
+      const [vendor, products] = await Promise.all([apiGetVendorProfile(vendorId), apiGetVendorProducts(vendorId)]);
+      return { vendor: vendor.data, products: Array.isArray(products.data) ? products.data : [] };
+    } catch (error) {
+      if (error.response?.status === 404) return null;
+      throw error;
     }
+  }, [vendorId]);
+  const { status, data, reload } = useLoader(load);
 
-    const upcycledCount = products.filter(p => p.isUpcycled).length;
+  const matches = useMemo(() => filterListings(data?.products || [], filters), [data, filters]);
 
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-8">
-            <div className="p-4 space-y-6">
+  return (
+    <div className="page">
+      <Button as={Link} to={ROUTES.marketplace} variant="ghost" size="sm" icon={LuArrowLeft} className="-ml-3 mb-4">Marketplace</Button>
 
-                {/* Back */}
-                <button onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
-                    <FaArrowLeft /> Back to Marketplace
-                </button>
-
-                {/* Vendor Header */}
-                <div className="rounded-2xl p-6 text-white relative overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
-                    <div className="absolute -right-6 -top-6 w-40 h-40 bg-white dark:bg-gray-900 opacity-5 rounded-full" />
-                    <div className="absolute -right-2 top-8 w-24 h-24 bg-white dark:bg-gray-900 opacity-5 rounded-full" />
-
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-16 h-16 rounded-full bg-white dark:bg-gray-900 bg-opacity-20 border-2 border-white border-opacity-40 flex items-center justify-center text-2xl font-bold flex-shrink-0">
-                            {vendor?.name?.[0]?.toUpperCase() || '?'}
-                        </div>
-                        <div>
-                            <p className="text-green-200 text-xs flex items-center gap-1 mb-1">
-                                <FaStore size={10} /> Vendor Store
-                            </p>
-                            <h1 className="text-2xl font-bold leading-tight">
-                                {vendor?.name ? `${vendor.name}'s Store` : 'Vendor Store'}
-                            </h1>
-                            {vendor?.location && (
-                                <p className="text-green-200 text-sm mt-1">📍 {vendor.location}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Stats row */}
-                    <div className="mt-5 grid grid-cols-3 gap-4 relative z-10">
-                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
-                            <FaBoxOpen className="mx-auto mb-1 text-green-200" />
-                            <p className="text-xl font-bold">{vendor?.totalProducts || 0}</p>
-                            <p className="text-green-200 text-xs">Products</p>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
-                            <FaShoppingBag className="mx-auto mb-1 text-green-200" />
-                            <p className="text-xl font-bold">{vendor?.totalSold || 0}</p>
-                            <p className="text-green-200 text-xs">Items Sold</p>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 bg-opacity-10 rounded-xl p-3 text-center">
-                            <FaRecycle className="mx-auto mb-1 text-green-200" />
-                            <p className="text-xl font-bold">{upcycledCount}</p>
-                            <p className="text-green-200 text-xs">Upcycled</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Search */}
-                <div className="relative">
-                    <FaSearch className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" />
-                    <input
-                        type="text"
-                        placeholder={`Search in ${vendor?.name || 'this'} store...`}
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 shadow-sm"
-                    />
-                    {search && (
-                        <button onClick={() => setSearch('')} className="absolute right-4 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600">
-                            <FaTimes />
-                        </button>
-                    )}
-                </div>
-
-                {/* Filter Row */}
-                <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                        onClick={() => setUpcycledOnly(u => !u)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                            upcycledOnly ? 'bg-green-600 text-white' : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
-                        }`}>
-                        <FaRecycle size={12} /> Upcycled Only
-                    </button>
-                    <select
-                        value={sortBy}
-                        onChange={e => setSortBy(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-full text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <option value="newest">Newest First</option>
-                        <option value="price_low">Price: Low to High</option>
-                        <option value="price_high">Price: High to Low</option>
-                    </select>
-                    <p className="ml-auto text-sm text-gray-500 dark:text-gray-400">
-                        {filtered.length} product{filtered.length !== 1 ? 's' : ''}
-                    </p>
-                </div>
-
-                {/* Products Grid */}
-                {filtered.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filtered.map(product => (
-                            <ApiGet
-                                key={product.id}
-                                id={product.id}
-                                title={product.title}
-                                description={product.description}
-                                image={product.image}
-                                inventory={product.inventory}
-                                price={product.price}
-                                isUpcycled={product.isUpcycled}
-                                wasteType={product.wasteType}
-                                location={product.location}
-                                condition={product.condition}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-                        <FaRecycle className="text-5xl mx-auto mb-3 opacity-20" />
-                        <p className="font-medium text-gray-500 dark:text-gray-400">
-                            {search ? 'No products match your search' : 'No products listed yet'}
-                        </p>
-                        {search && (
-                            <button onClick={() => setSearch('')}
-                                className="mt-3 text-green-600 text-sm hover:underline">
-                                Clear search
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
+      {status === 'loading' && (
+        <div aria-hidden="true">
+          <Skeleton className="mb-2 h-8 w-56" />
+          <Skeleton className="mb-6 h-4 w-32" />
+          <ProductGridSkeleton count={4} />
         </div>
-    );
+      )}
+
+      {status === 'error' && <LoadError title="This store could not be loaded" onRetry={reload} />}
+
+      {status === 'ready' && !data && (
+        <Card>
+          <EmptyState
+            icon={LuStore}
+            title="Vendor not found"
+            description="This store may have been closed."
+            action={<Button as={Link} to={ROUTES.marketplace} variant="secondary">Browse the marketplace</Button>}
+          />
+        </Card>
+      )}
+
+      {status === 'ready' && data && (
+        <>
+          <PageHeader
+            eyebrow="Vendor"
+            title={data.vendor.name}
+            description={data.vendor.location && (
+              <span className="inline-flex items-center gap-1.5">
+                <LuMapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {data.vendor.location}
+              </span>
+            )}
+          />
+
+          <div className="mb-6 grid grid-cols-2 gap-4 sm:max-w-md">
+            <StatCard label="Listings" value={formatNumber(data.vendor.totalProducts)} icon={LuPackage} />
+            <StatCard label="Items sold" value={formatNumber(data.vendor.totalSold)} icon={LuShoppingBag} />
+          </div>
+
+          {data.products.length === 0 ? (
+            <Card>
+              <EmptyState icon={LuPackage} title="No listings yet" description="This vendor has not listed any products." />
+            </Card>
+          ) : (
+            <>
+              <ListingFilters compact filters={filters} onChange={setFilters} onClear={() => setFilters(EMPTY_FILTERS)} />
+              {matches.length > 0 ? (
+                <ProductGrid products={matches} showVendor={false} />
+              ) : (
+                <Card>
+                  <EmptyState
+                    icon={LuSearch}
+                    title="No listings match these filters"
+                    description="Try a different search."
+                    action={<Button variant="secondary" onClick={() => setFilters(EMPTY_FILTERS)}>Clear filters</Button>}
+                  />
+                </Card>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
 };
 
 export default VendorStorefront;

@@ -1,95 +1,102 @@
-import './App.css'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import OfflineBanner from './components/OfflineBanner'
+import { ConfirmHost, Spinner } from './components/ui'
 
-const Overview         = lazy(() => import('./pages/customerDashboard/Overview'))
-const GoogleCallback   = lazy(() => import('./pages/auth/GoogleCallback'))
-const VendorDashboard  = lazy(() => import('./pages/recyclePage/vendorDashboard'))
-const LoginPage        = lazy(() => import('./pages/SigninPage/SignIn'))
-const SignupPage        = lazy(() => import('./pages/signupPage/Signup'))
-const LandingLayout    = lazy(() => import('./layout/LandingLayout'))
+const LandingLayout = lazy(() => import('./layout/LandingLayout'))
+const NavbarLayout = lazy(() => import('./layout/NavbarLayout'))
 const CustDushboardLayout = lazy(() => import('./layout/CustDushboardLayout'))
-const BlogsPage        = lazy(() => import('./pages/blogs/BlogsPage'))
-const NavbarLayout     = lazy(() => import('./layout/NavbarLayout'))
-const EducationHub     = lazy(() => import('./pages/education/EducationHub'))
-const EducationDetail  = lazy(() => import('./pages/education/EducationDetail'))
-const AddEducationForm = lazy(() => import('./pages/education/AddEducationForm'))
-const AboutUsPage      = lazy(() => import('./pages/WhoWeAre'))
-const DirectionPage    = lazy(() => import('./pages/directionPage/Direction'))
-const CustomerPage     = lazy(() => import('./pages/recyclePage/CustomerPage'))
-const Login            = lazy(() => import('./pages/recyclePage/VendorSignin'))
-const Signup           = lazy(() => import('./pages/recyclePage/vendorSignUp'))
-const WasteSection     = lazy(() => import('./pages/customerDashboard/Waste'))
-const ProductForm      = lazy(() => import('./pages/recyclePage/AddProductForm'))
-const VendorView       = lazy(() => import('./pages/recyclePage/VendorFetch'))
-const ArticlePage      = lazy(() => import('./pages/blogs/ArticlesPage'))
-const WasteSchedulePage = lazy(() => import('./pages/customerDashboard/DatePicker'))
-const WasteEditPage    = lazy(() => import('./pages/customerDashboard/EditDatePicker'))
-const AdminDashboard   = lazy(() => import('./pages/adminDashboard/AdminDashboard'))
-const AdminOverview    = lazy(() => import('./pages/adminDashboard/AdminOverview'))
-const ProductDetailPage = lazy(() => import('./pages/recyclePage/ProductDetail'))
-const ScheduleDetailPage = lazy(() => import('./pages/customerDashboard/ScheduleDetailPage'))
-const EditProductForm  = lazy(() => import('./pages/recyclePage/EditProductForm'))
-const VendorStorefront = lazy(() => import('./pages/recyclePage/VendorStorefront'))
-const AdminSetup       = lazy(() => import('./pages/adminDashboard/AdminSetup'))
-const AdminLoginPage   = lazy(() => import('./pages/adminDashboard/AdminLogin'))
-const NotFound         = lazy(() => import('./pages/NotFound'))
-const WasteScanner     = lazy(() => import('./pages/ai/WasteScanner'))
 
-const Spinner = () => (
-  <div className="flex justify-center items-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500" />
-  </div>
-)
+// Public pages
+const AboutUsPage = lazy(() => import('./pages/WhoWeAre'))
+const BlogsPage = lazy(() => import('./pages/blogs/BlogsPage'))
+const EducationHub = lazy(() => import('./pages/education/EducationHub'))
+const EducationDetail = lazy(() => import('./pages/education/EducationDetail'))
+const DirectionPage = lazy(() => import('./pages/directionPage/Direction'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+
+// Sign-in, sign-up and account setup
+const SignIn = lazy(() => import('./pages/SigninPage/SignIn'))
+const Signup = lazy(() => import('./pages/signupPage/Signup'))
+const GoogleCallback = lazy(() => import('./pages/auth/GoogleCallback'))
+const AdminSetup = lazy(() => import('./pages/adminDashboard/AdminSetup'))
+
+// Signed-in pages
+const Overview = lazy(() => import('./pages/customerDashboard/Overview'))
+const WasteSection = lazy(() => import('./pages/customerDashboard/Waste'))
+const WasteSchedulePage = lazy(() => import('./pages/customerDashboard/DatePicker'))
+const WasteEditPage = lazy(() => import('./pages/customerDashboard/EditDatePicker'))
+const ScheduleDetailPage = lazy(() => import('./pages/customerDashboard/ScheduleDetailPage'))
+const WasteScanner = lazy(() => import('./pages/ai/WasteScanner'))
+const ArticlePage = lazy(() => import('./pages/blogs/ArticlesPage'))
+const CustomerPage = lazy(() => import('./pages/recyclePage/CustomerPage'))
+const ProductDetailPage = lazy(() => import('./pages/recyclePage/ProductDetail'))
+const VendorStorefront = lazy(() => import('./pages/recyclePage/VendorStorefront'))
+const VendorDashboard = lazy(() => import('./pages/recyclePage/vendorDashboard'))
+const VendorView = lazy(() => import('./pages/recyclePage/VendorFetch'))
+const ProductForm = lazy(() => import('./pages/recyclePage/AddProductForm'))
+const EditProductForm = lazy(() => import('./pages/recyclePage/EditProductForm'))
+const AdminOverview = lazy(() => import('./pages/adminDashboard/AdminOverview'))
+const AdminDashboard = lazy(() => import('./pages/adminDashboard/AdminDashboard'))
+const AddEducationForm = lazy(() => import('./pages/education/AddEducationForm'))
 
 const router = createBrowserRouter([
-  { path: "/s", element: <DirectionPage/> },
-  { path: "/signin", element: <LoginPage /> },
-  { path: "/signup", element: <SignupPage/> },
-  { path: "/auth/callback", element: <GoogleCallback /> },
-  { path: "/", element: <LandingLayout /> },
+  { path: '/', element: <LandingLayout /> },
   {
-    path: "/",
+    path: '/',
     element: <NavbarLayout />,
     children: [
-      { path: "who-we-are", element: <AboutUsPage /> },
-      { path: "blog", element: <BlogsPage /> },
-      { path: "education", element: <EducationHub /> },
-      { path: "education/:id", element: <EducationDetail /> },
+      { path: 'who-we-are', element: <AboutUsPage /> },
+      { path: 'blog', element: <BlogsPage /> },
+      { path: 'education', element: <EducationHub /> },
+      { path: 'education/:id', element: <EducationDetail /> },
     ],
   },
-  { path: "/login", element: <Login /> },
-  { path: "/vendorsignup", element: <Signup /> },
-  { path: "/swk-admin-setup", element: <AdminSetup /> },
-  { path: "/admin", element: <AdminLoginPage /> },
+  { path: '/s', element: <DirectionPage /> },
+
+  // One sign-in screen for every role; /login and /admin are older addresses for it.
+  { path: '/signin', element: <SignIn /> },
+  { path: '/login', element: <SignIn /> },
+  { path: '/admin', element: <SignIn /> },
+  // One sign-up screen; /vendorsignup opens it with the vendor account type selected.
+  { path: '/signup', element: <Signup /> },
+  { path: '/vendorsignup', element: <Signup key="vendor" defaultType="vendor" /> },
+  { path: '/auth/callback', element: <GoogleCallback /> },
+  { path: '/swk-admin-setup', element: <AdminSetup /> },
+
   {
-    path: "/customerDashboard",
-    element: <CustDushboardLayout/>,
+    path: '/customerDashboard',
+    element: <CustDushboardLayout />,
     children: [
-      { path: "overview", element: <Overview /> },
-      { path: "scan", element: <WasteScanner /> },
-      { path: "adminoverview", element: <AdminOverview /> },
-      { path: "vendoroverview", element: <VendorDashboard /> },
-      { path: "blogs", element: <BlogsPage /> },
-      { path: "articles", element: <ArticlePage /> },
-      { path: "products", element: <CustomerPage /> },
-      { path: "pickup", element: <WasteSection /> },
-      { path: "vendorProduct", element: <VendorView/> },
-      { path: "wpickup", element: <WasteSchedulePage /> },
-      { path: "addProduct", element: <ProductForm /> },
-      { path: "addEducation", element: <AddEducationForm /> },
-      { path: "editProduct/:id", element: <EditProductForm/> },
-      { path: "adminview", element: <AdminDashboard /> },
-      { path: "product/:id", element: <ProductDetailPage/> },
-      { path: "schedule/:id", element: <ScheduleDetailPage/> },
-      { path: "editSchedule/:id", element: <WasteEditPage/> },
-      { path: "store/:vendorId", element: <VendorStorefront /> },
-    ]
+      { path: 'overview', element: <Overview /> },
+      { path: 'pickup', element: <WasteSection /> },
+      { path: 'wpickup', element: <WasteSchedulePage /> },
+      { path: 'schedule/:id', element: <ScheduleDetailPage /> },
+      { path: 'editSchedule/:id', element: <WasteEditPage /> },
+      { path: 'scan', element: <WasteScanner /> },
+      { path: 'blogs', element: <BlogsPage /> },
+      { path: 'articles', element: <ArticlePage /> },
+      { path: 'products', element: <CustomerPage /> },
+      { path: 'product/:id', element: <ProductDetailPage /> },
+      { path: 'store/:vendorId', element: <VendorStorefront /> },
+      { path: 'vendoroverview', element: <VendorDashboard /> },
+      { path: 'vendorProduct', element: <VendorView /> },
+      { path: 'addProduct', element: <ProductForm /> },
+      { path: 'editProduct/:id', element: <EditProductForm /> },
+      { path: 'adminoverview', element: <AdminOverview /> },
+      { path: 'adminview', element: <AdminDashboard /> },
+      { path: 'addEducation', element: <AddEducationForm /> },
+    ],
   },
-  { path: "*", element: <NotFound /> },
+  { path: '*', element: <NotFound /> },
 ])
+
+const PageLoading = () => (
+  <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Loading">
+    <Spinner className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+  </div>
+)
 
 // Keeps the toast theme in sync with the dark-mode toggle (which dispatches
 // a 'swk-theme' event whenever the user flips it).
@@ -105,11 +112,14 @@ const ThemedToaster = () => {
 
 function App() {
   return (
-    <Suspense fallback={<Spinner />}>
-      <RouterProvider router={router} />
+    <>
+      <Suspense fallback={<PageLoading />}>
+        <RouterProvider router={router} />
+      </Suspense>
       <ThemedToaster />
+      <ConfirmHost />
       <OfflineBanner />
-    </Suspense>
+    </>
   )
 }
 

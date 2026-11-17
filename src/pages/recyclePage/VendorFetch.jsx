@@ -1,92 +1,87 @@
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { apiGetVendorsProducts, apiGetProfile } from '../../services/product';
-import VendorApiGet from '../recyclePage/VendorApi';
-import { FaPlus, FaStore } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { LuPlus, LuStore } from 'react-icons/lu';
+import { Skeleton } from '../../components/Skeleton';
+import { Button, Card, EmptyState, PageHeader } from '../../components/ui';
+import { apiGetProfile, apiGetVendorsProducts } from '../../services/product';
+import VendorApiGet from './VendorApi';
+import { ROUTES, plural, useLoader } from './listingOptions';
+import { LoadError } from './listingParts';
 
 const VendorView = () => {
-  const [Adverts, setAdverts] = useState([]);
-  const handleDelete = (deletedId) => setAdverts(prev => prev.filter(a => a.id !== deletedId));
-  const [vendorId, setVendorId] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        setLoading(true);
-        const [productsRes, profileRes] = await Promise.all([
-          apiGetVendorsProducts(),
-          apiGetProfile()
-        ]);
-        setAdverts(Array.isArray(productsRes.data) ? productsRes.data : []);
-        setVendorId(profileRes.data?.id);
-      } catch {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to fetch products' });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAll();
+  // The profile is only needed for the "View store" link, so the page still
+  // works when that call fails.
+  const load = useCallback(async () => {
+    const [products, profile] = await Promise.all([apiGetVendorsProducts(), apiGetProfile().catch(() => null)]);
+    return { products: Array.isArray(products.data) ? products.data : [], vendorId: profile?.data?.id };
   }, []);
+  const { status, data, reload, setData } = useLoader(load);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
+  const products = data?.products || [];
+  const removeListing = (id) => setData((current) => ({ ...current, products: current.products.filter((p) => p.id !== id) }));
 
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">My Products</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{Adverts.length} products listed</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {vendorId && (
-            <Link
-              to={`/customerDashboard/store/${vendorId}`}
-              className="flex items-center gap-2 px-4 py-2 border border-green-600 text-green-600 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors text-sm font-medium">
-              <FaStore size={13} /> Preview Store
-            </Link>
-          )}
-          <Link
-            to="/customerDashboard/addProduct"
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm font-medium">
-            <FaPlus size={13} /> Add Product
-          </Link>
-        </div>
-      </div>
+    <div className="page">
+      <PageHeader
+        title="My listings"
+        description={status === 'ready' ? `${plural(products.length, 'listing')} on the marketplace.` : 'The products you sell on the marketplace.'}
+        actions={(
+          <>
+            {data?.vendorId && <Button as={Link} to={ROUTES.store(data.vendorId)} variant="secondary" icon={LuStore}>View store</Button>}
+            <Button as={Link} to={ROUTES.addListing} icon={LuPlus}>Add listing</Button>
+          </>
+        )}
+      />
 
-      {Adverts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Adverts.map((advert) => (
-            <VendorApiGet
-              key={advert.id}
-              id={advert.id}
-              title={advert.title}
-              description={advert.description}
-              category={advert.category}
-              image={advert.image}
-              price={advert.price}
-              isUpcycled={advert.isUpcycled}
-              onDelete={handleDelete}
-            />
+      {status === 'loading' && (
+        <Card className="grid gap-4 p-5" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
+              <div className="grid flex-1 gap-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/4" />
+              </div>
+              <Skeleton className="h-7 w-20" />
+            </div>
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-          <FaStore className="text-5xl mx-auto mb-3 opacity-20" />
-          <p className="font-medium text-gray-500 dark:text-gray-400">No products yet</p>
-          <p className="text-sm mt-1">Add your first product to get started!</p>
-          <Link to="/customerDashboard/addProduct"
-            className="inline-flex items-center gap-2 mt-4 px-5 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors text-sm font-medium">
-            <FaPlus size={12} /> Add Product
-          </Link>
-        </div>
+        </Card>
+      )}
+
+      {status === 'error' && <LoadError title="Your listings could not be loaded" onRetry={reload} />}
+
+      {status === 'ready' && products.length === 0 && (
+        <Card>
+          <EmptyState
+            icon={LuStore}
+            title="No listings yet"
+            description="Add your first listing to start selling on the marketplace."
+            action={<Button as={Link} to={ROUTES.addListing} icon={LuPlus}>Add listing</Button>}
+          />
+        </Card>
+      )}
+
+      {status === 'ready' && products.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Listing</th>
+                  <th className="hidden text-right sm:table-cell">Price</th>
+                  <th className="hidden text-right sm:table-cell">Stock</th>
+                  <th className="hidden text-right lg:table-cell">Views</th>
+                  <th className="hidden text-right lg:table-cell">Sold</th>
+                  <th className="hidden sm:table-cell">Status</th>
+                  <th><span className="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => <VendorApiGet key={product.id} product={product} onDelete={removeListing} />)}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       )}
     </div>
   );

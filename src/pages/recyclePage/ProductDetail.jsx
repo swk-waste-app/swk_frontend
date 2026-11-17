@@ -1,220 +1,171 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { LuArrowLeft, LuPackage, LuStore } from 'react-icons/lu';
+import { Skeleton } from '../../components/Skeleton';
+import { Badge, Button, Card, EmptyState, PageHeader } from '../../components/ui';
+import { formatDate, formatMoney } from '../../lib/format';
 import { apiGetSingleProduct } from '../../services/product';
-import { FaArrowLeft, FaMapMarkerAlt, FaCalendar, FaBox, FaRecycle, FaStore } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { ROUTES, inStock, useLoader } from './listingOptions';
+import { LoadError, ProductImage } from './listingParts';
+
+const LARGE = 'w_1000,q_auto,f_auto';
+const sectionTitle = 'text-lg font-semibold text-gray-900 dark:text-gray-50';
+const bodyText = 'whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-300';
+
+const Facts = ({ items, className = 'grid-cols-2' }) => {
+  const shown = items.filter(([, value]) => value);
+  if (shown.length === 0) return null;
+  return (
+    <dl className={`grid gap-x-6 gap-y-4 text-sm ${className}`}>
+      {shown.map(([label, value]) => (
+        <div key={label} className="min-w-0">
+          <dt className="eyebrow">{label}</dt>
+          <dd className="mt-1 break-words text-gray-900 dark:text-gray-100">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+};
+
+const DetailSkeleton = () => (
+  <div aria-hidden="true">
+    <Skeleton className="mb-6 h-8 w-2/3 max-w-md" />
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+      <div className="grid content-start gap-4">
+        <Skeleton className="h-9 w-36" />
+        <Skeleton className="h-5 w-48 rounded-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-20 w-full rounded-xl" />
+      </div>
+    </div>
+  </div>
+);
 
 const ProductDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const load = useCallback(() => apiGetSingleProduct(id).then((res) => res.data), [id]);
+  const { status, data: product, reload } = useLoader(load);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await apiGetSingleProduct(id);
-        setProduct(response.data);
-      } catch {
-        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Failed to load product details' });
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchData();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen gap-3">
-        <p className="text-xl text-gray-600 dark:text-gray-300">Product not found</p>
-        <button onClick={() => navigate(-1)} className="text-green-600 hover:underline text-sm">Go back</button>
-      </div>
-    );
-  }
-
-  const vendor = product.user;
+  const vendor = product?.user;
+  const available = inStock(product);
+  const materials = product?.materialsUsed || [];
+  const hasMakingOf = product && (product.upcyclingStory || materials.length > 0 || product.wasteSourced || product.processDescription || product.timeToMake);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-10">
+    <div className="page">
+      <Button as={Link} to={ROUTES.marketplace} variant="ghost" size="sm" icon={LuArrowLeft} className="-ml-3 mb-4">Marketplace</Button>
 
-      {/* Back */}
-      <div className="p-4">
-        <button onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-green-600 hover:text-green-700 dark:hover:text-green-300 font-medium">
-          <FaArrowLeft /> Back
-        </button>
-      </div>
+      {status === 'loading' && <DetailSkeleton />}
 
-      <div className="px-4 max-w-4xl mx-auto space-y-4">
+      {status === 'error' && <LoadError title="This listing could not be loaded" onRetry={reload} />}
 
-        {/* Main Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
-          <div className="md:flex">
+      {status === 'ready' && !product && (
+        <Card>
+          <EmptyState
+            icon={LuPackage}
+            title="Listing not found"
+            description="It may have been removed by the vendor."
+            action={<Button as={Link} to={ROUTES.marketplace} variant="secondary">Browse the marketplace</Button>}
+          />
+        </Card>
+      )}
 
-            {/* Image */}
-            <div className="md:w-2/5">
-              <div className="relative h-72 md:h-full min-h-[280px]">
-                <img
-                  src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_1000,q_auto,f_auto/${product.image}`}
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
+      {status === 'ready' && product && (
+        <div className="grid gap-6">
+          <div>
+            <PageHeader eyebrow={product.category} title={product.title} />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ProductImage
+                image={product.image}
+                alt={product.title}
+                wasteType={product.wasteType}
+                transform={LARGE}
+                className="aspect-[4/3] w-full rounded-xl border border-gray-200 dark:border-gray-800"
+                iconClassName="h-16 w-16"
+              />
+
+              <div className="grid content-start gap-5">
+                <div>
+                  <p className="text-3xl font-semibold tabular-nums tracking-tight text-gray-900 dark:text-gray-50">{formatMoney(product.price)}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {product.isUpcycled && <Badge tone="brand">Upcycled</Badge>}
+                    <Badge tone={available ? 'neutral' : 'danger'}>{available ? 'In stock' : 'Out of stock'}</Badge>
+                    {available && <span className="text-sm tabular-nums text-gray-600 dark:text-gray-400">{product.inventory} available</span>}
+                  </div>
+                </div>
+
+                <p className={bodyText}>{product.description || 'The vendor has not added a description.'}</p>
+
+                <Facts
+                  className="grid-cols-2 border-y border-gray-200 py-4 dark:border-gray-800"
+                  items={[
+                    ['Condition', product.condition],
+                    ['Material', product.wasteType],
+                    ['Location', product.location],
+                    ['Listed', formatDate(product.createdAt)],
+                  ]}
                 />
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.isUpcycled && (
-                    <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium">♻️ Upcycled</span>
-                  )}
-                  {product.condition && (
-                    <span className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 text-xs px-3 py-1 rounded-full font-medium shadow">{product.condition}</span>
-                  )}
-                </div>
-                <div className="absolute top-3 right-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    product.inventory > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                  }`}>
-                    {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* Details */}
-            <div className="md:w-3/5 p-6 space-y-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{product.title}</h1>
-                {product.wasteType && (
-                  <span className="inline-block mt-2 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-xs px-3 py-1 rounded-full">
-                    {product.wasteType}
-                  </span>
+                {vendor && (
+                  <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        <LuStore className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Sold by</p>
+                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{vendor.name}</p>
+                        {vendor.location && <p className="truncate text-xs text-gray-500 dark:text-gray-400">{vendor.location}</p>}
+                      </div>
+                    </div>
+                    <Button as={Link} to={ROUTES.store(vendor.id)} variant="secondary" size="sm">View store</Button>
+                  </Card>
                 )}
               </div>
-
-              <p className="text-4xl font-bold text-green-600">
-                GH₵ {Number(product.price || 0).toFixed(2)}
-              </p>
-
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                {product.description || 'No description provided.'}
-              </p>
-
-              <div className="space-y-2 py-3 border-y border-gray-100 dark:border-gray-800">
-                {product.location && (
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
-                    <FaMapMarkerAlt className="text-green-500 flex-shrink-0" />
-                    <span>{product.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
-                  <FaCalendar className="text-green-500 flex-shrink-0" />
-                  <span>Listed {new Date(product.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                  })}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm">
-                  <FaBox className="text-green-500 flex-shrink-0" />
-                  <span>{product.inventory} units available</span>
-                </div>
-              </div>
-
-              {/* Vendor Panel */}
-              {vendor && (
-                <div className="bg-gray-50 dark:bg-gray-950 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                      {vendor.name?.[0]?.toUpperCase() || '?'}
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Sold by</p>
-                      <p className="font-semibold text-gray-800 dark:text-gray-100">{vendor.name}</p>
-                      {vendor.location && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500">📍 {vendor.location}</p>
-                      )}
-                    </div>
-                  </div>
-                  <Link
-                    to={`/customerDashboard/store/${vendor.id}`}
-                    className="flex items-center gap-1.5 text-sm bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                    <FaStore size={12} /> Visit Store
-                  </Link>
-                </div>
-              )}
             </div>
           </div>
+
+          {(product.beforeImage || product.afterImage) && (
+            <Card as="section" className="p-5">
+              <h2 className={sectionTitle}>Before and after</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {[['Before', product.beforeImage], ['After', product.afterImage]].map(([label, image]) => image && (
+                  <figure key={label}>
+                    <ProductImage image={image} alt={`${label} upcycling`} className="aspect-[4/3] w-full rounded-lg" />
+                    <figcaption className="eyebrow mt-2">{label}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {hasMakingOf && (
+            <Card as="section" className="grid gap-4 p-5">
+              <h2 className={sectionTitle}>How it was made</h2>
+              {product.upcyclingStory && <p className={bodyText}>{product.upcyclingStory}</p>}
+              {materials.length > 0 && (
+                <div>
+                  <p className="eyebrow">Materials</p>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {materials.map((material, i) => <li key={`${material}-${i}`}><Badge>{material}</Badge></li>)}
+                  </ul>
+                </div>
+              )}
+              <Facts
+                className="sm:grid-cols-3"
+                items={[
+                  ['Material source', product.wasteSourced],
+                  ['Process', product.processDescription],
+                  ['Time to make', product.timeToMake],
+                ]}
+              />
+            </Card>
+          )}
         </div>
-
-        {/* Before / After Images */}
-        {(product.beforeImage || product.afterImage) && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <FaRecycle className="text-green-500" /> Transformation
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              {product.beforeImage && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Before</p>
-                  <img
-                    src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.beforeImage}`}
-                    alt="Before upcycling"
-                    className="w-full h-48 object-cover rounded-xl"
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Before'; }}
-                  />
-                </div>
-              )}
-              {product.afterImage && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">After</p>
-                  <img
-                    src={`https://res.cloudinary.com/dwgj3lovn/image/upload/w_600,q_auto,f_auto/${product.afterImage}`}
-                    alt="After upcycling"
-                    className="w-full h-48 object-cover rounded-xl"
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=After'; }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Upcycling Story */}
-        {(product.upcyclingStory || product.materialsUsed?.length > 0) && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center gap-2">
-              <FaRecycle className="text-green-500" /> Upcycling Story
-            </h2>
-            {product.upcyclingStory && (
-              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">{product.upcyclingStory}</p>
-            )}
-            {product.materialsUsed?.length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Materials Used</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.materialsUsed.map((m, i) => (
-                    <span key={i} className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs px-2 py-1 rounded-full">{m}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {product.processDescription && (
-              <div className="mt-4">
-                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">Process</p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">{product.processDescription}</p>
-              </div>
-            )}
-            {product.timeToMake && (
-              <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">⏱️ Time to make: {product.timeToMake}</p>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

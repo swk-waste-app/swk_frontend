@@ -1,27 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaBell, FaCheckDouble } from 'react-icons/fa';
+import { LuAward, LuBell, LuCheckCheck, LuInfo, LuStar, LuTruck } from 'react-icons/lu';
 import { apiGetNotifications, apiMarkNotificationRead, apiMarkAllNotificationsRead } from '../services/notifications';
+import { timeAgo } from '../lib/format';
 import { Skeleton } from './Skeleton';
 
-const TYPE_ICON = { pickup: '🗓️', points: '🌟', badge: '🏅', system: '📣' };
+const TYPE_ICON = { pickup: LuTruck, points: LuStar, badge: LuAward, system: LuInfo };
 
-const timeAgo = (date) => {
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString();
-};
-
-// Real in-app notifications: polls the backend every 30s and when the tab
-// regains focus, so pickup updates appear without a page refresh.
-// placement: 'sidebar' (desktop green sidebar) or 'header' (mobile top bar).
-const NotificationBell = ({ placement = 'sidebar' }) => {
+// In-app notifications for the top bar. Polls the backend every 30 seconds and
+// when the tab regains focus, so pickup updates appear without a page refresh.
+const NotificationBell = () => {
   const [items, setItems] = useState(null);
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
@@ -34,7 +22,7 @@ const NotificationBell = ({ placement = 'sidebar' }) => {
       setItems(data.notifications);
       setUnread(data.unreadCount);
     } catch {
-      // Offline or token expired — keep whatever we last showed.
+      // Offline or token expired: keep whatever was last shown.
     }
   }, []);
 
@@ -56,8 +44,13 @@ const NotificationBell = ({ placement = 'sidebar' }) => {
     const onClickOutside = (e) => {
       if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
     };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [open]);
 
   const onItemClick = (n) => {
@@ -76,44 +69,39 @@ const NotificationBell = ({ placement = 'sidebar' }) => {
     apiMarkAllNotificationsRead().catch(() => {});
   };
 
-  const panelPosition = placement === 'header'
-    ? 'fixed right-2 top-14 w-80 max-w-[92vw]'
-    : 'fixed left-3 top-24 w-72 max-w-[85vw]';
-
   return (
-    <div ref={rootRef}>
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Notifications"
-        className="relative p-2 rounded-full text-white hover:bg-green-700 transition-colors duration-200"
+        aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="btn btn-ghost relative h-9 w-9 p-0"
       >
-        <FaBell size={18} />
+        <LuBell className="h-5 w-5" aria-hidden="true" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center">
+          <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold tabular-nums text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className={`${panelPosition} z-[80] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden text-left animate-fade-in`}>
-          <div className="px-4 py-3 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">Notifications</p>
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-gray-200 bg-white text-left shadow-pop animate-fade-in dark:border-gray-800 dark:bg-gray-900">
+          <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">Notifications</p>
             {unread > 0 && (
-              <button
-                type="button"
-                onClick={onMarkAll}
-                className="text-xs font-semibold text-green-700 dark:text-green-400 hover:underline flex items-center gap-1"
-              >
-                <FaCheckDouble size={10} /> Mark all read
+              <button type="button" onClick={onMarkAll} className="link flex items-center gap-1 text-xs">
+                <LuCheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                Mark all read
               </button>
             )}
           </div>
 
           <div className="max-h-80 overflow-y-auto">
             {items === null && (
-              <div className="p-4 space-y-3">
+              <div className="flex flex-col gap-3 p-4">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-5/6" />
@@ -121,33 +109,39 @@ const NotificationBell = ({ placement = 'sidebar' }) => {
             )}
 
             {items !== null && items.length === 0 && (
-              <div className="p-8 text-center">
-                <FaBell className="mx-auto text-3xl text-gray-300 dark:text-gray-700 mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet.</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Pickup updates and rewards will appear here.</p>
+              <div className="px-6 py-8 text-center">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">No notifications yet</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Pickup updates and rewards appear here.</p>
               </div>
             )}
 
-            {items !== null && items.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => onItemClick(n)}
-                className={`w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0 flex items-start gap-3 transition-colors ${
-                  n.read
-                    ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    : 'bg-green-50/70 dark:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/30'
-                }`}
-              >
-                <span className="text-lg leading-none mt-0.5">{TYPE_ICON[n.type] || TYPE_ICON.system}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold text-gray-800 dark:text-gray-100">{n.title}</span>
-                  {n.body && <span className="block text-xs text-gray-600 dark:text-gray-300 mt-0.5">{n.body}</span>}
-                  <span className="block text-[11px] text-gray-400 dark:text-gray-500 mt-1">{timeAgo(n.createdAt)}</span>
-                </span>
-                {!n.read && <span className="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" />}
-              </button>
-            ))}
+            {items !== null && items.map((n) => {
+              const Icon = TYPE_ICON[n.type] || TYPE_ICON.system;
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => onItemClick(n)}
+                  className={`flex w-full items-start gap-3 border-b border-gray-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 focus-visible:-outline-offset-2 dark:border-gray-800 dark:hover:bg-gray-800 ${
+                    n.read ? '' : 'bg-brand-50 dark:bg-brand-900/40'
+                  }`}
+                >
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-gray-900 dark:text-gray-100">{n.title}</span>
+                    {n.body && <span className="mt-0.5 block text-xs text-gray-600 dark:text-gray-400">{n.body}</span>}
+                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-500">{timeAgo(n.createdAt)}</span>
+                  </span>
+                  {!n.read && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600 dark:bg-brand-400">
+                      <span className="sr-only">Unread</span>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

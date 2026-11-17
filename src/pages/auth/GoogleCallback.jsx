@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Spinner } from '../../components/ui';
 
 // Lands here after the backend finishes Google sign-in. Credentials arrive in
 // the URL fragment (#token=...&role=...&name=...) so they are never sent to the
@@ -46,11 +47,9 @@ const GoogleCallback = () => {
     }, [navigate, searchParams]);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
-            <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
-                <p className="text-gray-600 dark:text-gray-300 font-medium">Signing you in with Google...</p>
-            </div>
+        <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center" role="status">
+            <Spinner className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">Signing you in with Google</p>
         </div>
     );
 };

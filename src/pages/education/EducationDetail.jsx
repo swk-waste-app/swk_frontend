@@ -1,80 +1,105 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaLeaf } from 'react-icons/fa';
+import { LuArrowLeft, LuTriangleAlert } from 'react-icons/lu';
 import { apiGetEducationResource } from '../../services/education';
+import { formatDate, mediaUrl } from '../../lib/format';
+import { Badge, Button, Card, EmptyState } from '../../components/ui';
+import { Skeleton } from '../../components/Skeleton';
 
-const cloudinaryUrl = (image) =>
-  `https://res.cloudinary.com/dwgj3lovn/image/upload/w_1200,q_auto,f_auto/${image}`;
+const sentenceCase = (text = '') => text.charAt(0) + text.slice(1).toLowerCase();
+
+const BackLink = () => (
+  <Link to="/education" className="link inline-flex items-center gap-1.5 text-sm">
+    <LuArrowLeft className="h-4 w-4" aria-hidden="true" />
+    All guides
+  </Link>
+);
 
 const EducationDetail = () => {
   const { id } = useParams();
   const [resource, setResource] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    setStatus('loading');
     apiGetEducationResource(id)
-      .then((res) => { if (!cancelled) setResource(res.data); })
-      .catch(() => { if (!cancelled) setError('This resource could not be found.'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .then((res) => {
+        if (cancelled) return;
+        setResource(res.data);
+        setStatus(res.data ? 'ready' : 'error');
+      })
+      .catch(() => { if (!cancelled) setStatus('error'); });
     return () => { cancelled = true; };
   }, [id]);
 
-  if (loading) {
+  if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600" />
+      <div className="page max-w-3xl" role="status" aria-label="Loading guide">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="mt-8 h-5 w-28" />
+        <Skeleton className="mt-4 h-9 w-4/5" />
+        <Skeleton className="mt-3 h-4 w-48" />
+        <Skeleton className="mt-8 h-64 w-full rounded-xl" />
+        <div className="mt-8 flex flex-col gap-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
       </div>
     );
   }
 
-  if (error || !resource) {
+  if (status === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <p className="text-gray-600 dark:text-gray-300">{error || 'This resource could not be found.'}</p>
-        <Link to="/education" className="mt-4 text-green-700 dark:text-green-400 font-semibold hover:underline">Back to resources</Link>
+      <div className="page max-w-3xl">
+        <Card>
+          <EmptyState
+            icon={LuTriangleAlert}
+            title="This guide could not be opened"
+            description="It may have been removed, or the connection dropped. Go back to the list and try again."
+            action={<Button as={Link} to="/education" variant="secondary" icon={LuArrowLeft}>All guides</Button>}
+          />
+        </Card>
       </div>
     );
   }
+
+  const byline = [resource.author?.name && `By ${resource.author.name}`, formatDate(resource.createdAt)]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <article className="max-w-3xl mx-auto px-5 sm:px-8 py-14">
-      <Link to="/education" className="inline-flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 mb-8">
-        <FaArrowLeft size={12} /> Back to resources
-      </Link>
+    <article className="page max-w-3xl pb-14">
+      <BackLink />
 
-      <span className="text-xs font-bold uppercase tracking-wide text-green-600">{resource.category}</span>
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-50 mt-3 leading-tight">{resource.title}</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mt-3">
-        {resource.author?.name ? `By ${resource.author.name} · ` : ''}
-        {new Date(resource.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-      </p>
+      <header className="mt-8">
+        {resource.category && <Badge>{sentenceCase(resource.category)}</Badge>}
+        <h1 className="mt-3 text-balance font-display text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 sm:text-4xl">
+          {resource.title}
+        </h1>
+        {byline && <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{byline}</p>}
+      </header>
 
-      {resource.image ? (
+      {resource.image && (
         <img
-          src={cloudinaryUrl(resource.image)}
-          alt={resource.title}
-          className="w-full rounded-2xl shadow-md mt-8 object-cover max-h-96"
+          src={mediaUrl(resource.image, 'w_1200,q_auto,f_auto')}
+          alt=""
+          className="mt-8 max-h-96 w-full rounded-xl border border-gray-200 bg-gray-100 object-cover dark:border-gray-800 dark:bg-gray-800"
         />
-      ) : (
-        <div className="w-full h-56 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center mt-8">
-          <FaLeaf className="text-6xl text-green-200" />
-        </div>
       )}
 
-      <p className="mt-8 text-lg text-gray-700 dark:text-gray-200 font-medium leading-relaxed">{resource.summary}</p>
-      <div className="mt-6 text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{resource.content}</div>
+      {resource.summary && (
+        <p className="mt-8 text-lg leading-8 text-gray-900 dark:text-gray-100">{resource.summary}</p>
+      )}
+      <div className="mt-6 whitespace-pre-wrap text-base leading-7 text-gray-700 dark:text-gray-300">{resource.content}</div>
 
       {resource.tags?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-10">
+        <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">
           {resource.tags.map((tag) => (
-            <span key={tag} className="px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold">
-              #{tag}
-            </span>
+            <li key={tag}><Badge>{tag}</Badge></li>
           ))}
-        </div>
+        </ul>
       )}
     </article>
   );

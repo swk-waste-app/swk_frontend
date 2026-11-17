@@ -1,488 +1,299 @@
-import { useEffect, useState } from 'react';
-import { apiGetUserStats, apiGetLeaderboard } from '../../services/product';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FaRecycle, FaLeaf, FaTrophy, FaFire, FaCalendarCheck, FaShoppingBag, FaStore, FaArrowRight, FaGlobe } from 'react-icons/fa';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  LuArrowRight, LuCalendarPlus, LuChartBar, LuCircleCheck, LuFlame, LuLeaf, LuMapPin, LuRecycle, LuTrophy, LuWeight,
+} from 'react-icons/lu';
+import { Badge, Button, Card, EmptyState, PageHeader, StatCard, StatusBadge } from '../../components/ui';
+import { Skeleton } from '../../components/Skeleton';
+import { formatDateTime, formatDay, formatNumber, formatWeight } from '../../lib/format';
+import { apiGetLeaderboard, apiGetUserStats } from '../../services/product';
+import { apiGetMyPickups } from '../../services/pickups';
+import { SchedulePickupButton } from './DatePicker';
+import { LoadError, PickupRow, PickupRowsSkeleton, StatCardSkeleton } from './wasteList';
+import { PICKUPS_PATH, badgeName, levelProgress, monthlyCounts, nextPickup, pickupId, pickupPath, weightLabel } from './pickupUtils';
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const AXIS_TICK = { fontSize: 12, fill: 'rgb(var(--gray-500))' };
 
-const LEVELS = [
-    { name: 'Beginner', min: 0, max: 100, color: '#78909C', emoji: '🌱' },
-    { name: 'Recycler', min: 100, max: 300, color: '#26A69A', emoji: '♻️' },
-    { name: 'Eco Warrior', min: 300, max: 600, color: '#026937', emoji: '⚔️' },
-    { name: 'Green Champion', min: 600, max: 1000, color: '#00BFA5', emoji: '🏆' },
-    { name: 'Earth Guardian', min: 1000, max: Infinity, color: '#FFD700', emoji: '🌍' },
-];
+const SectionTitle = ({ children }) => (
+  <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-50">{children}</h2>
+);
 
-const BADGES = [
-    { id: 'first_pickup', name: 'First Pickup', emoji: '🎯', desc: 'Scheduled first pickup' },
-    { id: 'five_pickups', name: 'Regular', emoji: '⭐', desc: 'Completed 5 pickups' },
-    { id: 'ten_pickups', name: 'Dedicated', emoji: '🌟', desc: 'Completed 10 pickups' },
-    { id: 'eco_seller', name: 'Eco Seller', emoji: '🛍️', desc: 'Listed first product' },
-    { id: 'carbon_saver', name: 'Carbon Saver', emoji: '🌿', desc: 'Saved 10kg CO₂' },
-];
+const NextPickup = ({ pickup, onScheduled }) => (
+  <Card className="p-5 lg:col-span-2">
+    <div className="flex items-center justify-between gap-3">
+      <SectionTitle>Next pickup</SectionTitle>
+      {pickup && <StatusBadge status={pickup.status} />}
+    </div>
+    {pickup ? (
+      <>
+        <p className="mt-4 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">{formatDay(pickup.pickupDate)}</p>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{formatDateTime(pickup.pickupDate)}</p>
+        <ul className="mt-4 grid gap-2 text-sm text-gray-700 dark:text-gray-300">
+          <li className="flex items-center gap-2">
+            <LuRecycle className="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+            {pickup.wasteType || 'General Waste'}
+            {weightLabel(pickup) && <span className="text-gray-500 dark:text-gray-400">({weightLabel(pickup)})</span>}
+          </li>
+          <li className="flex items-start gap-2">
+            <LuMapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+            <span className="min-w-0 break-words">{pickup.location}</span>
+          </li>
+        </ul>
+        <Button as={Link} to={pickupPath(pickup)} variant="secondary" size="sm" className="mt-5">
+          View pickup
+          <LuArrowRight className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      </>
+    ) : (
+      <EmptyState
+        icon={LuCalendarPlus}
+        title="No pickup scheduled"
+        description="Choose a date and time and a collector will come to your address."
+        action={<SchedulePickupButton variant="secondary" onScheduled={onScheduled} />}
+        className="py-8"
+      />
+    )}
+  </Card>
+);
 
-const ECO_TIPS = [
-    "♻️ Segregating waste at source increases recycling efficiency by up to 60%.",
-    "🌱 Composting organic waste reduces methane emissions from landfills.",
-    "💧 Recycling one aluminium can saves enough energy to run a TV for 3 hours.",
-    "🌍 Ghana generates over 12,000 tonnes of waste daily — you're making a difference!",
-    "📦 Upcycling reduces the need for new raw materials and saves energy.",
-    "🏭 Accra alone generates 1,500 tonnes of waste every day — every pickup counts!",
-    "🌿 Plastic takes up to 1,000 years to decompose in landfills.",
-];
+const LevelCard = ({ points, badges }) => {
+  const { current, next, percent, remaining } = levelProgress(points);
+  return (
+    <Card className="p-5">
+      <p className="eyebrow">Level</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">{current.name}</p>
+      <p className="mt-1 text-sm tabular-nums text-gray-600 dark:text-gray-400">{formatNumber(points)} points</p>
+      <div
+        className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800"
+        role="progressbar"
+        aria-label="Progress to the next level"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+      >
+        <div className="h-full rounded-full bg-brand-600 dark:bg-brand-500" style={{ width: `${percent}%` }} />
+      </div>
+      <p className="mt-2 text-xs tabular-nums text-gray-500 dark:text-gray-400">
+        {next ? `${formatNumber(remaining)} points to ${next.name}` : 'You have reached the highest level.'}
+      </p>
+      <div className="mt-5 border-t border-gray-200 pt-4 dark:border-gray-800">
+        <p className="eyebrow">Badges</p>
+        {badges.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {badges.map((id) => <Badge key={id} tone="brand">{badgeName(id)}</Badge>)}
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">None yet. Your first completed pickup earns one.</p>
+        )}
+      </div>
+    </Card>
+  );
+};
 
-const Overview = ({ role }) => {
-    const navigate = useNavigate();
-    const [stats, setStats] = useState(null);
-    const [leaderboard, setLeaderboard] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [tipIndex, setTipIndex] = useState(0);
-    const [monthlyGoal, setMonthlyGoal] = useState(() => parseInt(localStorage.getItem('monthlyGoal')) || 4);
-    const [editingGoal, setEditingGoal] = useState(false);
-    const [newGoal, setNewGoal] = useState(monthlyGoal);
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  const count = payload[0].value;
+  return (
+    <div className="card px-3 py-2 text-xs shadow-pop">
+      <p className="font-medium text-gray-900 dark:text-gray-100">{label}</p>
+      <p className="mt-0.5 tabular-nums text-gray-600 dark:text-gray-400">{count} {count === 1 ? 'pickup' : 'pickups'} booked</p>
+    </div>
+  );
+};
 
-    const currentRole = role || localStorage.getItem('role');
+const MonthlyChart = ({ data }) => (
+  <Card className="p-5">
+    <SectionTitle>Pickups booked</SectionTitle>
+    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Each of the last six months.</p>
+    {data.some((month) => month.pickups > 0) ? (
+      <div
+        className="mt-4 h-56 [&_.recharts-cartesian-grid_line]:stroke-gray-200 dark:[&_.recharts-cartesian-grid_line]:stroke-gray-800"
+        role="img"
+        aria-label={`Pickups booked per month: ${data.map((month) => `${month.month} ${month.pickups}`).join(', ')}`}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+            <CartesianGrid vertical={false} stroke="rgb(var(--gray-200))" />
+            <XAxis dataKey="month" tickLine={false} axisLine={false} tick={AXIS_TICK} />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={AXIS_TICK} />
+            <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgb(var(--gray-500) / 0.12)' }} />
+            <Bar dataKey="pickups" fill="rgb(var(--brand-600))" radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    ) : (
+      <EmptyState icon={LuChartBar} title="Nothing to chart yet" description="Pickups you book will be counted here by month." className="py-8" />
+    )}
+  </Card>
+);
 
-    useEffect(() => {
-        if (currentRole === 'admin') {
-            navigate('/customerDashboard/adminoverview');
-            return;
-        }
-        fetchData();
-        const tipInterval = setInterval(() => {
-            setTipIndex(prev => (prev + 1) % ECO_TIPS.length);
-        }, 5000);
-        return () => clearInterval(tipInterval);
-    }, [currentRole, navigate]);
+const Leaderboard = ({ entries, userId }) => (
+  <Card className="overflow-hidden">
+    <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+      <SectionTitle>Community leaderboard</SectionTitle>
+      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">The households with the most points.</p>
+    </div>
+    {entries.length > 0 ? (
+      <ol className="divide-y divide-gray-100 dark:divide-gray-800">
+        {entries.map((entry, index) => {
+          const entryId = String(entry.id || entry._id || index);
+          const isUser = Boolean(userId) && entryId === userId;
+          return (
+            <li
+              key={entryId}
+              className={`flex items-center gap-3 px-5 py-3 ${isUser ? 'bg-brand-50 dark:bg-brand-900/20' : ''}`}
+              aria-current={isUser ? 'true' : undefined}
+            >
+              <span className="w-6 shrink-0 text-sm font-semibold tabular-nums text-gray-500 dark:text-gray-400">{index + 1}</span>
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="truncate">{entry.name}</span>
+                  {isUser && <Badge tone="brand">You</Badge>}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{entry.level || levelProgress(entry.points).current.name}</p>
+              </div>
+              <div className="shrink-0 text-right tabular-nums">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatNumber(entry.points)} points</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{formatWeight(entry.wasteCollected)}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    ) : (
+      <EmptyState icon={LuTrophy} title="No rankings yet" description="Households appear here once they earn points from completed pickups." className="py-8" />
+    )}
+  </Card>
+);
 
-    const fetchData = async () => {
-        try {
-            const [statsRes, leaderboardRes] = await Promise.all([
-                apiGetUserStats(),
-                apiGetLeaderboard()
-            ]);
-            setStats(statsRes.data);
-            setLeaderboard(leaderboardRes.data);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+const OverviewSkeleton = () => (
+  <div className="grid gap-6" aria-hidden="true">
+    <div className="grid gap-6 lg:grid-cols-3">
+      <Card className="p-5 lg:col-span-2">
+        <Skeleton className="h-5 w-28" />
+        <Skeleton className="mt-5 h-7 w-40" />
+        <Skeleton className="mt-3 h-4 w-56 max-w-full" />
+        <Skeleton className="mt-3 h-4 w-48 max-w-full" />
+      </Card>
+      <Card className="p-5">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="mt-3 h-7 w-32" />
+        <Skeleton className="mt-5 h-2 w-full rounded-full" />
+        <Skeleton className="mt-3 h-3 w-36" />
+      </Card>
+    </div>
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {[0, 1, 2, 3].map((i) => <StatCardSkeleton key={i} />)}
+    </div>
+    <Card className="overflow-hidden">
+      <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800"><Skeleton className="h-5 w-36" /></div>
+      <PickupRowsSkeleton rows={3} />
+    </Card>
+  </div>
+);
 
-    const saveGoal = () => {
-        setMonthlyGoal(newGoal);
-        localStorage.setItem('monthlyGoal', newGoal);
-        setEditingGoal(false);
-    };
+// The household home page: what is coming up, where the household stands,
+// and what it has done so far.
+const Overview = () => {
+  const navigate = useNavigate();
+  const role = localStorage.getItem('role');
+  const [status, setStatus] = useState('loading');
+  const [data, setData] = useState(null);
 
-    if (currentRole === 'admin') return null;
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            </div>
-        );
+  // Also called after a pickup is scheduled, so the page updates in place.
+  const load = useCallback(async () => {
+    try {
+      const [statsRes, pickupsRes, leaderboardRes] = await Promise.all([
+        apiGetUserStats(),
+        apiGetMyPickups(),
+        apiGetLeaderboard().catch(() => ({ data: [] })),
+      ]);
+      setData({
+        stats: statsRes.data || {},
+        pickups: Array.isArray(pickupsRes.data) ? pickupsRes.data : [],
+        leaderboard: Array.isArray(leaderboardRes.data) ? leaderboardRes.data : [],
+      });
+      setStatus('ready');
+    } catch {
+      setStatus('error');
     }
+  }, []);
 
-    const points = stats?.stats?.totalPoints || 0;
-    const currentLevel = LEVELS.find(l => points >= l.min && points < l.max) || LEVELS[0];
-    const nextLevel = LEVELS[LEVELS.indexOf(currentLevel) + 1];
-    const progressPercent = nextLevel
-        ? Math.round(((points - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100)
-        : 100;
+  useEffect(() => {
+    // Admins have their own overview.
+    if (role === 'admin') {
+      navigate('/customerDashboard/adminoverview', { replace: true });
+      return;
+    }
+    load();
+  }, [role, navigate, load]);
 
-    const monthlyData = stats?.monthlyPickups?.map(item => ({
-        name: MONTHS[item._id.month - 1],
-        pickups: item.count
-    })) || [];
+  if (role === 'admin') return null;
 
-    const pieData = [
-        { name: 'Completed', value: stats?.stats?.completedPickups || 0, color: '#026937' },
-        { name: 'Scheduled', value: stats?.stats?.scheduledPickups || 0, color: '#00BFA5' },
-        { name: 'In Progress', value: stats?.stats?.inProgressPickups || 0, color: '#FFC107' },
-        { name: 'Cancelled', value: stats?.stats?.cancelledPickups || 0, color: '#F44336' },
-    ].filter(item => item.value > 0);
+  const retry = () => {
+    setStatus('loading');
+    load();
+  };
 
-    const thisMonthPickups = stats?.monthlyPickups?.find(item => {
-        const now = new Date();
-        return item._id.month === now.getMonth() + 1 && item._id.year === now.getFullYear();
-    })?.count || 0;
+  const user = data?.stats.user || {};
+  const totals = data?.stats.stats || {};
+  const firstName = user.name?.trim().split(/\s+/)[0];
+  const streak = totals.streak || 0;
+  const recent = data
+    ? [...data.pickups].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5)
+    : [];
 
-    const goalProgress = Math.min(Math.round((thisMonthPickups / monthlyGoal) * 100), 100);
-    const userRank = leaderboard.findIndex(u => u.name === stats?.user?.name) + 1;
+  return (
+    <div className="page">
+      <PageHeader
+        title={firstName ? `Hello, ${firstName}` : 'Hello'}
+        description="Your next pickup, your points and what you have recycled so far."
+        actions={<SchedulePickupButton onScheduled={load} />}
+      />
 
-    return (
-        <div className="space-y-6 p-4 bg-gray-50 dark:bg-gray-950 min-h-screen">
+      {status === 'loading' && <OverviewSkeleton />}
 
-            {/* Eco Tip Banner */}
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-3">
-                <FaLeaf className="text-green-600 text-xl flex-shrink-0" />
-                <p className="text-green-800 dark:text-green-300 text-sm font-medium">{ECO_TIPS[tipIndex]}</p>
-            </div>
+      {status === 'error' && (
+        <Card><LoadError title="Your dashboard could not be loaded" onRetry={retry} /></Card>
+      )}
 
-            {/* Level Banner */}
-            <div className="rounded-2xl p-6 text-white relative overflow-hidden"
-                style={{ background: `linear-gradient(135deg, #026937, #00BFA5)` }}>
-                <div className="absolute top-0 right-0 w-48 h-48 opacity-10 text-9xl flex items-center justify-center">
-                    {currentLevel.emoji}
-                </div>
-                <div className="flex items-start justify-between gap-3 relative z-10 flex-wrap">
-                    <div>
-                        <p className="text-green-200 text-xs uppercase tracking-wider">Current Level</p>
-                        <h2 className="text-2xl sm:text-3xl font-bold">{currentLevel.name} {currentLevel.emoji}</h2>
-                        <p className="text-green-200 mt-1 text-sm">{points} points earned</p>
-                    </div>
-                    {userRank > 0 && (
-                        <div className="bg-white dark:bg-gray-900 bg-opacity-20 rounded-xl px-4 py-2 text-center flex-shrink-0">
-                            <p className="text-green-200 text-xs">Community Rank</p>
-                            <p className="text-white font-bold text-xl">#{userRank}</p>
-                            <p className="text-green-200 text-xs mt-0.5">{progressPercent}% to next</p>
-                        </div>
-                    )}
-                </div>
-                <div className="mt-4">
-                    <div className="flex justify-between text-xs text-green-200 mb-1">
-                        <span>{currentLevel.min} pts</span>
-                        <span>{nextLevel?.min || '∞'} pts</span>
-                    </div>
-                    <div className="w-full bg-green-900 rounded-full h-3">
-                        <div className="bg-white dark:bg-gray-900 rounded-full h-3 transition-all duration-1000"
-                            style={{ width: `${progressPercent}%` }}></div>
-                    </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-4">
-                    <div className="flex items-center gap-2">
-                        <FaFire className="text-orange-300" />
-                        <span className="text-sm">{stats?.stats?.streak || 0} week streak</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <FaLeaf className="text-green-300" />
-                        <span className="text-sm">{stats?.stats?.totalCarbonSaved || 0} kg CO₂ saved</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <FaTrophy className="text-yellow-300" />
-                        <span className="text-sm">{stats?.user?.badges?.length || 0} badges</span>
-                    </div>
-                </div>
-            </div>
+      {status === 'ready' && (
+        <div className="grid gap-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            <NextPickup pickup={nextPickup(data.pickups)} onScheduled={load} />
+            <LevelCard points={totals.totalPoints || 0} badges={user.badges || []} />
+          </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Link to="/customerDashboard/pickup"
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                        <FaCalendarCheck className="text-green-600 group-hover:text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Action</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Schedule Pickup</p>
-                    </div>
-                    <FaArrowRight className="text-gray-300 ml-auto group-hover:text-green-600 transition-colors" />
-                </Link>
-                <Link to="/customerDashboard/products"
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center group-hover:bg-teal-600 transition-colors">
-                        <FaShoppingBag className="text-teal-600 group-hover:text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Explore</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Buy Recycled</p>
-                    </div>
-                    <FaArrowRight className="text-gray-300 ml-auto group-hover:text-teal-600 transition-colors" />
-                </Link>
-                <Link to="/login"
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
-                        <FaStore className="text-purple-600 group-hover:text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Earn</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Sell Items</p>
-                    </div>
-                    <FaArrowRight className="text-gray-300 ml-auto group-hover:text-purple-600 transition-colors" />
-                </Link>
-                <Link to="/customerDashboard/blogs"
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                        <FaGlobe className="text-blue-600 group-hover:text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Learn</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Read News</p>
-                    </div>
-                    <FaArrowRight className="text-gray-300 ml-auto group-hover:text-blue-600 transition-colors" />
-                </Link>
-            </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <StatCard label="Pickups completed" icon={LuCircleCheck} value={formatNumber(totals.completedPickups)} />
+            <StatCard label="Waste collected" icon={LuWeight} value={formatWeight(totals.totalWasteCollected || user.wasteCollected)} />
+            <StatCard label="Carbon avoided" icon={LuLeaf} value={formatWeight(totals.totalCarbonSaved || user.carbonSaved)} hint="Estimated CO2e" />
+            <StatCard label="Current streak" icon={LuFlame} value={`${formatNumber(streak)} ${streak === 1 ? 'week' : 'weeks'}`} />
+          </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-green-600">
-                    <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Total Pickups</p>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats?.stats?.totalPickups || 0}</h3>
-                    <p className="text-xs text-green-600 mt-1">All time</p>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-teal-500">
-                    <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Completed</p>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats?.stats?.completedPickups || 0}</h3>
-                    <p className="text-xs text-teal-600 mt-1">Successfully done</p>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-yellow-500">
-                    <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Waste Collected</p>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats?.stats?.totalWasteCollected || 0} <span className="text-base sm:text-lg font-normal">kg</span></h3>
-                    <p className="text-xs text-yellow-600 mt-1">Total weight</p>
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-blue-500">
-                    <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Carbon Saved</p>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats?.stats?.totalCarbonSaved || 0} <span className="text-base sm:text-lg font-normal">kg</span></h3>
-                    <p className="text-xs text-blue-600 mt-1">CO₂ equivalent</p>
-                </div>
-            </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="overflow-hidden">
+              <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                <SectionTitle>Recent pickups</SectionTitle>
+                <Link to={PICKUPS_PATH} className="link text-sm">View all</Link>
+              </div>
+              {recent.length > 0 ? (
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {recent.map((pickup) => <PickupRow key={pickupId(pickup)} pickup={pickup} />)}
+                </ul>
+              ) : (
+                <EmptyState icon={LuRecycle} title="No pickups yet" description="Pickups you schedule will be listed here." className="py-8" />
+              )}
+            </Card>
+            <MonthlyChart data={monthlyCounts(data.pickups)} />
+          </div>
 
-            {/* Goal Setting + Environmental Impact */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🎯 Monthly Goal</h3>
-                        <button onClick={() => setEditingGoal(!editingGoal)} className="text-xs text-green-600 hover:underline">
-                            {editingGoal ? 'Cancel' : 'Edit Goal'}
-                        </button>
-                    </div>
-                    {editingGoal ? (
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <input type="number" value={newGoal} onChange={e => setNewGoal(parseInt(e.target.value))}
-                                className="w-16 border rounded-lg p-2 text-center text-gray-700 dark:text-gray-200" min="1" max="30" />
-                            <span className="text-gray-600 dark:text-gray-300 text-sm">pickups this month</span>
-                            <button onClick={saveGoal} className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">Save</button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="flex items-end gap-2 mb-3">
-                                <span className="text-4xl font-bold text-green-600">{thisMonthPickups}</span>
-                                <span className="text-gray-500 dark:text-gray-400 text-lg mb-1">/ {monthlyGoal} pickups</span>
-                            </div>
-                            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-4">
-                                <div className="bg-green-500 rounded-full h-4 transition-all duration-1000 flex items-center justify-end pr-2"
-                                    style={{ width: `${goalProgress}%` }}>
-                                    {goalProgress > 20 && <span className="text-white text-xs font-bold">{goalProgress}%</span>}
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                {goalProgress >= 100 ? '🎉 Goal achieved! Amazing work!' :
-                                    `${monthlyGoal - thisMonthPickups} more pickup${monthlyGoal - thisMonthPickups !== 1 ? 's' : ''} to reach your goal`}
-                            </p>
-                        </>
-                    )}
-                </div>
-                <div className="bg-gradient-to-r from-green-50 dark:from-green-950/50 to-teal-50 dark:to-teal-950/50 rounded-xl p-6 shadow-sm border border-green-200 dark:border-green-800">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🌍 Your Environmental Impact</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-green-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 0.5)}</p>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">🌳 Trees equivalent</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-blue-600">{Math.round((stats?.stats?.totalCarbonSaved || 0) / 0.21)}</p>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">🚗 Car trips avoided</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-yellow-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 1.5)}</p>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">💡 Hours of electricity</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-2xl font-bold text-teal-600">{Math.round((stats?.stats?.totalWasteCollected || 0) * 10)}</p>
-                            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">💧 Litres of water saved</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Vendor Stats */}
-            {currentRole === 'vendor' && stats?.vendorStats && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-purple-500">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Products Listed</p>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats.vendorStats.totalProducts}</h3>
-                    </div>
-                    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-pink-500">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Total Views</p>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats.vendorStats.totalViews}</h3>
-                    </div>
-                    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-orange-500">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Items Sold</p>
-                        <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">{stats.vendorStats.totalSold}</h3>
-                    </div>
-                    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border-l-4 border-green-500">
-                        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">Revenue</p>
-                        <h3 className="text-xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mt-1">GH₵ {stats.vendorStats.totalRevenue?.toFixed(2) || '0.00'}</h3>
-                    </div>
-                </div>
-            )}
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">📈 Monthly Pickups</h3>
-                    {monthlyData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={200}>
-                            <AreaChart data={monthlyData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                                <YAxis tick={{ fontSize: 12 }} />
-                                <Tooltip />
-                                <Area type="monotone" dataKey="pickups" stroke="#026937" fill="#00BFA5" fillOpacity={0.3} strokeWidth={2} />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-                            <FaCalendarCheck className="text-4xl mb-2 opacity-30" />
-                            <p>No pickup data yet</p>
-                            <Link to="/customerDashboard/pickup" className="mt-2 text-green-600 text-sm hover:underline">Schedule your first pickup →</Link>
-                        </div>
-                    )}
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🥧 Pickup Status</h3>
-                    {pieData.length > 0 ? (
-                        <>
-                            <ResponsiveContainer width="100%" height={160}>
-                                <PieChart>
-                                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={70} dataKey="value">
-                                        {pieData.map((entry, index) => (
-                                            <Cell key={index} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="flex flex-wrap gap-2 justify-center mt-2">
-                                {pieData.map((entry, index) => (
-                                    <div key={index} className="flex items-center gap-1">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                                        <span className="text-xs text-gray-600 dark:text-gray-300">{entry.name}: {entry.value}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-                            <FaRecycle className="text-4xl mb-2 opacity-30" />
-                            <p>No pickup data yet</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Badges */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">🏅 Badges</h3>
-                <div className="grid grid-cols-3 lg:grid-cols-5 gap-4">
-                    {BADGES.map((badge) => {
-                        const earned = stats?.user?.badges?.includes(badge.id);
-                        return (
-                            <div key={badge.id} className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${earned ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-md' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 opacity-50'}`}>
-                                <span className="text-3xl">{badge.emoji}</span>
-                                <p className="text-xs font-semibold text-gray-700 dark:text-gray-200 mt-1 text-center">{badge.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{badge.desc}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Leaderboard + Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🏆 Community Leaderboard</h3>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Top Recyclers</span>
-                    </div>
-                    {leaderboard.length > 0 ? (
-                        <div className="space-y-3">
-                            {leaderboard.slice(0, 5).map((user, index) => (
-                                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${user.name === stats?.user?.name ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-950'}`}>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                            index === 0 ? 'bg-yellow-400 text-white' :
-                                            index === 1 ? 'bg-gray-300 text-white' :
-                                            index === 2 ? 'bg-orange-400 text-white' :
-                                            'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                        }`}>
-                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                                                {user.name} {user.name === stats?.user?.name ? <span className="text-green-600 text-xs">(You)</span> : ''}
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{user.level}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-green-600">{user.points} pts</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{user.wasteCollected} kg</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-                            <FaTrophy className="text-4xl mx-auto mb-2 opacity-30" />
-                            <p>No leaderboard data yet</p>
-                            <p className="text-sm">Be the first to earn points!</p>
-                        </div>
-                    )}
-                </div>
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">🕐 Recent Activity</h3>
-                        <Link to="/customerDashboard/pickup" className="text-green-600 text-sm hover:underline">View all →</Link>
-                    </div>
-                    {stats?.recentPickups?.length > 0 ? (
-                        <div className="space-y-3">
-                            {stats.recentPickups.map((pickup, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-950 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                            pickup.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30' :
-                                            pickup.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
-                                            pickup.status === 'Cancelled' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
-                                        }`}>
-                                            <FaRecycle className={`${
-                                                pickup.status === 'Completed' ? 'text-green-600' :
-                                                pickup.status === 'In Progress' ? 'text-yellow-600' :
-                                                pickup.status === 'Cancelled' ? 'text-red-600' : 'text-blue-600'
-                                            }`} />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{pickup.location}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(pickup.pickupDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                                        pickup.status === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                        pickup.status === 'In Progress' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                        pickup.status === 'Cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                    }`}>{pickup.status}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-8 text-gray-400 dark:text-gray-500">
-                            <FaCalendarCheck className="text-4xl mx-auto mb-2 opacity-30" />
-                            <p className="font-medium">No recent activity yet</p>
-                            <p className="text-sm">Schedule your first waste pickup!</p>
-                            <Link to="/customerDashboard/pickup"
-                                className="mt-3 inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
-                                Schedule Now
-                            </Link>
-                        </div>
-                    )}
-                </div>
-            </div>
+          <Leaderboard entries={data.leaderboard} userId={String(user.id || user._id || '')} />
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Overview;

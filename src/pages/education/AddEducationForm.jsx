@@ -1,95 +1,229 @@
-import { Link, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import { apiAddEducationResource } from "../../services/education";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { LuSend, LuX } from 'react-icons/lu';
+import { Button, Card, Field, PageHeader } from '../../components/ui';
+import { apiAddEducationResource } from '../../services/education';
+import { apiErrorMessage } from '../../services/ops';
+
+// Publishes an article to the education hub (operations only).
 
 const CATEGORIES = ['Recycling Tips', 'Composting', 'Waste Sorting', 'Sustainability', 'Workshops', 'General'];
+const SUMMARY_MAX = 300;
+const TAG_MAX = 40;
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const IMAGE_MAX_MB = 5;
+
+const EMPTY = { title: '', category: CATEGORIES[0], summary: '', content: '', tags: '' };
+
+// "Plastics, sorting , plastics" becomes ["Plastics", "sorting"].
+const parseTags = (text) => {
+  const seen = new Set();
+  return text.split(',').map((tag) => tag.trim()).filter((tag) => {
+    const key = tag.toLowerCase();
+    if (!tag || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const validate = (values) => {
+  const errors = {};
+  if (!values.title.trim()) errors.title = 'Enter a title.';
+  if (!values.summary.trim()) errors.summary = 'Enter a short summary.';
+  if (!values.content.trim()) errors.content = 'Write the article.';
+  if (parseTags(values.tags).some((tag) => tag.length > TAG_MAX)) {
+    errors.tags = `Keep each tag to ${TAG_MAX} characters or fewer.`;
+  }
+  return errors;
+};
+
+const imageProblem = (file) => {
+  if (!IMAGE_TYPES.includes(file.type)) return 'Choose a JPEG, PNG or WebP image.';
+  if (file.size > IMAGE_MAX_MB * 1024 * 1024) return `Choose an image smaller than ${IMAGE_MAX_MB} MB.`;
+  return '';
+};
 
 const AddEducationForm = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const fileInput = useRef(null);
+  const [values, setValues] = useState(EMPTY);
+  const [errors, setErrors] = useState({});
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState('');
+  const [saving, setSaving] = useState(false);
 
-    const saveResource = async (event) => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
+  useEffect(() => {
+    if (!image) {
+      setPreview('');
+      return undefined;
+    }
+    const url = URL.createObjectURL(image);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
 
-        try {
-            await apiAddEducationResource(formData);
-            Swal.fire({
-                icon: 'success',
-                title: 'Resource Published',
-                text: 'Your education resource is now live!',
-                confirmButtonColor: '#026937',
-            });
-            navigate("/education");
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Failed to publish resource: ${error.response?.data?.message || error.message || 'An unexpected error occurred.'}`,
-            });
-        }
-    };
+  const change = (event) => {
+    const { name, value } = event.target;
+    setValues((current) => ({ ...current, [name]: value }));
+    setErrors((current) => ({ ...current, [name]: '' }));
+  };
 
-    return (
-        <div className="bg-gray-50 dark:bg-gray-950 min-h-screen p-4">
-            <div className="max-w-2xl mx-auto">
-                <div className="rounded-2xl p-6 text-white mb-6"
-                    style={{ background: 'linear-gradient(135deg, #026937, #00BFA5)' }}>
-                    <h2 className="text-2xl font-bold">Add Education Resource</h2>
-                    <p className="text-green-100 text-sm mt-1">Publish a guide, tip or workshop update</p>
-                </div>
+  const clearImage = () => {
+    setImage(null);
+    if (fileInput.current) fileInput.current.value = '';
+  };
 
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
-                    <form onSubmit={saveResource} className="space-y-5">
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">Title *</label>
-                            <input type="text" name="title" required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
-                                placeholder="e.g. 5 Tips for Sorting Household Waste" />
-                        </div>
+  const chooseImage = (event) => {
+    const file = event.target.files?.[0];
+    const problem = file ? imageProblem(file) : '';
+    setErrors((current) => ({ ...current, image: problem }));
+    if (file && !problem) setImage(file);
+    else clearImage();
+  };
 
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">Category</label>
-                            <select name="category"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200">
-                                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
+  const publish = async (event) => {
+    event.preventDefault();
+    if (saving) return;
 
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">Summary *</label>
-                            <textarea name="summary" rows={2} required maxLength={300}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200 resize-none"
-                                placeholder="A short teaser shown on the resource list (max 300 characters)" />
-                        </div>
+    const found = validate(values);
+    setErrors(found);
+    const firstInvalid = Object.keys(found)[0];
+    if (firstInvalid) {
+      document.getElementById(`article-${firstInvalid}`)?.focus();
+      return;
+    }
 
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">Content *</label>
-                            <textarea name="content" rows={8} required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200"
-                                placeholder="Write the full article, guide or workshop details..." />
-                        </div>
+    const formData = new FormData();
+    formData.append('title', values.title.trim());
+    formData.append('category', values.category);
+    formData.append('summary', values.summary.trim());
+    formData.append('content', values.content.trim());
+    parseTags(values.tags).forEach((tag) => formData.append('tags', tag));
+    if (image) formData.append('image', image);
 
-                        <div>
-                            <label className="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-2">Cover Image</label>
-                            <input type="file" name="image" accept="image/*"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-700 dark:text-gray-200" />
-                        </div>
+    setSaving(true);
+    try {
+      await apiAddEducationResource(formData);
+      toast.success('Article published');
+      navigate('/education');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'The article could not be published. Try again.'));
+      setSaving(false);
+    }
+  };
 
-                        <div className="flex gap-3 pt-2">
-                            <Link to="/education"
-                                className="flex-1 py-3 border border-gray-300 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium text-center">
-                                Cancel
-                            </Link>
-                            <button type="submit"
-                                className="flex-1 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">
-                                Publish Resource
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="page">
+      <PageHeader
+        title="Publish article"
+        description="Add a guide, tip or workshop update to the education hub. It is visible to everyone as soon as it is published."
+      />
+
+      <Card className="max-w-3xl p-5 sm:p-6">
+        <form onSubmit={publish} noValidate className="space-y-5">
+          <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_14rem]">
+            <Field label="Title" htmlFor="article-title" error={errors.title}>
+              <input
+                id="article-title"
+                name="title"
+                className="input"
+                maxLength={140}
+                placeholder="e.g. Five ways to sort household waste"
+                value={values.title}
+                onChange={change}
+                aria-invalid={Boolean(errors.title)}
+              />
+            </Field>
+            <Field label="Category" htmlFor="article-category">
+              <select id="article-category" name="category" className="input" value={values.category} onChange={change}>
+                {CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          <Field
+            label="Summary"
+            htmlFor="article-summary"
+            error={errors.summary}
+            hint={`Shown on the article list. ${values.summary.length} of ${SUMMARY_MAX} characters used.`}
+          >
+            <textarea
+              id="article-summary"
+              name="summary"
+              className="input resize-none"
+              rows={2}
+              maxLength={SUMMARY_MAX}
+              value={values.summary}
+              onChange={change}
+              aria-invalid={Boolean(errors.summary)}
+            />
+          </Field>
+
+          <Field label="Content" htmlFor="article-content" error={errors.content} hint="Leave a blank line between paragraphs.">
+            <textarea
+              id="article-content"
+              name="content"
+              className="input"
+              rows={12}
+              value={values.content}
+              onChange={change}
+              aria-invalid={Boolean(errors.content)}
+            />
+          </Field>
+
+          <Field
+            label="Cover image"
+            htmlFor="article-image"
+            optional
+            error={errors.image}
+            hint={`JPEG, PNG or WebP, up to ${IMAGE_MAX_MB} MB.`}
+          >
+            <input
+              id="article-image"
+              ref={fileInput}
+              type="file"
+              accept={IMAGE_TYPES.join(',')}
+              onChange={chooseImage}
+              className="input file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-700 dark:file:bg-gray-800 dark:file:text-gray-200"
+            />
+            {preview && (
+              <div className="mt-3 flex items-start gap-3">
+                <img
+                  src={preview}
+                  alt="Preview of the cover image"
+                  className="h-28 w-44 rounded-lg border border-gray-200 object-cover dark:border-gray-800"
+                />
+                <Button variant="ghost" size="sm" icon={LuX} onClick={clearImage}>Remove image</Button>
+              </div>
+            )}
+          </Field>
+
+          <Field
+            label="Tags"
+            htmlFor="article-tags"
+            optional
+            error={errors.tags}
+            hint="Separate tags with commas, for example: plastics, sorting."
+          >
+            <input
+              id="article-tags"
+              name="tags"
+              className="input"
+              value={values.tags}
+              onChange={change}
+              aria-invalid={Boolean(errors.tags)}
+            />
+          </Field>
+
+          <div className="flex flex-wrap justify-end gap-2 border-t border-gray-200 pt-5 dark:border-gray-800">
+            <Button as={Link} to="/education" variant="secondary">Cancel</Button>
+            <Button type="submit" icon={LuSend} loading={saving}>Publish article</Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
 };
 
 export default AddEducationForm;
