@@ -10,7 +10,7 @@ export const defaults = {
   name: 'Taka Kipawa',
   // Company that operates this deployment.
   operator: 'SWK Ghana',
-  tagline: 'Book waste pickups, earn rewards for recycling and shop upcycled products.',
+  tagline: 'Scheduled waste collection, rewards for recycling and a marketplace for upcycled goods.',
   country: 'Ghana',
   // BCP 47 locale and ISO 4217 currency used for all number, date and money formatting.
   locale: 'en-GH',

@@ -207,7 +207,7 @@ const PickupDate = ({ pickup }) => (
 );
 
 const Collector = ({ pickup }) =>
-  pickup.agentName || <span className="text-gray-400 dark:text-gray-500">Unassigned</span>;
+  pickup.agentName || <span className="text-gray-400 dark:text-gray-500">No collector yet</span>;
 
 const PickupActions = ({ pickup, busy, onStart, onComplete, onCancel }) => {
   if (pickup.status === 'Completed') {
@@ -221,7 +221,7 @@ const PickupActions = ({ pickup, busy, onStart, onComplete, onCancel }) => {
 
   const name = customerName(pickup);
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap xl:justify-end">
       {pickup.status === 'Scheduled' ? (
         <Button size="sm" icon={LuPlay} loading={busy} aria-label={`Start pickup for ${name}`} onClick={() => onStart(pickup)}>
           Start
@@ -492,25 +492,26 @@ const AdminDashboard = () => {
               <thead>
                 <tr>
                   <th scope="col">Customer</th>
-                  <th scope="col">Waste type</th>
-                  <th scope="col">Pickup date</th>
+                  <th scope="col">Pickup</th>
+                  <th scope="col">Date</th>
                   <th scope="col">Location</th>
-                  <th scope="col">Weight</th>
-                  <th scope="col">Collector</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Actions</th>
+                  <th scope="col" className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {visible.map((pickup) => (
                   <tr key={pickup._id}>
                     <td>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{customerName(pickup)}</p>
+                      <p className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">{customerName(pickup)}</p>
                       <Phone pickup={pickup} />
                     </td>
-                    <td>{pickup.wasteType}</td>
+                    <td>
+                      <p>{pickup.wasteType}</p>
+                      <p className="whitespace-nowrap text-xs tabular-nums text-gray-500 dark:text-gray-400">{weightLabel(pickup)}</p>
+                    </td>
                     <td><PickupDate pickup={pickup} /></td>
-                    <td className="max-w-[16rem]">
+                    <td className="max-w-[14rem]">
                       <p className="line-clamp-2">{pickup.location}</p>
                       {pickup.notes && (
                         <p className="mt-0.5 line-clamp-1 text-xs text-gray-500 dark:text-gray-400" title={pickup.notes}>
@@ -518,10 +519,11 @@ const AdminDashboard = () => {
                         </p>
                       )}
                     </td>
-                    <td className="whitespace-nowrap tabular-nums">{weightLabel(pickup)}</td>
-                    <td><Collector pickup={pickup} /></td>
-                    <td><StatusBadge status={pickup.status} /></td>
-                    <td>{actionsFor(pickup)}</td>
+                    <td>
+                      <StatusBadge status={pickup.status} />
+                      <p className="mt-1 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400"><Collector pickup={pickup} /></p>
+                    </td>
+                    <td className="text-right">{actionsFor(pickup)}</td>
                   </tr>
                 ))}
               </tbody>

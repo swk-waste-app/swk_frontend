@@ -9,7 +9,7 @@ import { brand } from '../../config/brand';
 const BENEFITS = [
   { icon: LuTruck, text: 'Choose a pickup date and follow the collection status.' },
   { icon: LuAward, text: 'Earn reward points for every completed pickup.' },
-  { icon: LuShoppingBag, text: 'Buy and sell upcycled goods in the marketplace.' },
+  { icon: LuShoppingBag, text: 'Browse and sell upcycled goods in the marketplace.' },
 ];
 
 const INVALID = 'border-red-500 dark:border-red-500';

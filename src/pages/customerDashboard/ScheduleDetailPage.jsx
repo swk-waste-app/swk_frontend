@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   LuArrowLeft, LuBan, LuCalendar, LuCheck, LuFileText, LuMapPin, LuPencil, LuRecycle, LuStar, LuTriangleAlert, LuUser, LuWeight, LuX,
 } from 'react-icons/lu';
@@ -8,7 +8,8 @@ import { Button, Card, EmptyState, Field, PageHeader, StatusBadge } from '../../
 import { confirmAction } from '../../components/ui/confirm';
 import { Skeleton } from '../../components/Skeleton';
 import { formatDate, formatDateTime, formatNumber, formatWeight } from '../../lib/format';
-import { apiDeleteScheduledTicket, apiGetSingleScheduledProducts, apiSubmitPickupRating } from '../../services/product';
+import { apiGetSingleScheduledProducts, apiSubmitPickupRating } from '../../services/product';
+import { apiCancelPickup } from '../../services/pickups';
 import { PICKUPS_PATH, POINTS_PER_KG, editPickupPath, errorMessage, pickupId, pointsFor } from './pickupUtils';
 
 const SectionTitle = ({ children }) => (
@@ -235,7 +236,6 @@ const DetailSkeleton = () => (
 
 const ScheduleDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [pickup, setPickup] = useState(null);
   const [status, setStatus] = useState('loading');
   const [cancelling, setCancelling] = useState(false);
@@ -256,7 +256,7 @@ const ScheduleDetailPage = () => {
   const cancelPickup = async () => {
     const confirmed = await confirmAction({
       title: 'Cancel this pickup?',
-      body: `The pickup on ${formatDateTime(pickup.pickupDate)} will be removed from your pickups. This cannot be undone.`,
+      body: `No one will come to collect on ${formatDateTime(pickup.pickupDate)}. This cannot be undone.`,
       confirmLabel: 'Cancel pickup',
       cancelLabel: 'Keep pickup',
       tone: 'danger',
@@ -264,9 +264,10 @@ const ScheduleDetailPage = () => {
     if (!confirmed) return;
     setCancelling(true);
     try {
-      await apiDeleteScheduledTicket(id);
+      const { data } = await apiCancelPickup(id);
+      setPickup(data.pickup);
+      setCancelling(false);
       toast.success('Pickup cancelled');
-      navigate(PICKUPS_PATH, { replace: true });
     } catch (error) {
       toast.error(errorMessage(error, 'The pickup could not be cancelled. Try again in a moment.'));
       setCancelling(false);

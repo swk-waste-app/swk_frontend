@@ -7,3 +7,6 @@ export const apiGetMyPickups = () =>
   apiClient.get('/users/me/schedules', {
     params: { sort: JSON.stringify({ pickupDate: -1 }), limit: 1000 },
   });
+
+// Calls off a pickup that has not started. It stays on record as Cancelled.
+export const apiCancelPickup = (id) => apiClient.patch(`/waste-collection/schedules/${id}/cancel`);
