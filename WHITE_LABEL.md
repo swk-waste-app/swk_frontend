@@ -18,6 +18,7 @@ Unset variables fall back to the defaults in `brand.defaults.js`.
 | `VITE_BRAND_SITE_URL` | Public address of the deployment | `https://app.example.com` |
 | `VITE_BRAND_COLOR` | Primary colour as hex. The full light-to-dark scale is derived from it | `#0057b8` |
 | `VITE_BRAND_LOGO_URL` | Logo image URL. Empty uses the bundled logo | `https://cdn.example.com/logo.svg` |
+| `VITE_BUILT_BY_NAME`, `VITE_BUILT_BY_URL` | Studio credited in the footer ("Built by KoomBei") | `KoomBei`, `https://koombei.com` |
 | `VITE_CLOUDINARY_CLOUD` | Cloudinary cloud holding product and article images | `acme-media` |
 | `VITE_BASE_URL` | Address of the backend API | `https://api.example.com/api` |
 | `VITE_WEB3FORMS_ACCESS_KEY` | Key for the contact form | |

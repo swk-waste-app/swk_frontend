@@ -23,6 +23,9 @@ export const defaults = {
   logoUrl: '',
   // Cloudinary cloud that stores product and article images.
   cloudinaryCloud: 'dwgj3lovn',
+  // Studio credited in the footer as the builder of the site.
+  builtByName: 'KoomBei',
+  builtByUrl: 'https://koombei.com',
 };
 
 export const resolveBrand = (env = {}) => ({
@@ -37,4 +40,6 @@ export const resolveBrand = (env = {}) => ({
   primaryColor: env.VITE_BRAND_COLOR || defaults.primaryColor,
   logoUrl: env.VITE_BRAND_LOGO_URL || defaults.logoUrl,
   cloudinaryCloud: env.VITE_CLOUDINARY_CLOUD || defaults.cloudinaryCloud,
+  builtByName: env.VITE_BUILT_BY_NAME || defaults.builtByName,
+  builtByUrl: env.VITE_BUILT_BY_URL || defaults.builtByUrl,
 });

@@ -57,9 +57,23 @@ const Footer = () => (
         </div>
       </div>
 
-      <p className="mt-10 border-t border-gray-200 pt-6 text-gray-500 dark:border-gray-800 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} {brand.operator}. All rights reserved.
-      </p>
+      <div className="mt-10 flex flex-col gap-2 border-t border-gray-200 pt-6 text-gray-500 dark:border-gray-800 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+        <p>&copy; {new Date().getFullYear()} {brand.operator}. All rights reserved.</p>
+        {brand.builtByName && (
+          <p>
+            Built by{' '}
+            <a
+              href={brand.builtByUrl}
+              target="_blank"
+              rel="noopener"
+              className="font-medium text-gray-700 hover:text-gray-900 hover:underline dark:text-gray-300 dark:hover:text-gray-100"
+            >
+              {brand.builtByName}
+            </a>
+            {' '}({new URL(brand.builtByUrl).hostname.replace(/^www\./, '')})
+          </p>
+        )}
+      </div>
     </div>
   </footer>
 );
